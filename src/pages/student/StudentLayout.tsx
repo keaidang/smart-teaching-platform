@@ -9,9 +9,9 @@ import {
 import { Avatar } from "../../components/ui";
 
 const TABS = [
-  { to: "/preview", label: "课前预习", icon: IconTrophy },
-  { to: "/homework", label: "课中作业", icon: IconUpload },
-  { to: "/exercise", label: "课后习题", icon: IconChart },
+  { to: "/student/preview", label: "课前预习", icon: IconTrophy },
+  { to: "/student/homework", label: "提交作业", icon: IconUpload },
+  { to: "/student/exercise", label: "课后知识点问答", icon: IconChart },
 ];
 
 export default function StudentLayout() {
@@ -20,7 +20,7 @@ export default function StudentLayout() {
 
   const logout = () => {
     setStudent(null);
-    nav("/");
+    nav("/student");
   };
 
   return (

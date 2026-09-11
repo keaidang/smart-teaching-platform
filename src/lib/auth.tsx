@@ -51,6 +51,6 @@ export function useStudent() {
 
 export function RequireStudent({ children }: { children: ReactNode }) {
   const { student } = useStudent();
-  if (!student) return <Navigate to="/" replace />;
+  if (!student) return <Navigate to="/student" replace />;
   return <>{children}</>;
 }

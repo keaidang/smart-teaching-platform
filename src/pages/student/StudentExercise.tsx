@@ -63,7 +63,7 @@ export default function StudentExercise() {
           <IconChart className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-xl font-semibold text-white">课后习题</h2>
+          <h2 className="text-xl font-semibold text-white">课后知识点问答</h2>
           <p className="text-sm text-brand-200/60">
             共 {list.length} 题 · 已作答 {answered}
           </p>

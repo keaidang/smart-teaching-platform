@@ -111,3 +111,54 @@ export const IconBook = (p: IconProps) => (
     <path d="M8 3v18" />
   </svg>
 );
+
+export const IconHome = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 11l8-7 8 7" />
+    <path d="M6 10v9h12v-9" />
+    <path d="M10 19v-5h4v5" />
+  </svg>
+);
+
+export const IconLayers = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 3l9 5-9 5-9-5z" />
+    <path d="M3 13l9 5 9-5M3 17l9 5 9-5" />
+  </svg>
+);
+
+export const IconFactory = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M3 20V9l6 4V9l6 4V6h3v14z" />
+    <path d="M3 20h18" />
+  </svg>
+);
+
+export const IconExpand = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+  </svg>
+);
+
+export const IconGauge = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 13l4-4" />
+    <path d="M4 18a8 8 0 1 1 16 0" />
+    <circle cx="12" cy="13" r="1.4" />
+  </svg>
+);
+
+export const IconShield = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
+    <path d="M9 12l2 2 4-4" />
+  </svg>
+);
+
+export const IconCpu = (p: IconProps) => (
+  <svg {...base(p)}>
+    <rect x="7" y="7" width="10" height="10" rx="2" />
+    <path d="M10 3v2M14 3v2M10 19v2M14 19v2M3 10h2M3 14h2M19 10h2M19 14h2" />
+  </svg>
+);
+

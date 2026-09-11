@@ -113,7 +113,7 @@ export default function StudentHomework() {
           <IconUpload className="h-5 w-5" />
         </span>
         <div>
-          <h2 className="text-xl font-semibold text-white">课中作业提交</h2>
+          <h2 className="text-xl font-semibold text-white">提交作业</h2>
           <p className="text-sm text-brand-200/60">
             作品图片直传 EdgeOne Blob 存储，元数据入 KV
           </p>

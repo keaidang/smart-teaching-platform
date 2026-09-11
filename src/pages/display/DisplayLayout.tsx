@@ -83,12 +83,20 @@ export default function DisplayLayout() {
               </NavLink>
             ))}
           </nav>
-          <a
-            href="/"
-            className="rounded-lg border border-brand-400/30 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
-          >
-            学生端入口 →
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="/"
+              className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
+            >
+              资源库首页
+            </a>
+            <a
+              href="/student"
+              className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-400"
+            >
+              学生端入口 →
+            </a>
+          </div>
         </header>
 
         <main className="scrollbar-thin flex-1 overflow-y-auto px-8 py-7">
