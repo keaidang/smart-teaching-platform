@@ -33,18 +33,16 @@ export interface Homework {
   title: string;
   description: string;
   deadline: string;
-  davPath: string;
 }
 
 export interface HomeworkSubmission {
-  id: string;
-  homeworkId: string;
   studentId: string;
-  studentName: string;
+  name: string;
   fileName: string;
   size: number;
+  key: string;
+  contentType?: string;
   submittedAt: string;
-  davUrl: string;
 }
 
 export interface Exercise {

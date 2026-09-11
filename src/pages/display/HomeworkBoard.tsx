@@ -45,7 +45,7 @@ export default function HomeworkBoard() {
       <SectionTitle
         icon={<IconUpload className="h-6 w-6" />}
         title="课中作业 · 提交进度墙"
-        sub={hw ? `文件存储于 WebDAV · ${hw.davPath}` : ""}
+        sub={hw ? "作品图片存储于 EdgeOne Blob · 元数据入 KV" : ""}
         right={<LiveBadge />}
       />
 
@@ -85,7 +85,15 @@ export default function HomeworkBoard() {
               }`}
             >
               <div className="relative">
-                <Avatar name={s.name} color={s.avatarColor} size={44} />
+                {sub && sub.contentType?.startsWith("image/") ? (
+                  <img
+                    src={`/api/homework/file?sid=${s.id}`}
+                    alt={s.name}
+                    className="h-14 w-14 rounded-xl object-cover ring-1 ring-brand-400/30"
+                  />
+                ) : (
+                  <Avatar name={s.name} color={s.avatarColor} size={44} />
+                )}
                 {ok && (
                   <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-emerald-400 text-ink-900">
                     <IconCheck className="h-3.5 w-3.5" strokeWidth={3} />
@@ -111,9 +119,17 @@ export default function HomeworkBoard() {
             .reverse()
             .slice(0, 6)
             .map((s) => (
-              <div key={s.id} className="flex items-center gap-4 px-5 py-3">
-                <Avatar name={s.studentName} color="#22d3ee" size={32} />
-                <span className="w-20 text-sm text-white">{s.studentName}</span>
+              <div key={s.studentId} className="flex items-center gap-4 px-5 py-3">
+                {s.contentType?.startsWith("image/") ? (
+                  <img
+                    src={`/api/homework/file?sid=${s.studentId}`}
+                    alt={s.fileName}
+                    className="h-9 w-9 rounded-lg object-cover"
+                  />
+                ) : (
+                  <Avatar name={s.name} color="#22d3ee" size={32} />
+                )}
+                <span className="w-20 text-sm text-white">{s.name}</span>
                 <span className="min-w-0 flex-1 truncate text-sm text-brand-200/70">
                   {s.fileName}
                 </span>

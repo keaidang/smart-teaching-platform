@@ -33,7 +33,7 @@ async function get<T>(path: string, fallback: T): Promise<T> {
   return (await res.json()) as T;
 }
 
-async function post<T, B>(path: string, body: B, fallback: T): Promise<T> {
+async function post<T, B = unknown>(path: string, body: B, fallback: T): Promise<T> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 400));
     return fallback;
@@ -61,13 +61,35 @@ export const api = {
   submitPreview: (answers: PreviewAnswer[]) =>
     post("/preview/answers", answers, { ok: true }),
 
-  // 课中作业
+  // 课中作业（图片走 Blob 预签名直传，元数据走 KV）
   getHomework: () => get<Homework[]>("/homework", homeworks),
   getHomeworkSubmissions: () =>
     get<HomeworkSubmission[]>("/homework/submissions", mockHomeworkSubmissions()),
-  // 真实上传：先 PUT 到 WebDAV，再把元数据 POST 到 Function 落库
-  submitHomeworkMeta: (meta: Omit<HomeworkSubmission, "id">) =>
-    post("/homework/submissions", meta, { ...meta, id: `SUB${Date.now()}` }),
+  getHomeworkUploadUrl: (payload: { studentId: string; fileName: string; contentType: string }) =>
+    post<{ url: string; key: string; expiresAt: number }>(
+      "/homework/upload-url",
+      payload,
+      {
+        url: "",
+        key: `hw/${payload.studentId}/${Date.now()}-${payload.fileName}`,
+        expiresAt: 0,
+      }
+    ),
+  submitHomeworkMeta: (meta: {
+    studentId: string;
+    fileName: string;
+    size: number;
+    key: string;
+    contentType: string;
+  }) =>
+    post<HomeworkSubmission>("/homework/submissions", meta, {
+      ...meta,
+      name: students.find((s) => s.id === meta.studentId)?.name || meta.studentId,
+      submittedAt: new Date().toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    }),
 
   // 课后习题
   getExercises: () => get<Exercise[]>("/exercises", exercises),

@@ -12,6 +12,7 @@
     "deploy": "edgeone makers deploy ./ -n smart-teaching-platform"
   },
   "dependencies": {
+    "@edgeone/pages-blob": "^0.0.16",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

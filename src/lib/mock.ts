@@ -140,9 +140,8 @@ export const homeworks: Homework[] = [
     id: "HW1",
     title: "《赛博城市》主题数字插画",
     description:
-      "运用本节课所学图层与光影知识，完成一张 1920×1080 主题插画，提交 PSD/PNG。",
+      "运用本节课所学图层与光影知识，完成一张 1920×1080 主题插画，提交 PNG。",
     deadline: "今日 16:30",
-    davPath: "/webdav/class-2401/homework/session-07",
   },
 ];
 
@@ -157,14 +156,13 @@ function fmtTime(minAgo: number) {
 export function mockHomeworkSubmissions(): HomeworkSubmission[] {
   const submitted = students.slice(0, 13);
   return submitted.map((s, i) => ({
-    id: `SUB${i + 1}`,
-    homeworkId: "HW1",
     studentId: s.id,
-    studentName: s.name,
+    name: s.name,
     fileName: `${s.name}_赛博城市_${String(i + 1).padStart(2, "0")}.png`,
     size: Math.round((2.4 + (i % 5) * 1.3) * 1024 * 1024),
+    key: `hw/${s.id}/demo-${i + 1}.png`,
+    contentType: "image/png",
     submittedAt: fmtTime(38 - i * 2),
-    davUrl: `/webdav/class-2401/homework/session-07/${s.id}.png`,
   }));
 }
 

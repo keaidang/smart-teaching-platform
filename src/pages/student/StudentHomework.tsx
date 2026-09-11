@@ -10,28 +10,27 @@ function fmtSize(bytes: number) {
   return `${Math.round(bytes / 1024)} KB`;
 }
 
-// 真实环境：把文件 PUT 到 WebDAV 对应路径，这里用 mock 模拟上传进度
-async function uploadToWebDAV(
+// 把文件 PUT 到预签名 URL（直传到 Blob，带进度）
+function putWithProgress(
+  url: string,
   file: File,
-  davPath: string,
+  contentType: string,
   onProgress: (p: number) => void
-): Promise<string> {
-  const url = `${davPath}/${encodeURIComponent(file.name)}`;
-  // 生产示例：
-  // await fetch(url, { method: "PUT", body: file, headers: authHeaders });
-  await new Promise<void>((resolve) => {
-    let p = 0;
-    const t = setInterval(() => {
-      p += 12 + Math.random() * 18;
-      if (p >= 100) {
-        p = 100;
-        clearInterval(t);
-        resolve();
-      }
-      onProgress(Math.min(100, Math.round(p)));
-    }, 180);
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`上传失败 ${xhr.status}`));
+    xhr.onerror = () => reject(new Error("网络错误"));
+    xhr.send(file);
   });
-  return url;
 }
 
 export default function StudentHomework() {
@@ -39,8 +38,10 @@ export default function StudentHomework() {
   const [hw, setHw] = useState<Homework | null>(null);
   const [mine, setMine] = useState<HomeworkSubmission | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,28 +61,42 @@ export default function StudentHomework() {
     };
   }, [student?.id]);
 
+  const pickFile = (f: File | null) => {
+    setFile(f);
+    setErr("");
+    if (f && f.type.startsWith("image/")) setPreview(URL.createObjectURL(f));
+    else setPreview("");
+  };
+
   const submit = async () => {
-    if (!file || !hw || !student) return;
+    if (!file || !student) return;
     setUploading(true);
     setProgress(0);
-    const url = await uploadToWebDAV(file, hw.davPath, setProgress);
-    const meta = {
-      homeworkId: hw.id,
-      studentId: student.id,
-      studentName: student.name,
-      fileName: file.name,
-      size: file.size,
-      submittedAt: new Date().toLocaleTimeString("zh-CN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      davUrl: url,
-    };
-    const created = await api.submitHomeworkMeta(meta);
-    setMine(created);
-    setFile(null);
-    setUploading(false);
-    if (inputRef.current) inputRef.current.value = "";
+    setErr("");
+    try {
+      const contentType = file.type || "application/octet-stream";
+      const { url, key } = await api.getHomeworkUploadUrl({
+        studentId: student.id,
+        fileName: file.name,
+        contentType,
+      });
+      if (url) await putWithProgress(url, file, contentType, setProgress);
+      else setProgress(100);
+      const created = await api.submitHomeworkMeta({
+        studentId: student.id,
+        fileName: file.name,
+        size: file.size,
+        key,
+        contentType,
+      });
+      setMine(created);
+      pickFile(null);
+    } catch (e) {
+      setErr(String((e as Error).message || e));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
   };
 
   if (!hw)
@@ -99,7 +114,9 @@ export default function StudentHomework() {
         </span>
         <div>
           <h2 className="text-xl font-semibold text-white">课中作业提交</h2>
-          <p className="text-sm text-brand-200/60">文件将上传至班级 WebDAV 目录</p>
+          <p className="text-sm text-brand-200/60">
+            作品图片直传 EdgeOne Blob 存储，元数据入 KV
+          </p>
         </div>
       </div>
 
@@ -113,16 +130,21 @@ export default function StudentHomework() {
         <p className="mt-2 text-sm leading-relaxed text-brand-200/70">
           {hw.description}
         </p>
-        <div className="mt-3 rounded-lg bg-white/5 px-3 py-2 text-xs text-brand-200/50">
-          存储路径：{hw.davPath}
-        </div>
       </Card>
 
       {mine ? (
         <Card className="flex items-center gap-4 p-6">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
-            <IconCheck className="h-6 w-6" strokeWidth={2.5} />
-          </span>
+          {mine.contentType?.startsWith("image/") ? (
+            <img
+              src={`/api/homework/file?sid=${mine.studentId}`}
+              alt={mine.fileName}
+              className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-brand-400/30"
+            />
+          ) : (
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
+              <IconCheck className="h-6 w-6" strokeWidth={2.5} />
+            </span>
+          )}
           <div className="min-w-0 flex-1">
             <div className="font-medium text-white">已提交</div>
             <div className="truncate text-sm text-brand-200/70">
@@ -135,17 +157,25 @@ export default function StudentHomework() {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,.psd,.zip"
+            accept="image/*"
             className="hidden"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
           />
           <button
             onClick={() => inputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-400/30 bg-brand-500/5 py-10 transition-colors hover:border-brand-400/60 hover:bg-brand-500/10"
+            className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-400/30 bg-brand-500/5 py-8 transition-colors hover:border-brand-400/60 hover:bg-brand-500/10"
           >
-            <IconUpload className="h-8 w-8 text-brand-300" />
+            {preview ? (
+              <img
+                src={preview}
+                alt="预览"
+                className="max-h-48 rounded-lg object-contain"
+              />
+            ) : (
+              <IconUpload className="h-8 w-8 text-brand-300" />
+            )}
             <span className="mt-3 text-sm text-brand-100">
-              {file ? file.name : "点击选择文件（PSD / PNG / ZIP）"}
+              {file ? file.name : "点击选择作品图片（PNG / JPG）"}
             </span>
             {file && (
               <span className="mt-1 text-xs text-brand-200/50">
@@ -157,7 +187,7 @@ export default function StudentHomework() {
           {uploading && (
             <div className="mt-4">
               <div className="mb-1 flex justify-between text-xs text-brand-200/70">
-                <span>正在上传至 WebDAV…</span>
+                <span>正在上传…</span>
                 <span>{progress}%</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
@@ -168,6 +198,7 @@ export default function StudentHomework() {
               </div>
             </div>
           )}
+          {err && <p className="mt-3 text-sm text-rose-300">{err}</p>}
 
           <button
             disabled={!file || uploading}
