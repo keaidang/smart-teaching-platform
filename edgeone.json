@@ -1,0 +1,18 @@
+{
+  "$schema": "https://cdnstatic.tencentcs.com/edgeone/pages/docs/edgeone.schema.json",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "nodeVersion": "20",
+  "mainlandRegions": ["ap-shanghai"],
+  "rewrites": [
+    { "source": "/class", "destination": "/index.html" },
+    { "source": "/class/preview", "destination": "/index.html" },
+    { "source": "/class/homework", "destination": "/index.html" },
+    { "source": "/class/exercise", "destination": "/index.html" },
+    { "source": "/preview", "destination": "/index.html" },
+    { "source": "/homework", "destination": "/index.html" },
+    { "source": "/exercise", "destination": "/index.html" }
+  ]
+}

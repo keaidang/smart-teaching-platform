@@ -1,0 +1,187 @@
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../lib/api";
+import { useStudent } from "../../lib/auth";
+import type { Homework, HomeworkSubmission } from "../../lib/types";
+import { IconCheck, IconClock, IconUpload } from "../../components/icons";
+import { Card } from "../../components/ui";
+
+function fmtSize(bytes: number) {
+  if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+// 真实环境：把文件 PUT 到 WebDAV 对应路径，这里用 mock 模拟上传进度
+async function uploadToWebDAV(
+  file: File,
+  davPath: string,
+  onProgress: (p: number) => void
+): Promise<string> {
+  const url = `${davPath}/${encodeURIComponent(file.name)}`;
+  // 生产示例：
+  // await fetch(url, { method: "PUT", body: file, headers: authHeaders });
+  await new Promise<void>((resolve) => {
+    let p = 0;
+    const t = setInterval(() => {
+      p += 12 + Math.random() * 18;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(t);
+        resolve();
+      }
+      onProgress(Math.min(100, Math.round(p)));
+    }, 180);
+  });
+  return url;
+}
+
+export default function StudentHomework() {
+  const { student } = useStudent();
+  const [hw, setHw] = useState<Homework | null>(null);
+  const [mine, setMine] = useState<HomeworkSubmission | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      const [h, subs] = await Promise.all([
+        api.getHomework(),
+        api.getHomeworkSubmissions(),
+      ]);
+      if (!alive) return;
+      setHw(h[0] ?? null);
+      setMine(subs.find((s) => s.studentId === student?.id) ?? null);
+    };
+    load();
+    return () => {
+      alive = false;
+    };
+  }, [student?.id]);
+
+  const submit = async () => {
+    if (!file || !hw || !student) return;
+    setUploading(true);
+    setProgress(0);
+    const url = await uploadToWebDAV(file, hw.davPath, setProgress);
+    const meta = {
+      homeworkId: hw.id,
+      studentId: student.id,
+      studentName: student.name,
+      fileName: file.name,
+      size: file.size,
+      submittedAt: new Date().toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      davUrl: url,
+    };
+    const created = await api.submitHomeworkMeta(meta);
+    setMine(created);
+    setFile(null);
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = "";
+  };
+
+  if (!hw)
+    return (
+      <div className="grid h-40 place-items-center text-brand-200/60">
+        加载作业信息…
+      </div>
+    );
+
+  return (
+    <div className="animate-rise space-y-6">
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
+          <IconUpload className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-xl font-semibold text-white">课中作业提交</h2>
+          <p className="text-sm text-brand-200/60">文件将上传至班级 WebDAV 目录</p>
+        </div>
+      </div>
+
+      <Card className="p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-white">{hw.title}</h3>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-xs text-rose-300">
+            <IconClock className="h-3.5 w-3.5" /> 截止 {hw.deadline}
+          </span>
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-brand-200/70">
+          {hw.description}
+        </p>
+        <div className="mt-3 rounded-lg bg-white/5 px-3 py-2 text-xs text-brand-200/50">
+          存储路径：{hw.davPath}
+        </div>
+      </Card>
+
+      {mine ? (
+        <Card className="flex items-center gap-4 p-6">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
+            <IconCheck className="h-6 w-6" strokeWidth={2.5} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-white">已提交</div>
+            <div className="truncate text-sm text-brand-200/70">
+              {mine.fileName} · {fmtSize(mine.size)} · {mine.submittedAt}
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-6">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*,.psd,.zip"
+            className="hidden"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+          <button
+            onClick={() => inputRef.current?.click()}
+            className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-400/30 bg-brand-500/5 py-10 transition-colors hover:border-brand-400/60 hover:bg-brand-500/10"
+          >
+            <IconUpload className="h-8 w-8 text-brand-300" />
+            <span className="mt-3 text-sm text-brand-100">
+              {file ? file.name : "点击选择文件（PSD / PNG / ZIP）"}
+            </span>
+            {file && (
+              <span className="mt-1 text-xs text-brand-200/50">
+                {fmtSize(file.size)}
+              </span>
+            )}
+          </button>
+
+          {uploading && (
+            <div className="mt-4">
+              <div className="mb-1 flex justify-between text-xs text-brand-200/70">
+                <span>正在上传至 WebDAV…</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div
+                  className="h-full rounded-full bg-brand-400 transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          <button
+            disabled={!file || uploading}
+            onClick={submit}
+            className={`mt-4 w-full rounded-xl py-3.5 font-semibold transition-all ${
+              file && !uploading
+                ? "bg-brand-500 text-ink-900 hover:bg-brand-400"
+                : "cursor-not-allowed bg-white/10 text-brand-200/40"
+            }`}
+          >
+            {uploading ? "上传中…" : "提交作业"}
+          </button>
+        </Card>
+      )}
+    </div>
+  );
+}
