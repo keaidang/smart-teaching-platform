@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useStudent } from "../../lib/auth";
 import { api } from "../../lib/api";
@@ -8,8 +8,10 @@ import {
   IconUpload,
   IconChart,
   IconCpu,
+  IconLock,
 } from "../../components/icons";
 import { Avatar } from "../../components/ui";
+import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
 
 const TABS = [
   { to: "/student/preview", label: "课前预习", icon: IconTrophy },
@@ -18,12 +20,15 @@ const TABS = [
   { to: "/student/ai", label: "AI 问答", icon: IconCpu },
 ];
 
+const TASK_KEY = "stp.taskChosen";
+
 export default function StudentLayout() {
   const { student, setStudent } = useStudent();
   const nav = useNavigate();
+  const [taskChosen, setTaskChosen] = useState(() => sessionStorage.getItem(TASK_KEY) === ACTIVE_TASK_ID);
 
   useEffect(() => {
-    if (!student) return;
+    if (!student || !taskChosen) return;
     const ping = () => api.pingPresence(student.id).catch(() => {});
     ping();
     const t = setInterval(ping, 20000);
@@ -33,20 +38,79 @@ export default function StudentLayout() {
       clearInterval(t);
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [student?.id]);
+  }, [student?.id, taskChosen]);
 
   const logout = () => {
     setStudent(null);
+    sessionStorage.removeItem(TASK_KEY);
     nav("/student");
   };
+
+  const choose = (id: string) => {
+    if (id !== ACTIVE_TASK_ID) return;
+    sessionStorage.setItem(TASK_KEY, id);
+    setTaskChosen(true);
+    nav("/student/preview");
+  };
+
+  // 登录后先选任务（仅「传感与视觉数据清洗」开放）
+  if (student && !taskChosen) {
+    return (
+      <div className="grid min-h-screen place-items-center px-6 py-10">
+        <div className="w-full max-w-3xl animate-rise">
+          <div className="mb-6 text-center">
+            <div className="text-glow text-2xl font-bold tracking-widest text-brand-100">选择课堂任务</div>
+            <p className="mt-2 text-sm text-brand-200/60">
+              {student.name}，当前仅开放「传感与视觉数据清洗」
+            </p>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {PROJECTS.map((p, pi) => (
+              <div key={p.id} className="glass rounded-2xl p-5">
+                <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
+                <div className="space-y-2">
+                  {p.tasks.map((t) => {
+                    const active = t.id === ACTIVE_TASK_ID;
+                    return (
+                      <button
+                        key={t.id}
+                        disabled={!active}
+                        onClick={() => choose(t.id)}
+                        className={`flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
+                          active ? "bg-brand-500 font-semibold text-ink-900 hover:bg-brand-400" : "cursor-not-allowed bg-white/5 text-brand-200/40"
+                        }`}
+                      >
+                        <span className="truncate">{t.title}</span>
+                        {active ? <span>进入 →</span> : <IconLock className="h-4 w-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <button onClick={logout} className="text-sm text-brand-200/60 hover:text-brand-100">← 退出登录</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const task = findTask(ACTIVE_TASK_ID);
 
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-400/15 bg-ink-900/50 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            AI数据服务 · 学生端
+            数智社区 · 学生端
           </span>
+          {taskChosen && (
+            <span className="hidden rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300 sm:inline">
+              {task?.task.title}
+            </span>
+          )}
         </div>
         {student && (
           <div className="flex items-center gap-3">

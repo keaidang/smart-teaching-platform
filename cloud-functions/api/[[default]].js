@@ -28,32 +28,28 @@ const listKeys = async (prefix) => {
   return blobs.map((b) => b.key);
 };
 
-// ---------- 课程：信息采集技术 · 城市“小微区域”环境与设施数据智能采集 ----------
-const NAMES = ["王梓涵","李宇轩","张欣怡","刘浩然","陈雨桐","杨俊杰","黄梦琪","赵子墨","周佳怡","吴天佑","徐诗琪","孙晨曦","马若曦","朱一鸣","胡嘉豪","郭雅婷","何睿哲","高可欣","林博文","郑静宜","谢志强","罗晓彤","梁文博","宋佳琪","唐泽宇","许安琪","韩立诚","冯悦溪","邓铭轩","曹乐萱","王宏毅","李思远"];
+// ---------- 课程：数智社区 · 信息采集 —— 当前任务：传感与视觉数据清洗 ----------
+const ROSTER = [["20241216501","孙天一"],["20241216502","王英杰"],["20241216503","马彦如"],["20241216504","杨诗意"],["20241216505","龚宸宇"],["20241216506","张昊祯"],["20241216507","金亮"],["20241216508","朱羿菲"],["20241216509","顾严天保"],["20241216510","陈迎冉"],["20241216511","顾保睿"],["20241216512","公俊超"],["20241216513","姚晨俊"],["20241216514","赵浩宇"],["20241216515","包杨睿"],["20241216516","汤宇轩"],["20241216517","龚皓林"],["20241216518","裴申宇"],["20241216519","黄杨萌"],["20241216520","宋子娴"],["20241216521","葛子骏"],["20241216522","刘佳鑫"],["20241216523","郑智童"],["20241216524","张哲"],["20241216525","周国栋"],["20241216526","张郁贤"]];
 const COLORS = ["#22d3ee","#34d399","#a78bfa","#f472b6","#fbbf24","#60a5fa","#f87171","#4ade80"];
-const SEED_STUDENTS = NAMES.map((name, i) => ({ id: `S${String(i + 1).padStart(2, "0")}`, name, avatarColor: COLORS[i % COLORS.length], classId: "C-2402" }));
+const SEED_STUDENTS = ROSTER.map(([id, name], i) => ({ id, name, avatarColor: COLORS[i % COLORS.length], classId: "C-2412" }));
 
-// 课前预习题（带 lesson/kp/dim 标签，供达成度看板融合）
+// 课前预习题（传感与视觉数据清洗，带 lesson/kp/dim 标签）
 const SEED_PQ = [
-  { id: "PQ1", lesson: "L1", kp: "kp1", dim: "知识", title: "开展城市小微区域数据采集，首先应完成的工作是？", options: ["直接编写爬虫", "确定采集需求与设计方案", "购买服务器", "绘制可视化大屏"], answer: 1, score: 25 },
-  { id: "PQ2", lesson: "L1", kp: "kp2", dim: "知识", title: "下列哪项不属于常见的环境类采集指标？", options: ["温度", "湿度", "PM2.5", "股票价格"], answer: 3, score: 25 },
-  { id: "PQ3", lesson: "L2", kp: "kp3", dim: "知识", title: "Python 中读取串口传感器数据最常用的库是？", options: ["pyserial", "requests", "flask", "numpy"], answer: 0, score: 25 },
-  { id: "PQ4", lesson: "L2", kp: "kp5", dim: "能力", title: "多传感器部署时，首要应考虑的是？", options: ["外观颜色", "采样频率与供电/网络稳定性", "品牌知名度", "价格最低"], answer: 1, score: 25 },
-  { id: "PQ5", lesson: "L3", kp: "kp7", dim: "能力", title: "数据清洗中处理连续型缺失值常用方法是？", options: ["直接删除全部数据", "均值/中位数插补", "随机填充", "不做处理"], answer: 1, score: 25 },
-  { id: "PQ6", lesson: "L4", kp: "kp9", dim: "能力", title: "展示各区域设施数量占比，最合适的图表是？", options: ["折线图", "饼图/环形图", "散点图", "词云"], answer: 1, score: 25 },
+  { id: "PQ1", lesson: "L3", kp: "kp7", dim: "能力", title: "多源传感数据融合前，首先要做的是？", options: ["直接求平均", "时间戳对齐与统一采样频率", "删除所有异常值", "转成图片"], answer: 1, score: 25 },
+  { id: "PQ2", lesson: "L3", kp: "kp7", dim: "能力", title: "检测数值型异常值常用的统计方法是？", options: ["3σ / IQR 准则", "冒泡排序", "字典序", "哈希"], answer: 0, score: 25 },
+  { id: "PQ3", lesson: "L3", kp: "kp7", dim: "知识", title: "图像去噪中，中值滤波特别擅长去除？", options: ["高斯噪声", "椒盐噪声", "运动模糊", "JPEG 压缩"], answer: 1, score: 25 },
+  { id: "PQ4", lesson: "L3", kp: "kp10", dim: "能力", title: "点云清洗中去除离群点常用？", options: ["统计/半径滤波", "锐化", "直方图均衡", "灰度化"], answer: 0, score: 25 },
 ];
 
-// 课后知识点问答题（带标签）
+// 课后知识点问答题（传感与视觉数据清洗）
 const SEED_EX = [
-  { id: "EX1", lesson: "L1", kp: "kp11", dim: "素养", title: "在公共区域采集数据时，首先应遵守的是？", options: ["采集越多越好", "合法合规与隐私保护", "只追求精度", "无需告知"], answer: 1 },
-  { id: "EX2", lesson: "L3", kp: "kp6", dim: "能力", title: "网络爬虫遵守 robots 协议与频控，主要目的是？", options: ["提高抓取速度", "尊重站点规则、降低服务器压力", "绕过反爬", "隐藏身份"], answer: 1 },
-  { id: "EX3", lesson: "L3", kp: "kp8", dim: "能力", title: "多源数据融合对齐的关键在于？", options: ["统一时间/空间与字段口径", "全部转成图片", "删除异常值", "只保留一个来源"], answer: 0 },
-  { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "涉及个人信息的数据，采集后应做？", options: ["公开共享", "脱敏处理", "长期留存", "随意转发"], answer: 1 },
-  { id: "EX5", lesson: "L4", kp: "kp2", dim: "知识", title: "数据可视化三要素不包括？", options: ["数据", "视觉编码", "交互/语境", "服务器型号"], answer: 3 },
-  { id: "EX6", lesson: "L4", kp: "kp10", dim: "能力", title: "工程验收环节通常不包括？", options: ["数据质量核验", "方案复盘", "随手删除原始数据", "成果演示"], answer: 2 },
+  { id: "EX1", lesson: "L3", kp: "kp7", dim: "能力", title: "连续型缺失值最稳妥的处理方式是？", options: ["一律删除整行", "按分布做均值/中位数插补", "填 0", "随机填充"], answer: 1 },
+  { id: "EX2", lesson: "L3", kp: "kp8", dim: "能力", title: "点云与图像配准对齐的关键是？", options: ["统一时间/空间与内外参标定", "都转成 CSV", "提高分辨率", "增加颜色"], answer: 0 },
+  { id: "EX3", lesson: "L3", kp: "kp11", dim: "素养", title: "数据清洗记录‘数据质量报告’的主要意义是？", options: ["应付检查", "可追溯、保证工程规范与质量", "拖慢进度", "没有意义"], answer: 1 },
+  { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "采集含人脸的视觉数据，清洗时应注意？", options: ["公开传播", "隐私脱敏与合规", "长期留存原图", "随意标注"], answer: 1 },
 ];
 
-const SEED_HW = { id: "HW1", title: "城市小微区域环境与设施数据采集成果", description: "提交本次任务的采集数据集（CSV）与采集方案说明（PNG/文档截图），体现需求-采集-清洗-可视化流程。", deadline: "今日 16:30" };
+const SEED_HW = { id: "HW-P2T2", title: "传感与视觉数据清洗成果", description: "提交清洗后的数据集（CSV）与数据质量说明（截图/图表），体现时间对齐、缺失/异常处理、图像去噪与点云滤波、格式归一化流程。", deadline: "今日 16:30" };
 
 let seeded = false;
 async function ensureSeed() {
@@ -124,8 +120,8 @@ export async function onRequest(context) {
       }
       const online = await onlineStudents();
       return json({
-        className: "计算机应用技术 2024 级 2 班",
-        sessionTitle: "城市“小微区域”环境与设施数据智能采集",
+        className: "计算机应用技术 2024 级 · 数智社区",
+        sessionTitle: "任务：传感与视觉数据清洗",
         studentCount: st.length,
         onlineCount: online.ids.length,
         previewDone: pvKeys.length,

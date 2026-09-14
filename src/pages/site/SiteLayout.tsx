@@ -24,10 +24,10 @@ export default function SiteLayout() {
       <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-6 backdrop-blur-xl">
         <div className="mb-8 px-2">
           <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            AI数据服务资源库
+            数智社区
           </div>
           <div className="mt-1 text-xs tracking-widest text-brand-300/60">
-            DATA SERVICE RESOURCE HUB
+            信息采集教学平台
           </div>
         </div>
 
@@ -77,7 +77,7 @@ export default function SiteLayout() {
               href="/class"
               className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
             >
-              教师大屏
+              后台大屏
             </a>
             <a
               href="/student"

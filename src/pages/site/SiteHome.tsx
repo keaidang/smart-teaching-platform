@@ -33,14 +33,20 @@ function Placeholder({ label }: { label: string }) {
 export default function SiteHome() {
   return (
     <div className="animate-rise space-y-8">
-      <div className="text-center">
-        <h1 className="text-glow text-4xl font-bold tracking-wide text-white">
-          AI数据服务资源库
-        </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-brand-200/70">
-          以数据生命周期为主线，融合项目实战、产教资源、拓展课程与智能评价，
-          面向师生提供一体化的人工智能数据服务教学资源平台。
-        </p>
+      <div className="relative overflow-hidden rounded-3xl border border-brand-400/15 bg-gradient-to-b from-brand-500/10 to-transparent px-8 py-12 text-center">
+        <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(600px_circle_at_50%_-10%,rgba(34,211,238,0.25),transparent_70%)]" />
+        <div className="relative">
+          <span className="inline-block rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1 text-xs font-medium tracking-widest text-brand-200">
+            数智社区 · 数据全生命周期
+          </span>
+          <h1 className="mt-5 bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-4xl font-extrabold tracking-wide text-transparent md:text-5xl">
+            数智社区 · 信息采集教学平台
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-brand-200/75">
+            以 Python 数据采集为核心，融合项目实战、产教资源、拓展课程与智能达成度评价，
+            面向师生提供一体化的数据服务教学资源平台。
+          </p>
+        </div>
       </div>
 
       {/* 课程导学 + 技术资源库 */}

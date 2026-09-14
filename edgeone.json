@@ -8,6 +8,7 @@
   "mainlandRegions": ["ap-shanghai"],
   "rewrites": [
     { "source": "/projects", "destination": "/index.html" },
+    { "source": "/projects/task/P2T2", "destination": "/index.html" },
     { "source": "/industry", "destination": "/index.html" },
     { "source": "/extensions", "destination": "/index.html" },
     { "source": "/evaluation", "destination": "/index.html" },

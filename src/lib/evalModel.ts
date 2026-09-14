@@ -1,4 +1,5 @@
 // 课程目标达成度评价数据模型（移植自 course-eval/gen_data.py，同结构、可注入真实数据）
+import { ROSTER } from "./course";
 
 export interface Dim3 { k: number; a: number; q: number }
 export interface LessonStudent extends Dim3 { pre: number; mid: number; post: number }
@@ -82,10 +83,7 @@ export const LESSONS: Omit<Lesson, "students" | "classAchieve">[] = [
   { id: "L4", idx: 4, name: "任务4 可视化构建与工程验收", pre: "可视化工具与工程规范预习", mid: "可视化应用构建 + 工程验收（含复盘）", post: "拓展创新（技术向善应用场景）", kpIds: ["kp2", "kp9", "kp10", "kp11", "kp12"] },
 ];
 
-const SURNAMES = list("王李张刘陈杨黄赵周吴徐孙马朱胡郭何高林郑谢罗梁宋唐许韩冯邓曹");
-const GIVEN = ["思涵","宇轩","欣怡","梓涵","浩然","雨桐","俊杰","梦琪","子墨","佳怡","天佑","诗琪","晨曦","若曦","一鸣","嘉豪","雅婷","睿哲","可欣","博文","静宜","志强","晓彤","文博","佳琪","泽宇","安琪","立诚","悦溪","铭轩","乐萱","宏毅"];
-function list(s: string) { return Array.from(s); }
-const TIERS = [...Array(13).fill("基础层"), ...Array(13).fill("提高层"), ...Array(6).fill("拓展层")];
+const TIERS = [...Array(12).fill("基础层"), ...Array(12).fill("提高层"), ...Array(6).fill("拓展层")];
 const TIER_BASE: Record<string, [number, number, number]> = { 基础层: [55, 62, 72], 提高层: [68, 78, 86], 拓展层: [80, 88, 93] };
 
 function mulberry32(seed: number) {
@@ -106,10 +104,10 @@ export function buildEvalData(real: RealScores = {}): EvalData {
   const rnd = mulberry32(20260907);
   const rand = (lo: number, hi: number) => lo + rnd() * (hi - lo);
 
-  const students = TIERS.map((tier, i) => {
-    const name = SURNAMES[i % SURNAMES.length] + GIVEN[i];
+  const students = ROSTER.map((r, i) => {
+    const tier = TIERS[i % TIERS.length];
     const ability = rand(-4, 4);
-    return { id: `S${String(i + 1).padStart(2, "0")}`, name, tier, ability };
+    return { id: r.id, name: r.name, tier, ability };
   });
 
   const lessons: Lesson[] = LESSONS.map((les) => {

@@ -1,23 +1,13 @@
+import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import {
   IconBoard,
   IconChart,
-  IconClass,
-  IconIdea,
-  IconRecord,
-  IconSkill,
-  IconTeach,
   IconTrophy,
   IconUpload,
+  IconLock,
 } from "../../components/icons";
-
-const NAV = [
-  { to: "/class", label: "教学平台", icon: IconTeach, end: true },
-  { to: "/class/preview", label: "技能平台", icon: IconSkill },
-  { to: "/class/homework", label: "同步课堂", icon: IconClass },
-  { to: "/class/exercise", label: "实时录屏", icon: IconRecord },
-  { to: "/class", label: "数智创想", icon: IconIdea },
-];
+import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
 
 const MODULES = [
   { to: "/class", label: "课堂总览", icon: IconBoard },
@@ -27,45 +17,71 @@ const MODULES = [
 ];
 
 export default function DisplayLayout() {
-  return (
-    <div className="flex min-h-screen">
-      {/* 左侧导航（还原参考图） */}
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-6 backdrop-blur-xl">
-        <div className="mb-8 px-2">
-          <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            AI数据服务资源库
+  const [entered, setEntered] = useState(false);
+
+  if (!entered) {
+    return (
+      <div className="grid min-h-screen place-items-center px-6 py-10">
+        <div className="w-full max-w-3xl animate-rise">
+          <div className="mb-6 text-center">
+            <div className="text-glow text-2xl font-bold tracking-widest text-brand-100">后台大屏 · 选择课堂任务</div>
+            <p className="mt-2 text-sm text-brand-200/60">当前仅开放「传感与视觉数据清洗」，其余任务资源建设中</p>
           </div>
-          <div className="mt-1 text-xs tracking-widest text-brand-300/60">
-            数据采集 · 教师大屏
+          <div className="grid gap-5 sm:grid-cols-2">
+            {PROJECTS.map((p, pi) => (
+              <div key={p.id} className="glass rounded-2xl p-5">
+                <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
+                <div className="space-y-2">
+                  {p.tasks.map((t) => {
+                    const active = t.id === ACTIVE_TASK_ID;
+                    return (
+                      <button
+                        key={t.id}
+                        disabled={!active}
+                        onClick={() => active && setEntered(true)}
+                        className={`flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
+                          active
+                            ? "bg-brand-500 text-ink-900 font-semibold hover:bg-brand-400"
+                            : "cursor-not-allowed bg-white/5 text-brand-200/40"
+                        }`}
+                      >
+                        <span className="truncate">{t.title}</span>
+                        {active ? <span>进入 →</span> : <IconLock className="h-4 w-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 text-center">
+            <a href="/" className="text-sm text-brand-200/60 hover:text-brand-100">← 返回资源库首页</a>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        <nav className="space-y-1.5">
-          {NAV.map((n, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-xl px-3 py-3 text-brand-100/90 transition-colors hover:bg-brand-500/10"
-            >
-              <n.icon className="h-5 w-5 text-brand-300" />
-              <span className="text-[15px] font-medium tracking-wide">
-                {n.label}
-              </span>
-            </div>
-          ))}
-        </nav>
-      </aside>
+  const task = findTask(ACTIVE_TASK_ID);
 
-      {/* 主区 */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-400/15 bg-ink-900/50 px-8 py-4 backdrop-blur-xl">
-          <nav className="flex gap-1">
+  return (
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-brand-400/15 bg-ink-900/50 px-6 py-3 backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <span className="text-glow text-lg font-bold tracking-widest text-brand-100">后台大屏</span>
+          <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+            {task?.task.title}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <nav className="mr-2 flex gap-1">
             {MODULES.map((m) => (
               <NavLink
-                key={m.to + m.label}
+                key={m.to}
                 to={m.to}
                 end={m.to === "/class"}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-brand-500/20 text-brand-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.35)]"
                       : "text-brand-200/70 hover:bg-white/5 hover:text-brand-100"
@@ -73,30 +89,19 @@ export default function DisplayLayout() {
                 }
               >
                 <m.icon className="h-4 w-4" />
-                {m.label}
+                <span className="hidden lg:inline">{m.label}</span>
               </NavLink>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
-            <a
-              href="/"
-              className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
-            >
-              资源库首页
-            </a>
-            <a
-              href="/student"
-              className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-ink-900 transition-colors hover:bg-brand-400"
-            >
-              学生端入口 →
-            </a>
-          </div>
-        </header>
+          <button onClick={() => setEntered(false)} className="rounded-lg border border-brand-400/25 px-3 py-2 text-sm text-brand-100 hover:bg-brand-500/15">切换任务</button>
+          <a href="/" className="rounded-lg border border-brand-400/25 px-3 py-2 text-sm text-brand-100 hover:bg-brand-500/15">资源库</a>
+          <a href="/student" className="rounded-lg bg-brand-500 px-3 py-2 text-sm font-semibold text-ink-900 hover:bg-brand-400">学生端</a>
+        </div>
+      </header>
 
-        <main className="scrollbar-thin flex-1 overflow-y-auto px-8 py-7">
-          <Outlet />
-        </main>
-      </div>
+      <main className="scrollbar-thin flex-1 overflow-y-auto px-6 py-7">
+        <Outlet />
+      </main>
     </div>
   );
 }

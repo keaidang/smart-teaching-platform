@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import SiteLayout from "./pages/site/SiteLayout";
 import SiteHome from "./pages/site/SiteHome";
 import Projects from "./pages/site/Projects";
+import TaskDetail from "./pages/site/TaskDetail";
 import Industry from "./pages/site/Industry";
 import Extensions from "./pages/site/Extensions";
 import Evaluation from "./pages/site/Evaluation";
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/" element={<SiteLayout />}>
         <Route index element={<SiteHome />} />
         <Route path="projects" element={<Projects />} />
+        <Route path="projects/task/:taskId" element={<TaskDetail />} />
         <Route path="industry" element={<Industry />} />
         <Route path="extensions" element={<Extensions />} />
         <Route path="evaluation" element={<Evaluation />} />
