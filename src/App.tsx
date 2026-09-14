@@ -11,7 +11,6 @@ import DisplayHome from "./pages/display/DisplayHome";
 import PreviewBoard from "./pages/display/PreviewBoard";
 import HomeworkBoard from "./pages/display/HomeworkBoard";
 import ExerciseBoard from "./pages/display/ExerciseBoard";
-import TeacherEvaluate from "./pages/display/TeacherEvaluate";
 import StudentLayout from "./pages/student/StudentLayout";
 import StudentLogin from "./pages/student/StudentLogin";
 import StudentPreview from "./pages/student/StudentPreview";
@@ -64,7 +63,6 @@ export default function App() {
           <Route path="preview" element={<PreviewBoard />} />
           <Route path="homework" element={<HomeworkBoard />} />
           <Route path="exercise" element={<ExerciseBoard />} />
-          <Route path="evaluate" element={<TeacherEvaluate />} />
         </Route>
 
         {/* 管理后台 */}

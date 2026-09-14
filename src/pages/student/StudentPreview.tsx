@@ -24,15 +24,21 @@ export default function StudentPreview() {
   const submit = async () => {
     if (!student || !allDone) return;
     setSubmitting(true);
-    const answers: PreviewAnswer[] = qs.map((q) => ({
-      studentId: student.id,
-      questionId: q.id,
-      selected: picks[q.id],
-      correct: picks[q.id] === q.answer,
-    }));
-    const score = answers.filter((a) => a.correct).length * 25;
+    const scoreOf = (qid: string) => qs.find((q) => q.id === qid)?.score ?? 0;
+    const total = qs.reduce((a, q) => a + q.score, 0);
+    let score = 0;
+    const answers: PreviewAnswer[] = qs.map((q) => {
+      const correct = picks[q.id] === q.answer;
+      if (correct) score += scoreOf(q.id);
+      return {
+        studentId: student.id,
+        questionId: q.id,
+        selected: picks[q.id],
+        correct,
+      };
+    });
     await api.submitPreview(answers);
-    setResult({ score, total: qs.length * 25 });
+    setResult({ score, total });
     setSubmitting(false);
   };
 

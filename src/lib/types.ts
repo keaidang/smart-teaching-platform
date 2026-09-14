@@ -77,3 +77,14 @@ export interface TeacherEval {
   comment: string;
   updatedAt: string;
 }
+
+// 小组评价：教师 / 企业 / AI 工具测评 三类，均为「6 个小组 × 4 个项目」打分（0–100）
+export type EvalKind = "teacher" | "enterprise" | "ai";
+export interface GroupEval {
+  type: EvalKind;
+  groupId: string;
+  name: string;
+  scores: Record<string, number>;
+  comment: string;
+  updatedAt: string;
+}

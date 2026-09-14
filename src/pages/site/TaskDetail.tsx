@@ -24,7 +24,7 @@ export default function TaskDetail() {
 
       <Card className="mb-6 p-6">
         <div className="text-sm leading-relaxed text-brand-200/80">
-          <b className="text-white">任务目标：</b>面向社区治理场景，完成传感器与视觉（图像 / 点云）数据的清洗治理——时间对齐、缺失与异常处理、图像去噪、点云滤波、格式统一与归一化，产出可用于融合分析的高质量数据集。
+          <b className="text-white">任务目标（工单编号 SQ-2026-001）：</b>为社区试点楼栋人脸门禁与 AI 监控联动系统建设居民<b className="text-white">人脸特征底库</b>，支撑黑名单人员预警、独居老人长时间未出入研判。使用 K230 CanMV 端侧设备采集多姿态人脸样本，完成质量筛选、特征提取与加密存储、元数据索引、数据卡与合规记录整理，最终打包交付<b className="text-white">合规的人脸特征数据集</b>（不是人脸照片）。验收硬指标：质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%（一票否决）、假名化合规、无原图残留。
         </div>
       </Card>
 
@@ -49,7 +49,7 @@ export default function TaskDetail() {
             <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
             <div>
               <div className="font-semibold text-white">提交作业</div>
-              <div className="text-xs text-brand-200/60">上传清洗成果数据集与质量说明</div>
+              <div className="text-xs text-brand-200/60">上传交付成果：索引表 / 数据卡 / 合规记录等材料</div>
             </div>
           </Card>
         </Link>
@@ -65,7 +65,7 @@ export default function TaskDetail() {
       </div>
 
       <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
-        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「传感与视觉数据清洗」配置。
+        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「人脸特征底库建设与交付」配置。
       </div>
     </div>
   );

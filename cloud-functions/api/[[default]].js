@@ -31,17 +31,19 @@ const listKeys = async (prefix) => {
   return blobs.map((b) => b.key);
 };
 
-// ---------- 课程：数智社区 · 信息采集 —— 当前任务：传感与视觉数据清洗 ----------
+// ---------- 课程：数智社区 · 信息采集 —— 当前任务：项目一·任务2 人脸特征底库建设与交付 ----------
 const ROSTER = [["20241216501","孙天一"],["20241216502","王英杰"],["20241216503","马彦如"],["20241216504","杨诗意"],["20241216505","龚宸宇"],["20241216506","张昊祯"],["20241216507","金亮"],["20241216508","朱羿菲"],["20241216509","顾严天保"],["20241216510","陈迎冉"],["20241216511","顾保睿"],["20241216512","公俊超"],["20241216513","姚晨俊"],["20241216514","赵浩宇"],["20241216515","包杨睿"],["20241216516","汤宇轩"],["20241216517","龚皓林"],["20241216518","裴申宇"],["20241216519","黄杨萌"],["20241216520","宋子娴"],["20241216521","葛子骏"],["20241216522","刘佳鑫"],["20241216523","郑智童"],["20241216524","张哲"],["20241216525","周国栋"],["20241216526","张郁贤"]];
 const COLORS = ["#22d3ee","#34d399","#a78bfa","#f472b6","#fbbf24","#60a5fa","#f87171","#4ade80"];
 const SEED_STUDENTS = ROSTER.map(([id, name], i) => ({ id, name, avatarColor: COLORS[i % COLORS.length], classId: "C-2412" }));
 
-// 课前预习题（传感与视觉数据清洗，带 lesson/kp/dim 标签）
+// 课前检测：图像采集基础知识（项目一·任务2，对应工单 SQ-2026-001；6 题，分值合计 100）
 const SEED_PQ = [
-  { id: "PQ1", lesson: "L3", kp: "kp7", dim: "能力", title: "多源传感数据融合前，首先要做的是？", options: ["直接求平均", "时间戳对齐与统一采样频率", "删除所有异常值", "转成图片"], answer: 1, score: 25 },
-  { id: "PQ2", lesson: "L3", kp: "kp7", dim: "能力", title: "检测数值型异常值常用的统计方法是？", options: ["3σ / IQR 准则", "冒泡排序", "字典序", "哈希"], answer: 0, score: 25 },
-  { id: "PQ3", lesson: "L3", kp: "kp7", dim: "知识", title: "图像去噪中，中值滤波特别擅长去除？", options: ["高斯噪声", "椒盐噪声", "运动模糊", "JPEG 压缩"], answer: 1, score: 25 },
-  { id: "PQ4", lesson: "L3", kp: "kp10", dim: "能力", title: "点云清洗中去除离群点常用？", options: ["统计/半径滤波", "锐化", "直方图均衡", "灰度化"], answer: 0, score: 25 },
+  { id: "PQ1", lesson: "L2", kp: "kp5", dim: "能力", title: "在采集人脸图像时，工单要求图像质量分不能低于（ ），才能被视为基础合格。", options: ["0.3", "0.5", "0.8", "1.0"], answer: 1, score: 15 },
+  { id: "PQ2", lesson: "L2", kp: "kp5", dim: "能力", title: "人脸区域的最小边长必须达到（ ）像素，才能满足后续底库建模的尺寸要求。", options: ["40", "60", "80", "120"], answer: 2, score: 15 },
+  { id: "PQ3", lesson: "L2", kp: "kp5", dim: "知识", title: "为了避免人脸被裁切导致特征提取失败，检测框距离图像边缘的最小距离应不低于（ ）像素。", options: ["0", "5", "10", "50"], answer: 2, score: 15 },
+  { id: "PQ4", lesson: "L2", kp: "kp10", dim: "能力", title: "为了让模型能适应不同角度的人脸，采集时同一人至少需要采集（ ）张不同姿态的样本。", options: ["1", "2", "3", "5"], answer: 2, score: 15 },
+  { id: "PQ5", lesson: "L2", kp: "kp10", dim: "知识", title: "按照任务工单中企业交付验收标准，试点批次人脸数据的可用样本占比（可用率）不得低于（ ），否则一票否决。", options: ["50%", "70%", "80%", "95%"], answer: 2, score: 20 },
+  { id: "PQ6", lesson: "L2", kp: "kp12", dim: "素养", title: "关于合规底线，采集与处理人脸数据时，以下哪种做法是正确的？（ ）", options: ["将拍摄的原始人脸照片和特征数据一起存入底库，方便比对", "原始人脸图像提取特征后必须立即删除，不得存储", "为了方便联系，直接在 CSV 表格中写入被采集人的真实姓名", "为了数据安全，将包含人脸信息的 CSV 文件通过互联网发送给甲方"], answer: 1, score: 20 },
 ];
 
 // 课后知识点问答题（传感与视觉数据清洗）
@@ -52,7 +54,7 @@ const SEED_EX = [
   { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "采集含人脸的视觉数据，清洗时应注意？", options: ["公开传播", "隐私脱敏与合规", "长期留存原图", "随意标注"], answer: 1 },
 ];
 
-const SEED_HW = { id: "HW-P2T2", title: "传感与视觉数据清洗成果", description: "提交清洗后的数据集（CSV）与数据质量说明（截图/图表），体现时间对齐、缺失/异常处理、图像去噪与点云滤波、格式归一化流程。", deadline: "今日 16:30" };
+const SEED_HW = { id: "HW-P1T2", title: "人脸特征底库交付成果", description: "按任务工单 SQ-2026-001 提交交付成果材料：特征模板目录（features/）、元数据索引表（metadata.csv）、数据卡（datacard.md）与合规记录（知情同意卡、原始图像删除日志）的截图或成品照片。", deadline: "今日 16:30" };
 
 let seeded = false;
 async function ensureSeed() {
@@ -198,7 +200,7 @@ export async function onRequest(context) {
       const online = await onlineStudents();
       return json({
         className: "2465 人工智能",
-        sessionTitle: "任务：传感与视觉数据清洗",
+        sessionTitle: "任务：人脸特征底库建设与交付",
         studentCount: st.length,
         onlineCount: online.ids.length,
         previewDone: pvKeys.length,
@@ -336,6 +338,31 @@ export async function onRequest(context) {
         updatedAt: nowHM(),
       };
       await wj(`teacher-eval:${m.studentId}`, doc);
+      return json(doc, 201);
+    }
+
+    // 小组评价（teacher/enterprise/ai 三类，按小组 × 4 项目打分 0–100，存 KV）
+    if (path === "/group-evals" && method === "GET") {
+      const type = url.searchParams.get("type") || "teacher";
+      if (!["teacher", "enterprise", "ai"].includes(type)) return json({ error: "invalid type" }, 400);
+      const keys = await listKeys(`group-eval:${type}:`);
+      const rows = [];
+      for (const k of keys) { const d = await rj(k); if (d) rows.push(d); }
+      return json(rows);
+    }
+    if (path === "/group-evals" && method === "POST") {
+      const m = await request.json();
+      if (!["teacher", "enterprise", "ai"].includes(m.type)) return json({ error: "invalid type" }, 400);
+      if (!m.groupId) return json({ error: "groupId required" }, 400);
+      const doc = {
+        type: m.type,
+        groupId: m.groupId,
+        name: m.name || m.groupId,
+        scores: m.scores || {},
+        comment: m.comment || "",
+        updatedAt: nowHM(),
+      };
+      await wj(`group-eval:${m.type}:${m.groupId}`, doc);
       return json(doc, 201);
     }
 

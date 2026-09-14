@@ -14,6 +14,8 @@ import {
   PREVIEW_QUESTIONS,
   EXERCISE_QUESTIONS,
   ACTIVE_HOMEWORK,
+  ACTIVE_TASK_ID,
+  findTask,
 } from "./course";
 
 export const students: Student[] = STUDENTS;
@@ -55,7 +57,7 @@ export function mockHomeworkSubmissions(): HomeworkSubmission[] {
   return students.slice(0, 12).map((s, i) => ({
     studentId: s.id,
     name: s.name,
-    fileName: `${s.name}_传感视觉清洗_${String(i + 1).padStart(2, "0")}.png`,
+    fileName: `${s.name}_人脸底库交付_${String(i + 1).padStart(2, "0")}.png`,
     size: Math.round((2.4 + (i % 5) * 1.3) * 1024 * 1024),
     key: `hw/${s.id}/demo-${i + 1}.png`,
     contentType: "image/png",
@@ -81,7 +83,7 @@ export function mockOverview(): ClassOverview {
   const avg = Math.round(scores.reduce((a, b) => a + b.score, 0) / scores.length);
   return {
     className: "2465 人工智能",
-    sessionTitle: "任务：传感与视觉数据清洗",
+    sessionTitle: `任务：${findTask(ACTIVE_TASK_ID)?.task.title ?? ""}`,
     studentCount: students.length,
     onlineCount: Math.min(18, scores.length),
     previewDone: scores.length,

@@ -1,10 +1,21 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EChart, dark } from "../../components/EChart";
 import { buildEvalData, DIM, COL, pct } from "../../lib/evalModel";
+import { PROJECTS, GROUPS, groupMemberNames } from "../../lib/course";
+import { api } from "../../lib/api";
+import type { EvalKind, GroupEval } from "../../lib/types";
 import { Card } from "../../components/ui";
 import { IconGauge } from "../../components/icons";
 
-const TABS = [
+// 评价区顶层模块：三类小组打分 + 原达成度看板
+const AREA_TABS: { id: EvalKind | "dashboard"; label: string }[] = [
+  { id: "teacher", label: "教师评价" },
+  { id: "enterprise", label: "企业评价" },
+  { id: "ai", label: "AI 工具测评" },
+  { id: "dashboard", label: "达成度看板" },
+];
+
+const DASH_TABS = [
   { id: "overview", label: "① 课程总览" },
   { id: "lesson", label: "② 每堂课达成" },
   { id: "kp", label: "③ 知识点掌握" },
@@ -13,6 +24,7 @@ const TABS = [
 ];
 
 export default function Evaluation() {
+  const [area, setArea] = useState<EvalKind | "dashboard">("teacher");
   const [tab, setTab] = useState("overview");
   const D = useMemo(() => buildEvalData(), []);
   const p3 = D.projects.find((p) => p.id === "P3")!;
@@ -26,24 +38,21 @@ export default function Evaluation() {
             <IconGauge className="h-6 w-6" />
           </span>
           <div>
-            <h2 className="text-2xl font-semibold text-white">教学评价 · 课程目标达成度看板</h2>
+            <h2 className="text-2xl font-semibold text-white">教学评价资源区</h2>
             <p className="mt-0.5 text-sm text-brand-200/70">
-              《{D.meta.course}》· {D.meta.project} · {D.meta.className} · {D.students.length} 人
+              教师评价 · 企业评价 · AI 工具测评 · 达成度看板（26 人 · 6 小组 · 以小组为单位打分）
             </p>
           </div>
         </div>
-        <span className="rounded-full border border-brand-400/25 bg-brand-500/5 px-3 py-1 text-xs text-brand-200/70">
-          {D.meta.model}
-        </span>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
-        {TABS.map((t) => (
+        {AREA_TABS.map((t) => (
           <button
             key={t.id}
-            onClick={() => setTab(t.id)}
+            onClick={() => setArea(t.id)}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-              tab === t.id
+              area === t.id
                 ? "bg-brand-500/20 text-brand-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.35)]"
                 : "text-brand-200/70 hover:bg-white/5 hover:text-brand-100"
             }`}
@@ -53,13 +62,252 @@ export default function Evaluation() {
         ))}
       </div>
 
-      {tab === "overview" && <Overview D={D} p3={p3} avgVa={avgVa} />}
-      {tab === "lesson" && <LessonView D={D} />}
-      {tab === "kp" && <KpView D={D} />}
-      {tab === "student" && <StudentView D={D} />}
-      {tab === "value" && <ValueView D={D} />}
+      {area !== "dashboard" && <GroupScorePanel kind={area} />}
 
-      <p className="mt-6 text-center text-xs text-brand-200/40">{D.meta.dataNote}</p>
+      {area === "dashboard" && (
+        <>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-white">
+              课程目标达成度看板 · 《{D.meta.course}》· {D.meta.className} · {D.students.length} 人
+            </h3>
+            <span className="rounded-full border border-brand-400/25 bg-brand-500/5 px-3 py-1 text-xs text-brand-200/70">
+              {D.meta.model}
+            </span>
+          </div>
+
+          <div className="mb-6 flex flex-wrap gap-2">
+            {DASH_TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  tab === t.id
+                    ? "bg-brand-500/20 text-brand-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.35)]"
+                    : "text-brand-200/70 hover:bg-white/5 hover:text-brand-100"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {tab === "overview" && <Overview D={D} p3={p3} avgVa={avgVa} />}
+          {tab === "lesson" && <LessonView D={D} />}
+          {tab === "kp" && <KpView D={D} />}
+          {tab === "student" && <StudentView D={D} />}
+          {tab === "value" && <ValueView D={D} />}
+
+          <p className="mt-6 text-center text-xs text-brand-200/40">{D.meta.dataNote}</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---------- 小组打分面板（教师 / 企业 / AI 工具测评共用） ----------
+
+const KIND_META: Record<EvalKind, { title: string; desc: string; placeholder: string }> = {
+  teacher: {
+    title: "教师评价",
+    desc: "以小组为单位，对 4 个项目的课堂完成情况打分（0–100 分），不打分到个人。",
+    placeholder: "该组本阶段表现、亮点与建议…",
+  },
+  enterprise: {
+    title: "企业评价",
+    desc: "以小组为单位，从企业交付验收视角对 4 个项目成果打分（0–100 分）。",
+    placeholder: "对标企业交付验收标准的评价…",
+  },
+  ai: {
+    title: "AI 工具测评",
+    desc: "以小组为单位，测评课堂中学生使用 AI 工具与脚本的能力（0–100 分）。",
+    placeholder: "AI 工具 / 脚本使用熟练度、提示词质量、结果校验意识…",
+  },
+};
+
+function avgOfScores(scores: Record<string, number>) {
+  const vals = PROJECTS.map((p) => scores[p.id] || 0).filter((v) => v > 0);
+  return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
+}
+
+function GroupScorePanel({ kind }: { kind: EvalKind }) {
+  const meta = KIND_META[kind];
+  const [evals, setEvals] = useState<GroupEval[]>([]);
+  const [selId, setSelId] = useState(GROUPS[0].id);
+  const [scores, setScores] = useState<Record<string, number>>({});
+  const [comment, setComment] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    setSelId(GROUPS[0].id);
+    setScores({});
+    setComment("");
+    api.getGroupEvals(kind).then((rows) => {
+      if (!alive) return;
+      setEvals(rows);
+      const first = rows.find((r) => r.groupId === GROUPS[0].id);
+      if (first) {
+        setScores({ ...first.scores });
+        setComment(first.comment || "");
+      }
+    });
+    return () => { alive = false; };
+  }, [kind]);
+
+  const pick = (gid: string) => {
+    setSelId(gid);
+    setMsg("");
+    const e = evals.find((r) => r.groupId === gid);
+    setScores(e ? { ...e.scores } : {});
+    setComment(e?.comment || "");
+  };
+
+  const group = GROUPS.find((g) => g.id === selId)!;
+  const done = Object.values(scores).filter((v) => v > 0).length;
+
+  const save = async () => {
+    if (done === 0) { setMsg("请先为至少一个项目打分"); return; }
+    setSaving(true);
+    setMsg("");
+    try {
+      const saved = await api.saveGroupEval({ type: kind, groupId: group.id, name: group.name, scores, comment });
+      setEvals((rows) => [...rows.filter((r) => r.groupId !== group.id), saved]);
+      setMsg("已保存");
+    } catch (e) {
+      setMsg(`保存失败：${String((e as Error).message || e)}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* 小组选择 */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {GROUPS.map((g) => {
+          const ev = evals.find((r) => r.groupId === g.id);
+          const on = g.id === selId;
+          return (
+            <button
+              key={g.id}
+              onClick={() => pick(g.id)}
+              className={`rounded-xl border px-4 py-3 text-left transition-all ${
+                on
+                  ? "border-brand-400/60 bg-brand-500/15 text-white"
+                  : "border-white/10 bg-white/5 text-brand-100/80 hover:border-brand-400/30"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{g.name}</span>
+                <span className="text-xs text-brand-200/50">{g.memberIds.length} 人</span>
+              </div>
+              <div className={`mt-1 text-xs ${ev ? "text-amber-300" : "text-brand-200/30"}`}>
+                {ev ? `均分 ${avgOfScores(ev.scores)}` : "未评价"}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        {/* 打分区 */}
+        <Card className="p-6">
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-lg font-semibold text-white">{meta.title} · {group.name}</h3>
+            <span className="rounded-full bg-brand-500/15 px-3 py-1 text-sm font-semibold text-brand-200">
+              均分 {avgOfScores(scores)}
+            </span>
+          </div>
+          <p className="mb-5 text-sm text-brand-200/70">{meta.desc}</p>
+          <p className="mb-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-xs leading-relaxed text-brand-200/60">
+            组员：{groupMemberNames(group).join("、")}
+          </p>
+
+          <div className="space-y-4">
+            {PROJECTS.map((p) => (
+              <div key={p.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="font-medium text-white">{p.title}</div>
+                    <div className="text-xs text-brand-200/50">{p.id} · {p.hours} 课时</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={scores[p.id] || 0}
+                      onChange={(e) => setScores({ ...scores, [p.id]: Number(e.target.value) })}
+                      className="w-36 accent-cyan-400 sm:w-48"
+                    />
+                    <span className="w-12 text-right text-lg font-bold text-brand-200">{scores[p.id] || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5">
+            <label className="mb-1.5 block text-sm text-brand-200/70">评语</label>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              placeholder={meta.placeholder}
+              className="w-full resize-none rounded-xl border border-brand-400/25 bg-ink-900/50 px-4 py-3 text-sm text-white outline-none focus:border-brand-400/60"
+            />
+          </div>
+
+          <div className="mt-5 flex items-center gap-3">
+            <button
+              onClick={save}
+              disabled={saving}
+              className="rounded-xl bg-brand-500 px-6 py-2.5 font-semibold text-ink-900 transition-colors hover:bg-brand-400 disabled:opacity-50"
+            >
+              {saving ? "保存中…" : `保存${meta.title}`}
+            </button>
+            <span className="text-xs text-brand-200/40">已打分 {done}/4 个项目</span>
+            {msg && <span className={`text-sm ${msg === "已保存" ? "text-emerald-300" : "text-rose-300"}`}>{msg}</span>}
+          </div>
+        </Card>
+
+        {/* 已评价汇总 */}
+        <Card className="max-h-[70vh] overflow-y-auto p-4 scrollbar-thin">
+          <div className="mb-2 px-2 text-sm font-medium text-brand-200/70">
+            {meta.title}记录 · {evals.length}/{GROUPS.length} 组
+          </div>
+          {evals.length === 0 && (
+            <div className="px-2 py-6 text-center text-sm text-brand-200/40">暂无评价，选择小组开始打分</div>
+          )}
+          <div className="space-y-2">
+            {evals
+              .slice()
+              .sort((a, b) => avgOfScores(b.scores) - avgOfScores(a.scores))
+              .map((ev) => (
+                <button
+                  key={ev.groupId}
+                  onClick={() => pick(ev.groupId)}
+                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-left transition-colors hover:border-brand-400/30"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-white">{ev.name}</span>
+                    <span className="text-sm font-bold text-amber-300">{avgOfScores(ev.scores)}</span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {PROJECTS.map((p) => (
+                      <span key={p.id} className="rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] text-brand-200/80">
+                        {p.id} {ev.scores[p.id] || 0}
+                      </span>
+                    ))}
+                  </div>
+                  {ev.comment && <div className="mt-1 truncate text-xs text-brand-200/50">{ev.comment}</div>}
+                </button>
+              ))}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -24,20 +24,20 @@ export const STUDENTS = ROSTER.map((r, i) => ({
   classId: "C-2412",
 }));
 
-// 4 个项目 / 8 个任务；当前课程只开放 项目二·任务2「传感与视觉数据清洗」
+// 4 个项目 / 8 个任务；当前课程开放 项目一·任务2「人脸特征底库建设与交付」（工单 SQ-2026-001）
 export const PROJECTS: ProjectDef[] = [
   {
     id: "P1", title: "数据感知方案设计与采集", hours: 8,
     tasks: [
       { id: "P1T1", title: "社区民意文本数据采集", active: false },
-      { id: "P1T2", title: "传感与视觉数据采集", active: false },
+      { id: "P1T2", title: "人脸特征底库建设与交付", active: true },
     ],
   },
   {
     id: "P2", title: "多源数据清洗治理", hours: 8,
     tasks: [
       { id: "P2T1", title: "居民诉求文本数据清洗", active: false },
-      { id: "P2T2", title: "传感与视觉数据清洗", active: true },
+      { id: "P2T2", title: "传感与视觉数据清洗", active: false },
     ],
   },
   {
@@ -56,7 +56,21 @@ export const PROJECTS: ProjectDef[] = [
   },
 ];
 
-export const ACTIVE_TASK_ID = "P2T2";
+export const ACTIVE_TASK_ID = "P1T2";
+
+// 小组分组：26 人 = 第 1–5 组各 4 人，第 6 组 6 人（多出的 2 人并入最后一组）；评价均以小组为单位
+export interface GroupDef { id: string; name: string; memberIds: string[] }
+export const GROUPS: GroupDef[] = [
+  { id: "G1", name: "第1组", memberIds: ROSTER.slice(0, 4).map((r) => r.id) },
+  { id: "G2", name: "第2组", memberIds: ROSTER.slice(4, 8).map((r) => r.id) },
+  { id: "G3", name: "第3组", memberIds: ROSTER.slice(8, 12).map((r) => r.id) },
+  { id: "G4", name: "第4组", memberIds: ROSTER.slice(12, 16).map((r) => r.id) },
+  { id: "G5", name: "第5组", memberIds: ROSTER.slice(16, 20).map((r) => r.id) },
+  { id: "G6", name: "第6组", memberIds: ROSTER.slice(20, 26).map((r) => r.id) },
+];
+export function groupMemberNames(g: GroupDef) {
+  return g.memberIds.map((id) => ROSTER.find((r) => r.id === id)?.name || id);
+}
 
 // 教师评价维度（4 项，1–5 星）
 export const EVAL_DIMENSIONS = [
@@ -73,23 +87,27 @@ export function allTasks() {
   return PROJECTS.flatMap((p) => p.tasks.map((t) => ({ ...t, project: p })));
 }
 
-// 当前任务：传感与视觉数据清洗 —— 课堂任务清单
+// 当前任务：项目一·任务2 人脸特征底库建设与交付 —— 课堂任务清单（依据企业任务工单 SQ-2026-001）
 export const ACTIVE_TASK_CHECKLIST = [
-  { step: "1", title: "读取原始数据", desc: "加载传感器 CSV（温湿度/PM2.5/噪声）与视觉样本（图像/点云）。" },
-  { step: "2", title: "时间戳对齐", desc: "统一采样频率，按时间窗口对齐多源传感数据。" },
-  { step: "3", title: "缺失与异常处理", desc: "均值/中位数插补缺失，3σ/IQR 检测并处理异常值。" },
-  { step: "4", title: "图像与点云清洗", desc: "图像去噪（高斯/中值），点云离群点滤波（统计/半径滤波）。" },
-  { step: "5", title: "格式统一与归一化", desc: "统一坐标系与单位，数值归一化/标准化。" },
-  { step: "6", title: "输出清洗数据集", desc: "导出清洗后 CSV 与图像/点云样本，记录数据质量报告。" },
+  { step: "1", title: "研读任务工单", desc: "明确委托方需求：为试点楼栋建设合规人脸特征底库，支撑黑名单预警与独居老人未出入研判；交付的是特征数据集，不是人脸照片。" },
+  { step: "2", title: "合规前置准备", desc: "采集前取得每位被采集人明确同意，签署并保留知情同意卡（照片/扫描件），作为一票否决项的证据材料。" },
+  { step: "3", title: "多姿态人脸采集", desc: "使用 K230 CanMV 端侧设备采集，每人不少于 3 张不同姿态样本（正脸 + 左侧脸 + 右侧脸）。" },
+  { step: "4", title: "质量筛选", desc: "单张质量分 ≥0.5，人脸框最小边 ≥80 像素，人脸框距图像边缘 ≥10 像素；不满足即视为不可用样本。" },
+  { step: "5", title: "特征提取与加密存储", desc: "每张有效样本提取 128 维特征向量，按 SHA-256 哈希前 16 位命名，加密存入 features/ 目录；原始图像提取后立即删除并记录删除日志。" },
+  { step: "6", title: "生成元数据索引表", desc: "生成 metadata.csv（UTF-8-sig 编码，8 字段：feature_id/file_name/person_id/consent_id/time/device_id/quality_score/face_size），person_id 必须假名化（如 P001）。" },
+  { step: "7", title: "撰写数据卡", desc: "编写 datacard.md：采集设备、样本总量、平均质量分、可用率、数据构成（特征维度/加密算法/存储位置）与合规状态说明。" },
+  { step: "8", title: "验收与打包交付", desc: "自查可用率 ≥80%（一票否决）、假名化合规、无原图残留（0 张）；整个交付文件夹压缩为 SQ-2026-001_第X组.zip 统一提交。" },
 ];
 
-// 课前预习（传感与视觉数据清洗）
+// 课前检测：图像采集基础知识（项目一·任务2，对应工单 SQ-2026-001；6 题，分值合计 100）
 export interface Q { id: string; title: string; options: string[]; answer: number; score: number; lesson: string; kp: string; dim: string }
 export const PREVIEW_QUESTIONS: Q[] = [
-  { id: "PQ1", lesson: "L3", kp: "kp7", dim: "能力", score: 25, title: "多源传感数据融合前，首先要做的是？", options: ["直接求平均", "时间戳对齐与统一采样频率", "删除所有异常值", "转成图片"], answer: 1 },
-  { id: "PQ2", lesson: "L3", kp: "kp7", dim: "能力", score: 25, title: "检测数值型异常值常用的统计方法是？", options: ["3σ / IQR 准则", "冒泡排序", "字典序", "哈希"], answer: 0 },
-  { id: "PQ3", lesson: "L3", kp: "kp7", dim: "知识", score: 25, title: "图像去噪中，中值滤波特别擅长去除？", options: ["高斯噪声", "椒盐噪声", "运动模糊", "JPEG 压缩"], answer: 1 },
-  { id: "PQ4", lesson: "L3", kp: "kp10", dim: "能力", score: 25, title: "点云清洗中去除离群点常用？", options: ["统计/半径滤波", "锐化", "直方图均衡", "灰度化"], answer: 0 },
+  { id: "PQ1", lesson: "L2", kp: "kp5", dim: "能力", score: 15, title: "在采集人脸图像时，工单要求图像质量分不能低于（ ），才能被视为基础合格。", options: ["0.3", "0.5", "0.8", "1.0"], answer: 1 },
+  { id: "PQ2", lesson: "L2", kp: "kp5", dim: "能力", score: 15, title: "人脸区域的最小边长必须达到（ ）像素，才能满足后续底库建模的尺寸要求。", options: ["40", "60", "80", "120"], answer: 2 },
+  { id: "PQ3", lesson: "L2", kp: "kp5", dim: "知识", score: 15, title: "为了避免人脸被裁切导致特征提取失败，检测框距离图像边缘的最小距离应不低于（ ）像素。", options: ["0", "5", "10", "50"], answer: 2 },
+  { id: "PQ4", lesson: "L2", kp: "kp10", dim: "能力", score: 15, title: "为了让模型能适应不同角度的人脸，采集时同一人至少需要采集（ ）张不同姿态的样本。", options: ["1", "2", "3", "5"], answer: 2 },
+  { id: "PQ5", lesson: "L2", kp: "kp10", dim: "知识", score: 20, title: "按照任务工单中企业交付验收标准，试点批次人脸数据的可用样本占比（可用率）不得低于（ ），否则一票否决。", options: ["50%", "70%", "80%", "95%"], answer: 2 },
+  { id: "PQ6", lesson: "L2", kp: "kp12", dim: "素养", score: 20, title: "关于合规底线，采集与处理人脸数据时，以下哪种做法是正确的？（ ）", options: ["将拍摄的原始人脸照片和特征数据一起存入底库，方便比对", "原始人脸图像提取特征后必须立即删除，不得存储", "为了方便联系，直接在 CSV 表格中写入被采集人的真实姓名", "为了数据安全，将包含人脸信息的 CSV 文件通过互联网发送给甲方"], answer: 1 },
 ];
 
 // 课后知识点问答（传感与视觉数据清洗）
@@ -102,8 +120,8 @@ export const EXERCISE_QUESTIONS: EQ[] = [
 ];
 
 export const ACTIVE_HOMEWORK = {
-  id: "HW-P2T2",
-  title: "传感与视觉数据清洗成果",
-  description: "提交清洗后的数据集（CSV）与数据质量说明（截图/图表），体现时间对齐、缺失/异常处理、图像去噪与点云滤波、格式归一化流程。",
+  id: "HW-P1T2",
+  title: "人脸特征底库交付成果",
+  description: "按任务工单 SQ-2026-001 提交交付成果材料：特征模板目录（features/）、元数据索引表（metadata.csv）、数据卡（datacard.md）与合规记录（知情同意卡、原始图像删除日志）的截图或成品照片。",
   deadline: "今日 16:30",
 };

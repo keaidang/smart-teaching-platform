@@ -1,7 +1,9 @@
 import type {
   ClassOverview,
+  EvalKind,
   Exercise,
   ExerciseStat,
+  GroupEval,
   Homework,
   HomeworkSubmission,
   PreviewAnswer,
@@ -176,6 +178,15 @@ export const api = {
       name: students.find((s) => s.id === e.studentId)?.name || e.studentId,
       scores: e.scores,
       comment: e.comment,
+      updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+    }),
+
+  // 小组评价（教师 / 企业 / AI 工具测评，均为小组 × 4 项目打分）
+  getGroupEvals: (type: EvalKind) =>
+    get<GroupEval[]>(`/group-evals?type=${type}`, []),
+  saveGroupEval: (e: Omit<GroupEval, "updatedAt">) =>
+    post<GroupEval>("/group-evals", e, {
+      ...e,
       updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
     }),
 };
