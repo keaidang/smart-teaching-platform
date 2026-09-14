@@ -69,6 +69,17 @@ async function ensureSeed() {
 }
 async function students() { return (await rj("students")) || []; }
 
+async function onlineStudents() {
+  const keys = await listKeys("presence:");
+  const now = Date.now();
+  const ids = [];
+  for (const k of keys) {
+    const d = await rj(k);
+    if (d && now - Number(d.ts) <= 60000) ids.push(d.studentId || k.split(":").pop());
+  }
+  return { ids };
+}
+
 // ---------- AI 问答系统提示词（导入课程介绍，限定答题范围）----------
 const COURSE_SYSTEM_PROMPT = `你是《信息采集技术》课程的 AI 助学助手，本项目的主题是“城市‘小微区域’环境与设施数据智能采集”，以 Python 数据采集为核心。
 课程围绕数据生命周期四阶段展开：
@@ -111,15 +122,28 @@ export async function onRequest(context) {
         const doc = await rj(k);
         for (const a of doc?.answers || []) { total++; if (a.correct) correct++; }
       }
+      const online = await onlineStudents();
       return json({
         className: "计算机应用技术 2024 级 2 班",
         sessionTitle: "城市“小微区域”环境与设施数据智能采集",
         studentCount: st.length,
-        onlineCount: new Set([...pvKeys, ...hwKeys].map((k) => k.split(":").pop())).size,
+        onlineCount: online.ids.length,
         previewDone: pvKeys.length,
         homeworkSubmitted: hwKeys.length,
         exerciseAvg: total ? Math.round((correct / total) * 100) : 0,
       });
+    }
+
+    // 在线心跳（学生端每 ~20s 调用；近 60s 有心跳 = 在线）
+    if (path === "/presence" && method === "POST") {
+      const { studentId } = await request.json();
+      if (!studentId) return json({ error: "studentId required" }, 400);
+      await wj(`presence:${studentId}`, { studentId, ts: Date.now() });
+      return json({ ok: true, ts: Date.now() });
+    }
+    if (path === "/presence" && method === "GET") {
+      const online = await onlineStudents();
+      return json({ onlineCount: online.ids.length, ids: online.ids });
     }
 
     // 课前预习

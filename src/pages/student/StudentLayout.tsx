@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useStudent } from "../../lib/auth";
+import { api } from "../../lib/api";
 import {
   IconLogout,
   IconTrophy,
@@ -19,6 +21,19 @@ const TABS = [
 export default function StudentLayout() {
   const { student, setStudent } = useStudent();
   const nav = useNavigate();
+
+  useEffect(() => {
+    if (!student) return;
+    const ping = () => api.pingPresence(student.id).catch(() => {});
+    ping();
+    const t = setInterval(ping, 20000);
+    const onVis = () => { if (!document.hidden) ping(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [student?.id]);
 
   const logout = () => {
     setStudent(null);

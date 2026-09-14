@@ -98,6 +98,10 @@ export const api = {
   submitExercise: (answers: { studentId: string; exerciseId: string; selected: number }[]) =>
     post("/exercises/answers", answers, { ok: true }),
 
+  // 在线心跳
+  pingPresence: (studentId: string) =>
+    post("/presence", { studentId }, { ok: true }),
+
   // AI 问答（阿里通义千问）
   aiChat: (messages: { role: string; content: string }[]) =>
     post<{ content: string }>(
