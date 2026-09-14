@@ -6,7 +6,7 @@ const FILES = getStore(process.env.BLOB_STORE || "homework");
 
 // 阿里 DashScope（通义千问）—— 兼容 OpenAI 协议
 const DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
-const QWEN_MODEL = process.env.QWEN_MODEL || "qwen-flash";
+const QWEN_MODEL = process.env.QWEN_MODEL || "qwen3.8-flash";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
