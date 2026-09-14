@@ -45,12 +45,12 @@ export default function Projects() {
         sub="围绕「数据生命周期」构建的全流程实战项目"
       />
 
-      <div className="relative space-y-6 before:absolute before:left-[27px] before:top-2 before:bottom-2 before:w-px before:bg-gradient-to-b before:from-brand-400/40 before:to-transparent lg:before:left-[31px]">
+      <div className="relative space-y-6 before:absolute before:left-[27px] before:top-3 before:bottom-3 before:w-px before:bg-gradient-to-b before:from-brand-400/40 before:to-transparent">
         {PROJECTS.map((p) => (
           <div key={p.no} className="relative flex gap-5">
             <div
               className="z-10 grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-lg font-bold"
-              style={{ background: `${p.color}1f`, color: p.color, boxShadow: `0 0 0 4px rgba(4,20,26,0.6)` }}
+              style={{ background: "#0a2f3d", color: p.color, border: `2px solid ${p.color}66`, boxShadow: "0 0 0 4px #04141a" }}
             >
               {p.no}
             </div>
