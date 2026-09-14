@@ -9,7 +9,7 @@ const DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/co
 const QWEN_MODEL = process.env.QWEN_MODEL || "qwen3.8-flash";
 
 // 管理端密钥（重置/播种等敏感操作）
-const ADMIN_KEY = process.env.ADMIN_KEY || "keaidang-admin-2026";
+const ADMIN_KEY = process.env.ADMIN_KEY || "admin";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
