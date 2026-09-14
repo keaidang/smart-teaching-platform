@@ -102,16 +102,67 @@ export const api = {
   pingPresence: (studentId: string) =>
     post("/presence", { studentId }, { ok: true }),
 
-  // AI 问答（阿里通义千问）
-  aiChat: (messages: { role: string; content: string }[]) =>
-    post<{ content: string }>(
-      "/ai/chat",
-      { messages },
-      {
-        content:
-          "【离线演示】我是《信息采集技术》课程 AI 助学助手。部署到 EdgeOne 并配置 DASHSCOPE_API_KEY 后，我会基于课程内容（Python 数据采集、传感器、爬虫、清洗融合、可视化、数据合规）为你实时答疑。",
+  // AI 问答（阿里通义千问，流式）
+  aiChatStream: async (
+    messages: { role: string; content: string }[],
+    onEvent: (e: { type: "reasoning" | "content" | "done" | "error"; text?: string }) => void
+  ) => {
+    if (USE_MOCK) {
+      const mock =
+        "【离线演示】部署到 EdgeOne 后，我会基于《信息采集技术》课程内容（Python 数据采集、传感器、爬虫、清洗融合、可视化、数据合规）**流式**作答，并展示思考过程。";
+      for (const ch of mock) {
+        onEvent({ type: "content", text: ch });
+        await new Promise((r) => setTimeout(r, 18));
       }
-    ),
+      onEvent({ type: "done" });
+      return;
+    }
+    const res = await fetch(`${BASE}/ai/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages }),
+    });
+    if (!res.ok || !res.body) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const j = await res.json();
+        msg = j.error || j.detail || msg;
+      } catch {
+        /* ignore */
+      }
+      onEvent({ type: "error", text: String(msg) });
+      onEvent({ type: "done" });
+      return;
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let idx: number;
+      while ((idx = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, idx).trim();
+        buf = buf.slice(idx + 1);
+        if (!line.startsWith("data:")) continue;
+        const data = line.slice(5).trim();
+        if (data === "[DONE]") {
+          onEvent({ type: "done" });
+          return;
+        }
+        try {
+          const j = JSON.parse(data);
+          const delta = j.choices?.[0]?.delta || {};
+          if (delta.reasoning_content) onEvent({ type: "reasoning", text: delta.reasoning_content });
+          if (delta.content) onEvent({ type: "content", text: delta.content });
+        } catch {
+          /* partial json, ignore */
+        }
+      }
+    }
+    onEvent({ type: "done" });
+  },
 
   // 大屏概览
   getOverview: () => get<ClassOverview>("/overview", mockOverview()),

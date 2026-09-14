@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
 import { IconCpu } from "../../components/icons";
 import { Card } from "../../components/ui";
 
-interface Msg { role: "user" | "assistant"; content: string }
+interface Msg {
+  role: "user" | "assistant";
+  content: string;
+  reasoning?: string;
+  streaming?: boolean;
+  error?: boolean;
+}
 
 const SUGGESTIONS = [
   "pyserial 怎么读取传感器数据？",
@@ -18,7 +26,7 @@ export default function StudentAI() {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: "assistant",
-      content: `你好${student ? "，" + student.name : ""}！我是《信息采集技术》课程 AI 助学助手，可以就 Python 数据采集、传感器、爬虫、数据清洗融合、可视化与数据合规等问题为你解答。想问点什么？`,
+      content: `你好${student ? "，" + student.name : ""}！我是《信息采集技术》课程 AI 助学助手，可解答 Python 数据采集、传感器、爬虫、数据清洗融合、可视化与数据合规等问题。`,
     },
   ]);
   const [input, setInput] = useState("");
@@ -27,23 +35,34 @@ export default function StudentAI() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs, busy]);
+  }, [msgs]);
 
   const send = async (text: string) => {
     const q = text.trim();
     if (!q || busy) return;
     setInput("");
-    const next: Msg[] = [...msgs, { role: "user", content: q }];
-    setMsgs(next);
     setBusy(true);
-    try {
-      const res = await api.aiChat(next);
-      setMsgs([...next, { role: "assistant", content: res.content }]);
-    } catch (e) {
-      setMsgs([...next, { role: "assistant", content: `（出错了：${String((e as Error).message || e)}）` }]);
-    } finally {
-      setBusy(false);
-    }
+    const history: Msg[] = [...msgs, { role: "user", content: q }, { role: "assistant", content: "", reasoning: "", streaming: true }];
+    setMsgs(history);
+
+    const patch = (fn: (m: Msg) => Msg) =>
+      setMsgs((prev) => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        next[next.length - 1] = fn(last);
+        return next;
+      });
+
+    await api.aiChatStream(
+      history.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
+      (e) => {
+        if (e.type === "reasoning") patch((m) => ({ ...m, reasoning: (m.reasoning || "") + e.text }));
+        else if (e.type === "content") patch((m) => ({ ...m, content: m.content + e.text }));
+        else if (e.type === "error") patch((m) => ({ ...m, error: true, content: m.content || `（出错了：${e.text}）` }));
+        else if (e.type === "done") patch((m) => ({ ...m, streaming: false }));
+      }
+    );
+    setBusy(false);
   };
 
   return (
@@ -54,31 +73,49 @@ export default function StudentAI() {
         </span>
         <div>
           <h2 className="text-xl font-semibold text-white">AI 课程问答</h2>
-          <p className="text-sm text-brand-200/60">基于课程介绍限定范围 · 阿里通义千问</p>
+          <p className="text-sm text-brand-200/60">流式作答 · 展示思考过程 · 阿里通义千问</p>
         </div>
       </div>
 
       <Card className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-5">
         {msgs.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                m.role === "user"
-                  ? "bg-brand-500 text-ink-900"
-                  : "border border-white/10 bg-white/5 text-brand-50"
-              }`}
-            >
-              {m.content}
-            </div>
+            {m.role === "user" ? (
+              <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl bg-brand-500 px-4 py-2.5 text-sm leading-relaxed text-ink-900">
+                {m.content}
+              </div>
+            ) : (
+              <div className="max-w-[88%] space-y-2">
+                {m.reasoning ? (
+                  <details open={m.streaming && !m.content} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                    <summary className="cursor-pointer select-none text-xs font-medium text-brand-200/70">
+                      💭 思考过程{m.streaming && !m.content ? "（进行中…）" : ""}
+                    </summary>
+                    <div className="mt-2 max-h-52 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-brand-200/60 scrollbar-thin">
+                      {m.reasoning}
+                    </div>
+                  </details>
+                ) : null}
+
+                <div
+                  className={`md rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                    m.error ? "border border-rose-400/30 bg-rose-500/10 text-rose-100" : "border border-white/10 bg-white/5 text-brand-50"
+                  }`}
+                >
+                  {m.content ? (
+                    <Markdown remarkPlugins={[remarkGfm]}>{m.content}</Markdown>
+                  ) : m.streaming ? (
+                    <span className="inline-flex items-center gap-2 text-brand-200/60">
+                      <span className="h-2 w-2 animate-ping rounded-full bg-brand-400" />
+                      正在思考…
+                    </span>
+                  ) : null}
+                  {m.streaming && m.content ? <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-brand-300 align-middle" /> : null}
+                </div>
+              </div>
+            )}
           </div>
         ))}
-        {busy && (
-          <div className="flex justify-start">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-200/60">
-              正在思考…
-            </div>
-          </div>
-        )}
         <div ref={endRef} />
       </Card>
 

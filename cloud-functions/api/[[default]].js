@@ -245,7 +245,7 @@ export async function onRequest(context) {
       return json({ ok: true, saved: Object.keys(groups).length });
     }
 
-    // AI 问答（阿里通义千问 qwen）
+    // AI 问答（阿里通义千问 qwen，SSE 流式透传 + 思维链）
     if (path === "/ai/chat" && method === "POST") {
       const key = process.env.DASHSCOPE_API_KEY;
       if (!key) return json({ error: "AI 未配置：请在 EdgeOne 环境变量中设置 DASHSCOPE_API_KEY" }, 503);
@@ -253,17 +253,28 @@ export async function onRequest(context) {
       const history = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
       const upstream = await fetch(DASHSCOPE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
           model: QWEN_MODEL,
           messages: [{ role: "system", content: COURSE_SYSTEM_PROMPT }, ...history],
           temperature: 0.7,
+          stream: true,
+          stream_options: { include_usage: true },
+          enable_thinking: true,
         }),
       });
-      const data = await upstream.json();
-      if (!upstream.ok) return json({ error: data?.error?.message || data?.message || "AI 调用失败", detail: data }, 502);
-      const content = data?.choices?.[0]?.message?.content || "（未获取到回复）";
-      return json({ content, usage: data?.usage });
+      if (!upstream.ok || !upstream.body) {
+        const t = await upstream.text().catch(() => "");
+        return json({ error: "AI 调用失败", status: upstream.status, detail: t }, 502);
+      }
+      return new Response(upstream.body, {
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Accel-Buffering": "no",
+          ...CORS,
+        },
+      });
     }
 
     return json({ error: "not found", path }, 404);
