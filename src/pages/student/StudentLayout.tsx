@@ -76,12 +76,12 @@ export default function StudentLayout() {
                         key={t.id}
                         disabled={!active}
                         onClick={() => choose(t.id)}
-                        className={`flex w-full items-center justify-between rounded-xl px-4 py-2.5 text-sm transition-all ${
-                          active ? "bg-brand-500 font-semibold text-ink-900 hover:bg-brand-400" : "cursor-not-allowed bg-white/5 text-brand-200/40"
+                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm transition-colors ${
+                          active ? "cursor-pointer hover:border-brand-400/50 hover:bg-brand-500/15" : "cursor-not-allowed"
                         }`}
                       >
-                        <span className="truncate">{t.title}</span>
-                        {active ? <span>进入 →</span> : <IconLock className="h-4 w-4" />}
+                        <span className="truncate text-brand-100">{t.title}</span>
+                        {active ? <span className="text-brand-300">进入 →</span> : <IconLock className="h-4 w-4 text-brand-200/40" />}
                       </button>
                     );
                   })}
