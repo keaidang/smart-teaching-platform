@@ -50,7 +50,7 @@ export default function StudentLogin() {
                 setSid(e.target.value);
                 setErr("");
               }}
-              placeholder="例如 S001"
+              placeholder="例如 20241216501"
               className="w-full rounded-xl border border-brand-400/25 bg-ink-900/50 px-4 py-3 text-white outline-none transition-colors placeholder:text-brand-200/40 focus:border-brand-400/60"
             />
           </div>
@@ -63,7 +63,7 @@ export default function StudentLogin() {
                 setErr("");
               }}
               onKeyDown={(e) => e.key === "Enter" && doLogin(sid, name)}
-              placeholder="例如 陈嘉怡"
+              placeholder="例如 孙天一"
               className="w-full rounded-xl border border-brand-400/25 bg-ink-900/50 px-4 py-3 text-white outline-none transition-colors placeholder:text-brand-200/40 focus:border-brand-400/60"
             />
           </div>

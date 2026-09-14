@@ -143,6 +143,33 @@ export async function onRequest(context) {
       return json({ ok: true, deleted, kept: [...keep] });
     }
 
+    if (path === "/admin/clear-blob" && method === "POST") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      const all = await FILES.list({ consistency: "strong" });
+      let deleted = 0;
+      for (const b of all.blobs) {
+        try { await FILES.delete(b.key); deleted++; } catch { /* ignore */ }
+      }
+      return json({ ok: true, deleted });
+    }
+
+    if (path === "/admin/reset-all" && method === "POST") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      const keep = new Set(["students", "preview:questions", "exercises", "homework"]);
+      const all = await KV.list({ consistency: "strong" });
+      let kvDeleted = 0;
+      for (const b of all.blobs) {
+        if (keep.has(b.key)) continue;
+        try { await KV.delete(b.key); kvDeleted++; } catch { /* ignore */ }
+      }
+      const files = await FILES.list({ consistency: "strong" });
+      let blobDeleted = 0;
+      for (const b of files.blobs) {
+        try { await FILES.delete(b.key); blobDeleted++; } catch { /* ignore */ }
+      }
+      return json({ ok: true, kvDeleted, blobDeleted });
+    }
+
     if (path === "/reseed" && method === "POST") {
       if (!authorized()) return json({ error: "forbidden" }, 403);
       const all = await KV.list({ consistency: "strong" });

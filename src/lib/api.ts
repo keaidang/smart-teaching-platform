@@ -199,6 +199,10 @@ export const adminApi = {
   stats: (key: string) => adminReq<AdminStats>("/admin/stats", "GET", key),
   resetSubmissions: (key: string) =>
     adminReq<{ ok: boolean; deleted: number }>("/admin/reset-submissions", "POST", key),
+  clearBlob: (key: string) =>
+    adminReq<{ ok: boolean; deleted: number }>("/admin/clear-blob", "POST", key),
+  resetAll: (key: string) =>
+    adminReq<{ ok: boolean; kvDeleted: number; blobDeleted: number }>("/admin/reset-all", "POST", key),
   reseed: (key: string) =>
     adminReq<{ ok: boolean; deleted: number; students: number }>("/reseed", "POST", key),
 };

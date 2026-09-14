@@ -122,28 +122,30 @@ export default function Admin() {
         <p className="mt-1 text-sm text-brand-200/60">
           学生名单与题目为固定种子数据；答题/提交/在线记录可按需重置。
         </p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-amber-400/25 bg-amber-400/5 p-5">
-            <div className="font-semibold text-amber-200">重置答题 / 提交记录</div>
-            <p className="mt-1 text-sm text-brand-200/70">清空预习/作业/问答作答与在线心跳，<b className="text-white">保留</b>名单与题目。</p>
-            <button
-              disabled={busy}
-              onClick={() => { if (confirm("确定重置所有答题/提交记录？名单会保留。")) run(adminApi.resetSubmissions, "已重置答题/提交记录"); }}
-              className="mt-4 w-full rounded-lg bg-amber-400 py-2.5 font-semibold text-ink-900 hover:bg-amber-300 disabled:opacity-50"
-            >
-              重置记录
-            </button>
+            <div className="font-semibold text-amber-200">重置答题 / 提交记录（KV）</div>
+            <p className="mt-1 text-sm text-brand-200/70">清空预习/作业/问答作答与在线心跳，<b className="text-white">保留</b>名单、题目与已传图片。</p>
+            <button disabled={busy} onClick={() => { if (confirm("确定重置答题/提交记录？名单与图片保留。")) run(adminApi.resetSubmissions, "已重置答题/提交记录"); }}
+              className="mt-4 w-full rounded-lg bg-amber-400 py-2.5 font-semibold text-ink-900 hover:bg-amber-300 disabled:opacity-50">重置记录</button>
+          </div>
+          <div className="rounded-xl border border-orange-400/25 bg-orange-400/5 p-5">
+            <div className="font-semibold text-orange-200">清空作业图片（Blob）</div>
+            <p className="mt-1 text-sm text-brand-200/70">删除 Blob 存储里所有学生上传的图片文件。</p>
+            <button disabled={busy} onClick={() => { if (confirm("确定清空所有作业图片？")) run(adminApi.clearBlob, "已清空作业图片"); }}
+              className="mt-4 w-full rounded-lg bg-orange-400 py-2.5 font-semibold text-ink-900 hover:bg-orange-300 disabled:opacity-50">清空图片</button>
           </div>
           <div className="rounded-xl border border-rose-400/25 bg-rose-400/5 p-5">
-            <div className="font-semibold text-rose-200">重新播种（名单 + 题目）</div>
-            <p className="mt-1 text-sm text-brand-200/70">清空全部数据并按最新代码重写名单与题目，用于内容更新后刷新。</p>
-            <button
-              disabled={busy}
-              onClick={() => { if (confirm("确定整体重播种？将清空全部并写入最新名单/题目。")) run(adminApi.reseed, "已重新播种"); }}
-              className="mt-4 w-full rounded-lg bg-rose-400 py-2.5 font-semibold text-ink-900 hover:bg-rose-300 disabled:opacity-50"
-            >
-              重新播种
-            </button>
+            <div className="font-semibold text-rose-200">全部重置（记录 + 图片）</div>
+            <p className="mt-1 text-sm text-brand-200/70">清空答题记录与作业图片，<b className="text-white">保留</b>名单与题目。</p>
+            <button disabled={busy} onClick={() => { if (confirm("确定重置全部记录与图片？名单与题目保留。")) run(adminApi.resetAll, "已全部重置"); }}
+              className="mt-4 w-full rounded-lg bg-rose-400 py-2.5 font-semibold text-ink-900 hover:bg-rose-300 disabled:opacity-50">全部重置</button>
+          </div>
+          <div className="rounded-xl border border-fuchsia-400/25 bg-fuchsia-400/5 p-5">
+            <div className="font-semibold text-fuchsia-200">重新播种（名单 + 题目）</div>
+            <p className="mt-1 text-sm text-brand-200/70">清空全部 KV 并按最新代码重写名单与题目，用于内容更新后刷新。</p>
+            <button disabled={busy} onClick={() => { if (confirm("确定整体重播种？将清空全部并写入最新名单/题目。")) run(adminApi.reseed, "已重新播种"); }}
+              className="mt-4 w-full rounded-lg bg-fuchsia-400 py-2.5 font-semibold text-ink-900 hover:bg-fuchsia-300 disabled:opacity-50">重新播种</button>
           </div>
         </div>
         {busy && <p className="mt-4 text-sm text-brand-200/60">处理中…</p>}
