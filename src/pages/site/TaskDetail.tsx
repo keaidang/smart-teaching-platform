@@ -44,29 +44,39 @@ export default function TaskDetail() {
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <Link to="/student/homework">
-          <Card hover className="flex items-center gap-4 p-5">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
-            <div>
-              <div className="font-semibold text-white">提交作业</div>
-              <div className="text-xs text-brand-200/60">上传交付成果：索引表 / 数据卡 / 合规记录等材料</div>
-            </div>
-          </Card>
-        </Link>
-        <Link to="/class">
-          <Card hover className="flex items-center gap-4 p-5">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300"><IconBoard className="h-5 w-5" /></span>
-            <div>
-              <div className="font-semibold text-white">后台大屏</div>
-              <div className="text-xs text-brand-200/60">查看本任务课堂实时数据</div>
-            </div>
-          </Card>
-        </Link>
+        {active && (
+          <>
+            <Link to="/student/homework">
+              <Card hover className="flex items-center gap-4 p-5">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
+                <div>
+                  <div className="font-semibold text-white">提交作业</div>
+                  <div className="text-xs text-brand-200/60">上传交付成果：索引表 / 数据卡 / 合规记录等材料</div>
+                </div>
+              </Card>
+            </Link>
+            <Link to="/class">
+              <Card hover className="flex items-center gap-4 p-5">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300"><IconBoard className="h-5 w-5" /></span>
+                <div>
+                  <div className="font-semibold text-white">后台大屏</div>
+                  <div className="text-xs text-brand-200/60">查看本任务课堂实时数据</div>
+                </div>
+              </Card>
+            </Link>
+          </>
+        )}
       </div>
 
-      <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
-        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「人脸特征底库建设与交付」配置。
-      </div>
+      {active ? (
+        <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
+          <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「传感与视觉数据清洗」配置。
+        </div>
+      ) : (
+        <div className="mt-6 flex items-center gap-2 text-xs text-brand-200/50">
+          <IconBook className="h-4 w-4" /> 本页为项目学习资源（任务工单 SQ-2026-001），供课前研读参考；当前课程开放任务为「传感与视觉数据清洗」。
+        </div>
+      )}
     </div>
   );
 }

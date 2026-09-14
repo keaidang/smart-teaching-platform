@@ -56,7 +56,7 @@ export const PROJECTS: ProjectDef[] = [
   },
 ];
 
-export const ACTIVE_TASK_ID = "P1T2";
+export const ACTIVE_TASK_ID = "P2T2";
 
 // 小组分组：26 人 = 第 1–5 组各 4 人，第 6 组 6 人（多出的 2 人并入最后一组）；评价均以小组为单位
 export interface GroupDef { id: string; name: string; memberIds: string[] }
