@@ -106,6 +106,21 @@ export async function onRequest(context) {
 
     if (path === "/health") return json({ ok: true, kv: process.env.KV_STORE || "class", blob: process.env.BLOB_STORE || "homework", ai: !!process.env.DASHSCOPE_API_KEY });
 
+    // 重播种：清空 class store 并写入最新名单/题目（带密钥，用于数据刷新）
+    if (path === "/reseed" && method === "POST") {
+      const k = url.searchParams.get("key") || request.headers.get("x-reseed-key");
+      if (k !== (process.env.RESEED_KEY || "keaidang-reseed-2026")) return json({ error: "forbidden" }, 403);
+      const all = await KV.list({ consistency: "strong" });
+      let deleted = 0;
+      for (const b of all.blobs) { try { await KV.delete(b.key); deleted++; } catch { /* ignore */ } }
+      await wj("students", SEED_STUDENTS);
+      await wj("preview:questions", SEED_PQ);
+      await wj("exercises", SEED_EX);
+      await wj("homework", SEED_HW);
+      seeded = true;
+      return json({ ok: true, deleted, students: SEED_STUDENTS.length, preview: SEED_PQ.length, exercises: SEED_EX.length });
+    }
+
     if (path === "/students" && method === "GET") return json(await students());
 
     if (path === "/overview" && method === "GET") {
