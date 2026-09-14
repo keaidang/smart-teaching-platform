@@ -8,6 +8,9 @@ const FILES = getStore(process.env.BLOB_STORE || "homework");
 const DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 const QWEN_MODEL = process.env.QWEN_MODEL || "qwen3.8-flash";
 
+// 管理端密钥（重置/播种等敏感操作）
+const ADMIN_KEY = process.env.ADMIN_KEY || "keaidang-admin-2026";
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
@@ -106,10 +109,42 @@ export async function onRequest(context) {
 
     if (path === "/health") return json({ ok: true, kv: process.env.KV_STORE || "class", blob: process.env.BLOB_STORE || "homework", ai: !!process.env.DASHSCOPE_API_KEY });
 
-    // 重播种：清空 class store 并写入最新名单/题目（带密钥，用于数据刷新）
+    // 管理端：统计 / 重置提交记录（保留名单）/ 重播种（名单+题目）
+    const authorized = () => {
+      const k = url.searchParams.get("key") || request.headers.get("x-admin-key");
+      return k === ADMIN_KEY;
+    };
+
+    if (path === "/admin/stats" && method === "GET") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      const st = await students();
+      const pv = await listKeys("preview:answer:");
+      const hw = await listKeys("homework:sub:");
+      const ex = await listKeys("exercise:answer:");
+      const online = await onlineStudents();
+      return json({
+        studentCount: st.length,
+        previewDone: pv.length,
+        homeworkSubmitted: hw.length,
+        exerciseDone: ex.length,
+        online: online.ids.length,
+      });
+    }
+
+    if (path === "/admin/reset-submissions" && method === "POST") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      const keep = new Set(["students", "preview:questions", "exercises", "homework"]);
+      const all = await KV.list({ consistency: "strong" });
+      let deleted = 0;
+      for (const b of all.blobs) {
+        if (keep.has(b.key)) continue;
+        try { await KV.delete(b.key); deleted++; } catch { /* ignore */ }
+      }
+      return json({ ok: true, deleted, kept: [...keep] });
+    }
+
     if (path === "/reseed" && method === "POST") {
-      const k = url.searchParams.get("key") || request.headers.get("x-reseed-key");
-      if (k !== (process.env.RESEED_KEY || "keaidang-reseed-2026")) return json({ error: "forbidden" }, 403);
+      if (!authorized()) return json({ error: "forbidden" }, 403);
       const all = await KV.list({ consistency: "strong" });
       let deleted = 0;
       for (const b of all.blobs) { try { await KV.delete(b.key); deleted++; } catch { /* ignore */ } }

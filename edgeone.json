@@ -20,6 +20,7 @@
     { "source": "/class", "destination": "/index.html" },
     { "source": "/class/preview", "destination": "/index.html" },
     { "source": "/class/homework", "destination": "/index.html" },
-    { "source": "/class/exercise", "destination": "/index.html" }
+    { "source": "/class/exercise", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" }
   ]
 }

@@ -16,6 +16,7 @@ import StudentLogin from "./pages/student/StudentLogin";
 import StudentPreview from "./pages/student/StudentPreview";
 import StudentHomework from "./pages/student/StudentHomework";
 import StudentExercise from "./pages/student/StudentExercise";
+import Admin from "./pages/admin/Admin";
 import { RequireStudent } from "./lib/auth";
 
 // 重依赖页面按需加载：Evaluation 拉 echarts，StudentAI 拉 react-markdown
@@ -63,6 +64,9 @@ export default function App() {
           <Route path="homework" element={<HomeworkBoard />} />
           <Route path="exercise" element={<ExerciseBoard />} />
         </Route>
+
+        {/* 管理后台 */}
+        <Route path="/admin" element={<Admin />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

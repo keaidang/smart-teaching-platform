@@ -74,6 +74,12 @@ export default function SiteLayout() {
           </div>
           <div className="flex items-center gap-2">
             <a
+              href="/admin"
+              className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
+            >
+              管理
+            </a>
+            <a
               href="/class"
               className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
             >

@@ -167,3 +167,38 @@ export const api = {
   // 大屏概览
   getOverview: () => get<ClassOverview>("/overview", mockOverview()),
 };
+
+// ---------- 管理端（始终走真实后端，不受 mock 影响） ----------
+async function adminReq<T>(path: string, method: "GET" | "POST", key: string): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: { "Content-Type": "application/json", "x-admin-key": key },
+  });
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const j = await res.json();
+      msg = j.error || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  return (await res.json()) as T;
+}
+
+export interface AdminStats {
+  studentCount: number;
+  previewDone: number;
+  homeworkSubmitted: number;
+  exerciseDone: number;
+  online: number;
+}
+
+export const adminApi = {
+  stats: (key: string) => adminReq<AdminStats>("/admin/stats", "GET", key),
+  resetSubmissions: (key: string) =>
+    adminReq<{ ok: boolean; deleted: number }>("/admin/reset-submissions", "POST", key),
+  reseed: (key: string) =>
+    adminReq<{ ok: boolean; deleted: number; students: number }>("/reseed", "POST", key),
+};
