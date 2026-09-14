@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Logo } from "../../components/Logo";
 import {
   IconBoard,
   IconBook,
@@ -22,12 +23,15 @@ export default function SiteLayout() {
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-6 backdrop-blur-xl">
-        <div className="mb-8 px-2">
-          <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            数智社区
-          </div>
-          <div className="mt-1 text-xs tracking-widest text-brand-300/60">
-            教学资源库
+        <div className="mb-8 flex items-center gap-3 px-2">
+          <Logo size={40} />
+          <div>
+            <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
+              数智社区
+            </div>
+            <div className="mt-0.5 text-xs tracking-widest text-brand-300/60">
+              教学资源库
+            </div>
           </div>
         </div>
 
