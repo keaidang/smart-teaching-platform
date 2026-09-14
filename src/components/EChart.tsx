@@ -1,17 +1,17 @@
 import { useEffect, useRef } from "react";
-import * as echarts from "echarts";
+import echarts, { type EChartsOption } from "../lib/echarts";
 
 export function EChart({
   option,
   height = 340,
   className = "",
 }: {
-  option: echarts.EChartsOption;
+  option: EChartsOption;
   height?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inst = useRef<echarts.ECharts | null>(null);
+  const inst = useRef<ReturnType<typeof echarts.init> | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
@@ -33,7 +33,7 @@ export function EChart({
 }
 
 // 深色主题基线：统一文字/坐标轴/提示框配色
-export function dark(option: Record<string, unknown>): echarts.EChartsOption {
+export function dark(option: Record<string, unknown>): EChartsOption {
   const axisStyle = {
     axisLine: { lineStyle: { color: "rgba(165,243,252,0.25)" } },
     axisLabel: { color: "rgba(207,250,254,0.7)" },
@@ -60,5 +60,5 @@ export function dark(option: Record<string, unknown>): echarts.EChartsOption {
       : option.yAxis
       ? { ...axisStyle, ...(option.yAxis as object) }
       : undefined,
-  } as echarts.EChartsOption;
+  } as EChartsOption;
 }
