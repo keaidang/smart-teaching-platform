@@ -8,6 +8,7 @@ import type {
   PreviewQuestion,
   PreviewScore,
   Student,
+  TeacherEval,
 } from "./types";
 import {
   exercises,
@@ -166,6 +167,17 @@ export const api = {
 
   // 大屏概览
   getOverview: () => get<ClassOverview>("/overview", mockOverview()),
+
+  // 教师评价
+  getEvaluations: () => get<TeacherEval[]>("/evaluations", []),
+  saveEvaluation: (e: { studentId: string; scores: Record<string, number>; comment: string }) =>
+    post<TeacherEval>("/evaluations", e, {
+      studentId: e.studentId,
+      name: students.find((s) => s.id === e.studentId)?.name || e.studentId,
+      scores: e.scores,
+      comment: e.comment,
+      updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
+    }),
 };
 
 // ---------- 管理端（始终走真实后端，不受 mock 影响） ----------

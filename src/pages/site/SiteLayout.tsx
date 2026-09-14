@@ -27,7 +27,7 @@ export default function SiteLayout() {
             数智社区
           </div>
           <div className="mt-1 text-xs tracking-widest text-brand-300/60">
-            信息采集教学平台
+            教学资源库
           </div>
         </div>
 

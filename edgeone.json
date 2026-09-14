@@ -21,6 +21,7 @@
     { "source": "/class/preview", "destination": "/index.html" },
     { "source": "/class/homework", "destination": "/index.html" },
     { "source": "/class/exercise", "destination": "/index.html" },
+    { "source": "/class/evaluate", "destination": "/index.html" },
     { "source": "/admin", "destination": "/index.html" }
   ]
 }

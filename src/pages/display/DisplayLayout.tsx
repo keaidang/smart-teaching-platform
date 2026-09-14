@@ -3,6 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import {
   IconBoard,
   IconChart,
+  IconGauge,
   IconTrophy,
   IconUpload,
 } from "../../components/icons";
@@ -13,6 +14,7 @@ const MODULES = [
   { to: "/class/preview", label: "课前预习 · 分数榜", icon: IconTrophy },
   { to: "/class/homework", label: "课中作业 · 提交墙", icon: IconUpload },
   { to: "/class/exercise", label: "课后习题 · 统计", icon: IconChart },
+  { to: "/class/evaluate", label: "教师评价", icon: IconGauge },
 ];
 
 export default function DisplayLayout() {

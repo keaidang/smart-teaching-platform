@@ -92,7 +92,7 @@ export default function Admin() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-glow text-2xl font-bold tracking-widest text-brand-100">管理后台</h1>
-          <p className="mt-1 text-sm text-brand-200/60">数智社区 · 信息采集教学平台</p>
+          <p className="mt-1 text-sm text-brand-200/60">数智社区 · 教学资源库</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => load(key)} className="rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 hover:bg-brand-500/15">刷新</button>

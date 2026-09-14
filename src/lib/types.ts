@@ -69,3 +69,11 @@ export interface ClassOverview {
   homeworkSubmitted: number;
   exerciseAvg: number;
 }
+
+export interface TeacherEval {
+  studentId: string;
+  name: string;
+  scores: Record<string, number>;
+  comment: string;
+  updatedAt: string;
+}

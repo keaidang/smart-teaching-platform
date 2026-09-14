@@ -1,4 +1,4 @@
-// 数智社区 · 信息采集教学平台 —— 课程结构与内容（前端 mock 与展示共用）
+// 数智社区 · 教学资源库 —— 课程结构与内容（前端 mock 与展示共用）
 
 export interface Roster { id: string; name: string }
 export interface TaskDef { id: string; title: string; active: boolean }
@@ -57,6 +57,14 @@ export const PROJECTS: ProjectDef[] = [
 ];
 
 export const ACTIVE_TASK_ID = "P2T2";
+
+// 教师评价维度（4 项，1–5 星）
+export const EVAL_DIMENSIONS = [
+  { key: "classroom", label: "课堂表现", desc: "出勤 · 专注 · 互动 · 回答" },
+  { key: "homework", label: "课后作业", desc: "完成度 · 质量 · 规范" },
+  { key: "knowledge", label: "知识掌握", desc: "概念 · 原理 · 方法" },
+  { key: "quality", label: "综合素养", desc: "协作 · 合规 · 创新" },
+];
 export function findTask(id: string) {
   for (const p of PROJECTS) for (const t of p.tasks) if (t.id === id) return { project: p, task: t };
   return null;

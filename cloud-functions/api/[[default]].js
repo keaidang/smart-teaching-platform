@@ -318,6 +318,27 @@ export async function onRequest(context) {
       return json({ ok: true, saved: Object.keys(groups).length });
     }
 
+    // 教师评价（4 维度打分 + 评语），存 KV
+    if (path === "/evaluations" && method === "GET") {
+      const keys = await listKeys("teacher-eval:");
+      const rows = [];
+      for (const k of keys) { const d = await rj(k); if (d) rows.push(d); }
+      return json(rows);
+    }
+    if (path === "/evaluations" && method === "POST") {
+      const m = await request.json();
+      const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
+      const doc = {
+        studentId: m.studentId,
+        name: byId[m.studentId]?.name || m.studentId,
+        scores: m.scores || {},
+        comment: m.comment || "",
+        updatedAt: nowHM(),
+      };
+      await wj(`teacher-eval:${m.studentId}`, doc);
+      return json(doc, 201);
+    }
+
     // AI 问答（阿里通义千问 qwen，SSE 流式透传 + 思维链）
     if (path === "/ai/chat" && method === "POST") {
       const key = process.env.DASHSCOPE_API_KEY;

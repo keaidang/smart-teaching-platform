@@ -40,7 +40,7 @@ export default function SiteHome() {
             数智社区 · 数据全生命周期
           </span>
           <h1 className="mt-5 bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-4xl font-extrabold tracking-wide text-transparent md:text-5xl">
-            数智社区 · 信息采集教学平台
+            数智社区 · 教学资源库
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-brand-200/75">
             以 Python 数据采集为核心，融合项目实战、产教资源、拓展课程与智能达成度评价，
