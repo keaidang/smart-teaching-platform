@@ -33,10 +33,10 @@ export default function DisplayLayout() {
       <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-6 backdrop-blur-xl">
         <div className="mb-8 px-2">
           <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            智绘强国资源库
+            AI数据服务资源库
           </div>
           <div className="mt-1 text-xs tracking-widest text-brand-300/60">
-            SMART TEACHING · 讲台大屏
+            数据采集 · 教师大屏
           </div>
         </div>
 
@@ -53,12 +53,6 @@ export default function DisplayLayout() {
             </div>
           ))}
         </nav>
-
-        <div className="mt-auto rounded-xl border border-brand-400/15 bg-brand-500/5 p-3 text-xs text-brand-200/70">
-          EdgeOne Pages · Serverless
-          <br />
-          数据源：阿里云 RDS
-        </div>
       </aside>
 
       {/* 主区 */}

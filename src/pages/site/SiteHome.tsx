@@ -56,7 +56,7 @@ export default function SiteHome() {
             </div>
           </div>
           <ul className="mt-5 space-y-2.5 text-sm text-brand-100/80">
-            {["课程目标与能力图谱", "学习路线与进度规划", "知识点地图与前置要求"].map((t) => (
+            {["课程定位：Python 数据采集全流程", "四阶闭环：需求→采集→清洗融合→可视化", "三维目标：知识 · 能力 · 素养"].map((t) => (
               <li key={t} className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
                 {t}
@@ -76,7 +76,7 @@ export default function SiteHome() {
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            {["Python", "Pandas", "NumPy", "SQL", "StableDiffusion", "ControlNet", "ComfyUI", "LabelImg"].map((t) => (
+            {["Python", "PySerial", "Requests", "BeautifulSoup", "Pandas", "NumPy", "Kepler.gl", "ECharts"].map((t) => (
               <span key={t} className="rounded-lg border border-brand-400/20 bg-brand-500/5 px-3 py-1.5 text-xs text-brand-100">
                 {t}
               </span>

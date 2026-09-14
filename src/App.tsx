@@ -15,6 +15,7 @@ import StudentLogin from "./pages/student/StudentLogin";
 import StudentPreview from "./pages/student/StudentPreview";
 import StudentHomework from "./pages/student/StudentHomework";
 import StudentExercise from "./pages/student/StudentExercise";
+import StudentAI from "./pages/student/StudentAI";
 import { RequireStudent } from "./lib/auth";
 
 export default function App() {
@@ -53,6 +54,14 @@ export default function App() {
           element={
             <RequireStudent>
               <StudentExercise />
+            </RequireStudent>
+          }
+        />
+        <Route
+          path="ai"
+          element={
+            <RequireStudent>
+              <StudentAI />
             </RequireStudent>
           }
         />

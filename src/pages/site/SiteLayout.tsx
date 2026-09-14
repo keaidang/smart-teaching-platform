@@ -59,12 +59,6 @@ export default function SiteLayout() {
             </NavLink>
           ))}
         </nav>
-
-        <div className="mt-auto rounded-xl border border-brand-400/15 bg-brand-500/5 p-3 text-[11px] leading-relaxed text-brand-200/60">
-          EdgeOne Makers · 无服务器
-          <br />
-          KV + Blob 存储
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

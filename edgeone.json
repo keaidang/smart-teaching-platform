@@ -15,6 +15,7 @@
     { "source": "/student/preview", "destination": "/index.html" },
     { "source": "/student/homework", "destination": "/index.html" },
     { "source": "/student/exercise", "destination": "/index.html" },
+    { "source": "/student/ai", "destination": "/index.html" },
     { "source": "/class", "destination": "/index.html" },
     { "source": "/class/preview", "destination": "/index.html" },
     { "source": "/class/homework", "destination": "/index.html" },

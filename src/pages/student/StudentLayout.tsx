@@ -5,6 +5,7 @@ import {
   IconTrophy,
   IconUpload,
   IconChart,
+  IconCpu,
 } from "../../components/icons";
 import { Avatar } from "../../components/ui";
 
@@ -12,6 +13,7 @@ const TABS = [
   { to: "/student/preview", label: "课前预习", icon: IconTrophy },
   { to: "/student/homework", label: "提交作业", icon: IconUpload },
   { to: "/student/exercise", label: "课后知识点问答", icon: IconChart },
+  { to: "/student/ai", label: "AI 问答", icon: IconCpu },
 ];
 
 export default function StudentLayout() {
@@ -28,7 +30,7 @@ export default function StudentLayout() {
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-brand-400/15 bg-ink-900/50 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className="text-glow text-lg font-bold tracking-widest text-brand-100">
-            智绘强国 · 学生端
+            AI数据服务 · 学生端
           </span>
         </div>
         {student && (

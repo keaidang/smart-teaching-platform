@@ -14,20 +14,20 @@ import { Avatar, Bar, Card, LiveBadge, SectionTitle } from "../../components/ui"
 
 const MODULE_CARDS = [
   {
-    title: "智享观点",
-    sub: "数字图书馆平台",
+    title: "项目学习",
+    sub: "数据生命周期实战",
     icon: IconBook,
     to: "/class",
   },
   {
     title: "产教融合",
-    sub: "素材资源库",
+    sub: "行业场景案例",
     icon: IconIdea,
     to: "/class",
   },
   {
-    title: "智慧创见",
-    sub: "课程资源库",
+    title: "教学评价",
+    sub: "达成度看板",
     icon: IconChart,
     to: "/class",
   },
@@ -108,7 +108,7 @@ export default function DisplayHome() {
           <SectionTitle
             icon={<IconBook className="h-5 w-5" />}
             title="学习平台 · 数字评价"
-            sub="智绘强国资源库"
+            sub="AI数据服务资源库"
           />
           <div className="grid gap-5 sm:grid-cols-3">
             {MODULE_CARDS.map((c) => (
@@ -128,11 +128,11 @@ export default function DisplayHome() {
 
           <Card className="mt-5 p-6">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold text-white">数智技术资源库</h3>
-              <span className="text-xs text-brand-200/60">AI 创作工具</span>
+              <h3 className="font-semibold text-white">数据采集技术资源库</h3>
+              <span className="text-xs text-brand-200/60">采集与可视化工具</span>
             </div>
             <div className="flex flex-wrap gap-3">
-              {["StableDiffusion", "ControlNet", "ComfyUI", "Midjourney", "即梦", "可灵"].map(
+              {["Python", "PySerial", "Requests", "BeautifulSoup", "Pandas", "NumPy", "Kepler.gl", "ECharts"].map(
                 (t) => (
                   <span
                     key={t}

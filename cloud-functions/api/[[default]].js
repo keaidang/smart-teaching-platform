@@ -4,6 +4,10 @@ import { getStore } from "@edgeone/pages-blob";
 const KV = getStore(process.env.KV_STORE || "class");
 const FILES = getStore(process.env.BLOB_STORE || "homework");
 
+// 阿里 DashScope（通义千问）—— 兼容 OpenAI 协议
+const DASHSCOPE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
+const QWEN_MODEL = process.env.QWEN_MODEL || "qwen-flash";
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
@@ -15,11 +19,7 @@ const json = (data, status = 200) =>
     headers: { "Content-Type": "application/json; charset=UTF-8", ...CORS },
   });
 const nowHM = () =>
-  new Date().toLocaleTimeString("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Shanghai",
-  });
+  new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Shanghai" });
 
 const rj = (key) => KV.get(key, { type: "json", consistency: "strong" });
 const wj = (key, val) => KV.setJSON(key, val);
@@ -28,22 +28,32 @@ const listKeys = async (prefix) => {
   return blobs.map((b) => b.key);
 };
 
-// ---------- 种子数据（定义类，首次访问自动写入）----------
-const NAMES = ["陈嘉怡","李思远","王雨萱","张浩然","刘梦琪","黄俊杰","周欣妍","吴子轩","徐若曦","孙铭泽","胡静雯","朱天宇","林思彤","何俊豪","郑雅雯","罗子墨","高雨欣","梁浩宇","谢佳琪","宋明轩"];
+// ---------- 课程：信息采集技术 · 城市“小微区域”环境与设施数据智能采集 ----------
+const NAMES = ["王梓涵","李宇轩","张欣怡","刘浩然","陈雨桐","杨俊杰","黄梦琪","赵子墨","周佳怡","吴天佑","徐诗琪","孙晨曦","马若曦","朱一鸣","胡嘉豪","郭雅婷","何睿哲","高可欣","林博文","郑静宜","谢志强","罗晓彤","梁文博","宋佳琪","唐泽宇","许安琪","韩立诚","冯悦溪","邓铭轩","曹乐萱","王宏毅","李思远"];
 const COLORS = ["#22d3ee","#34d399","#a78bfa","#f472b6","#fbbf24","#60a5fa","#f87171","#4ade80"];
-const SEED_STUDENTS = NAMES.map((name, i) => ({ id: `S${String(i + 1).padStart(3, "0")}`, name, avatarColor: COLORS[i % COLORS.length], classId: "C-2401" }));
+const SEED_STUDENTS = NAMES.map((name, i) => ({ id: `S${String(i + 1).padStart(2, "0")}`, name, avatarColor: COLORS[i % COLORS.length], classId: "C-2402" }));
+
+// 课前预习题（带 lesson/kp/dim 标签，供达成度看板融合）
 const SEED_PQ = [
-  { id: "PQ1", title: "在数字绘画软件中，图层混合模式「正片叠底」的主要作用是？", options: ["整体提亮画面", "保留暗部、滤除亮部，用于画阴影", "让颜色完全反相", "锁定图层不被编辑"], answer: 1, score: 25 },
-  { id: "PQ2", title: "RGB 色彩模式中，三种基色指的是？", options: ["红黄蓝", "红绿蓝", "青品黄", "黑白灰"], answer: 1, score: 25 },
-  { id: "PQ3", title: "使用 Stable Diffusion 生成图像时，CFG Scale 数值越大表示？", options: ["越贴近提示词、自由度越低", "越随机、越脱离提示词", "分辨率越高", "生成速度越快"], answer: 0, score: 25 },
-  { id: "PQ4", title: "矢量图相对于位图的最大优势是？", options: ["色彩更丰富", "放大不失真", "文件一定更小", "只支持黑白"], answer: 1, score: 25 },
+  { id: "PQ1", lesson: "L1", kp: "kp1", dim: "知识", title: "开展城市小微区域数据采集，首先应完成的工作是？", options: ["直接编写爬虫", "确定采集需求与设计方案", "购买服务器", "绘制可视化大屏"], answer: 1, score: 25 },
+  { id: "PQ2", lesson: "L1", kp: "kp2", dim: "知识", title: "下列哪项不属于常见的环境类采集指标？", options: ["温度", "湿度", "PM2.5", "股票价格"], answer: 3, score: 25 },
+  { id: "PQ3", lesson: "L2", kp: "kp3", dim: "知识", title: "Python 中读取串口传感器数据最常用的库是？", options: ["pyserial", "requests", "flask", "numpy"], answer: 0, score: 25 },
+  { id: "PQ4", lesson: "L2", kp: "kp5", dim: "能力", title: "多传感器部署时，首要应考虑的是？", options: ["外观颜色", "采样频率与供电/网络稳定性", "品牌知名度", "价格最低"], answer: 1, score: 25 },
+  { id: "PQ5", lesson: "L3", kp: "kp7", dim: "能力", title: "数据清洗中处理连续型缺失值常用方法是？", options: ["直接删除全部数据", "均值/中位数插补", "随机填充", "不做处理"], answer: 1, score: 25 },
+  { id: "PQ6", lesson: "L4", kp: "kp9", dim: "能力", title: "展示各区域设施数量占比，最合适的图表是？", options: ["折线图", "饼图/环形图", "散点图", "词云"], answer: 1, score: 25 },
 ];
+
+// 课后知识点问答题（带标签）
 const SEED_EX = [
-  { id: "EX1", title: "完成一张作品后，导出用于印刷应优先选择的色彩模式是？", options: ["RGB", "CMYK", "HSL", "LAB"], answer: 1 },
-  { id: "EX2", title: "在 AI 绘图工作流中，ControlNet 主要用于？", options: ["压缩文件体积", "对生成结果施加结构与姿态控制", "提高显卡温度", "转换字体格式"], answer: 1 },
-  { id: "EX3", title: "下列哪项最能提升画面的视觉焦点？", options: ["均匀铺色", "明暗与虚实对比", "全部使用高饱和", "取消透视"], answer: 1 },
+  { id: "EX1", lesson: "L1", kp: "kp11", dim: "素养", title: "在公共区域采集数据时，首先应遵守的是？", options: ["采集越多越好", "合法合规与隐私保护", "只追求精度", "无需告知"], answer: 1 },
+  { id: "EX2", lesson: "L3", kp: "kp6", dim: "能力", title: "网络爬虫遵守 robots 协议与频控，主要目的是？", options: ["提高抓取速度", "尊重站点规则、降低服务器压力", "绕过反爬", "隐藏身份"], answer: 1 },
+  { id: "EX3", lesson: "L3", kp: "kp8", dim: "能力", title: "多源数据融合对齐的关键在于？", options: ["统一时间/空间与字段口径", "全部转成图片", "删除异常值", "只保留一个来源"], answer: 0 },
+  { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "涉及个人信息的数据，采集后应做？", options: ["公开共享", "脱敏处理", "长期留存", "随意转发"], answer: 1 },
+  { id: "EX5", lesson: "L4", kp: "kp2", dim: "知识", title: "数据可视化三要素不包括？", options: ["数据", "视觉编码", "交互/语境", "服务器型号"], answer: 3 },
+  { id: "EX6", lesson: "L4", kp: "kp10", dim: "能力", title: "工程验收环节通常不包括？", options: ["数据质量核验", "方案复盘", "随手删除原始数据", "成果演示"], answer: 2 },
 ];
-const SEED_HW = { id: "HW1", title: "《赛博城市》主题数字插画", description: "运用本节课所学图层与光影知识，完成一张 1920×1080 主题插画，提交 PNG。", deadline: "今日 16:30" };
+
+const SEED_HW = { id: "HW1", title: "城市小微区域环境与设施数据采集成果", description: "提交本次任务的采集数据集（CSV）与采集方案说明（PNG/文档截图），体现需求-采集-清洗-可视化流程。", deadline: "今日 16:30" };
 
 let seeded = false;
 async function ensureSeed() {
@@ -59,6 +69,21 @@ async function ensureSeed() {
 }
 async function students() { return (await rj("students")) || []; }
 
+// ---------- AI 问答系统提示词（导入课程介绍，限定答题范围）----------
+const COURSE_SYSTEM_PROMPT = `你是《信息采集技术》课程的 AI 助学助手，本项目的主题是“城市‘小微区域’环境与设施数据智能采集”，以 Python 数据采集为核心。
+课程围绕数据生命周期四阶段展开：
+1) 需求确定与方案设计（采集指标、场景调研）；
+2) 传感部署与采集开发（多源传感器选型部署、pyserial 串口采集、网络爬虫、采集硬件配置）；
+3) 数据清洗与融合分析（缺失/异常处理、多源数据对齐融合）；
+4) 可视化构建与工程验收（图表选型、可视化应用、工程规范与复盘）。
+同时强调数据伦理、隐私脱敏、合规采集、规范意识与工匠精神。
+
+请遵守以下规则：
+- 只回答与本课程内容（Python 数据采集、传感器、爬虫、数据清洗融合、可视化、工程规范、数据合规）相关的问题；
+- 回答要贴合职业院校学生水平，条理清晰、可操作，适当给出 Python 代码或方法示例；
+- 若学生问题超出课程范围，请礼貌说明并引导回到课程主题；
+- 不要编造与课程无关的内容。`;
+
 // ---------- 路由 ----------
 export async function onRequest(context) {
   const { request } = context;
@@ -72,12 +97,10 @@ export async function onRequest(context) {
   try {
     await ensureSeed();
 
-    if (path === "/health") return json({ ok: true, kv: process.env.KV_STORE || "class", blob: process.env.BLOB_STORE || "homework" });
+    if (path === "/health") return json({ ok: true, kv: process.env.KV_STORE || "class", blob: process.env.BLOB_STORE || "homework", ai: !!process.env.DASHSCOPE_API_KEY });
 
-    // 学生
     if (path === "/students" && method === "GET") return json(await students());
 
-    // 大屏概览
     if (path === "/overview" && method === "GET") {
       const st = await students();
       const pvKeys = await listKeys("preview:answer:");
@@ -89,8 +112,8 @@ export async function onRequest(context) {
         for (const a of doc?.answers || []) { total++; if (a.correct) correct++; }
       }
       return json({
-        className: "数字媒体 2401 班",
-        sessionTitle: "第 7 讲 · AI 辅助数字插画创作",
+        className: "计算机应用技术 2024 级 2 班",
+        sessionTitle: "城市“小微区域”环境与设施数据智能采集",
         studentCount: st.length,
         onlineCount: new Set([...pvKeys, ...hwKeys].map((k) => k.split(":").pop())).size,
         previewDone: pvKeys.length,
@@ -112,8 +135,7 @@ export async function onRequest(context) {
       const list = await request.json();
       const qs = await rj("preview:questions");
       const qmap = Object.fromEntries(qs.map((q) => [q.id, q]));
-      const st = await students();
-      const byId = Object.fromEntries(st.map((s) => [s.id, s]));
+      const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
       const groups = {};
       for (const a of list) (groups[a.studentId] ||= []).push(a);
       for (const [sid, arr] of Object.entries(groups)) {
@@ -122,11 +144,9 @@ export async function onRequest(context) {
           const q = qmap[a.questionId]; if (!q) continue;
           const correct = Number(a.selected) === Number(q.answer);
           if (correct) score += q.score;
-          answers.push({ questionId: a.questionId, selected: a.selected, correct });
+          answers.push({ questionId: a.questionId, lesson: q.lesson, kp: q.kp, dim: q.dim, selected: a.selected, correct });
         }
-        await wj(`preview:answer:${sid}`, {
-          studentId: sid, name: byId[sid]?.name || sid, score, answered: answers.length,
-        });
+        await wj(`preview:answer:${sid}`, { studentId: sid, name: byId[sid]?.name || sid, score, answered: answers.length, answers });
       }
       return json({ ok: true, saved: Object.keys(groups).length });
     }
@@ -141,18 +161,14 @@ export async function onRequest(context) {
     }
     if (path === "/homework/upload-url" && method === "POST") {
       const { studentId, fileName, contentType } = await request.json();
-      const safe = String(fileName || "upload").replace(/[^\w.\-\u4e00-\u9fa5]/g, "_");
+      const safe = String(fileName || "upload").replace(/[^\w.\-一-龥]/g, "_");
       const key = `hw/${studentId}/${Date.now()}-${safe}`;
-      const { url: putUrl, expiresAt } = await FILES.createUploadUrl(key, {
-        contentType: contentType || "application/octet-stream",
-        expireSeconds: 3600,
-      });
+      const { url: putUrl, expiresAt } = await FILES.createUploadUrl(key, { contentType: contentType || "application/octet-stream", expireSeconds: 3600 });
       return json({ url: putUrl, key, expiresAt });
     }
     if (path === "/homework/submissions" && method === "POST") {
       const m = await request.json();
-      const st = await students();
-      const byId = Object.fromEntries(st.map((s) => [s.id, s]));
+      const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
       const meta = {
         studentId: m.studentId, name: byId[m.studentId]?.name || m.studentId,
         fileName: m.fileName, size: Number(m.size) || 0, key: m.key,
@@ -171,7 +187,7 @@ export async function onRequest(context) {
       return new Response(buf, { headers: { "Content-Type": meta.contentType || "image/png", "Cache-Control": "no-cache", ...CORS } });
     }
 
-    // 课后习题
+    // 课后知识点问答
     if (path === "/exercises" && method === "GET") return json(await rj("exercises"));
     if (path === "/exercises/stats" && method === "GET") {
       const exs = await rj("exercises");
@@ -198,11 +214,32 @@ export async function onRequest(context) {
         const answers = [];
         for (const a of arr) {
           const e = emap[a.exerciseId]; if (!e) continue;
-          answers.push({ exerciseId: a.exerciseId, selected: a.selected, correct: Number(a.selected) === Number(e.answer) });
+          answers.push({ exerciseId: a.exerciseId, lesson: e.lesson, kp: e.kp, dim: e.dim, selected: a.selected, correct: Number(a.selected) === Number(e.answer) });
         }
         await wj(`exercise:answer:${sid}`, { studentId: sid, answers });
       }
       return json({ ok: true, saved: Object.keys(groups).length });
+    }
+
+    // AI 问答（阿里通义千问 qwen）
+    if (path === "/ai/chat" && method === "POST") {
+      const key = process.env.DASHSCOPE_API_KEY;
+      if (!key) return json({ error: "AI 未配置：请在 EdgeOne 环境变量中设置 DASHSCOPE_API_KEY" }, 503);
+      const body = await request.json();
+      const history = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
+      const upstream = await fetch(DASHSCOPE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+        body: JSON.stringify({
+          model: QWEN_MODEL,
+          messages: [{ role: "system", content: COURSE_SYSTEM_PROMPT }, ...history],
+          temperature: 0.7,
+        }),
+      });
+      const data = await upstream.json();
+      if (!upstream.ok) return json({ error: data?.error?.message || data?.message || "AI 调用失败", detail: data }, 502);
+      const content = data?.choices?.[0]?.message?.content || "（未获取到回复）";
+      return json({ content, usage: data?.usage });
     }
 
     return json({ error: "not found", path }, 404);

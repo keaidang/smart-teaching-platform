@@ -98,6 +98,17 @@ export const api = {
   submitExercise: (answers: { studentId: string; exerciseId: string; selected: number }[]) =>
     post("/exercises/answers", answers, { ok: true }),
 
+  // AI 问答（阿里通义千问）
+  aiChat: (messages: { role: string; content: string }[]) =>
+    post<{ content: string }>(
+      "/ai/chat",
+      { messages },
+      {
+        content:
+          "【离线演示】我是《信息采集技术》课程 AI 助学助手。部署到 EdgeOne 并配置 DASHSCOPE_API_KEY 后，我会基于课程内容（Python 数据采集、传感器、爬虫、清洗融合、可视化、数据合规）为你实时答疑。",
+      }
+    ),
+
   // 大屏概览
   getOverview: () => get<ClassOverview>("/overview", mockOverview()),
 };
