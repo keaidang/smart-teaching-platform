@@ -36,7 +36,7 @@ export default function StudentLogin() {
           学生登录
         </div>
         <p className="mt-2 text-sm text-brand-200/70">
-          AI数据服务资源库 · 计算机应用技术 2024 级 2 班
+          数智社区 · 2465 人工智能
         </p>
       </div>
 

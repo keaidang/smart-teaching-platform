@@ -26,7 +26,7 @@ export const META: Record<string, string | number> = {
   course: "信息采集技术",
   project: "城市“小微区域”环境与设施数据智能采集",
   hours: 16,
-  className: "计算机应用技术 2024 级 2 班",
+  className: "2465 人工智能",
   teacher: "授课教师",
   semester: "2025-2026 学年第 2 学期",
   model: "全过程 · 多维 · 增值性评价（课前→课中→课后 四阶闭环）",

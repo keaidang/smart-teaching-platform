@@ -5,7 +5,6 @@ import {
   IconChart,
   IconTrophy,
   IconUpload,
-  IconLock,
 } from "../../components/icons";
 import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
 
@@ -25,7 +24,7 @@ export default function DisplayLayout() {
         <div className="w-full max-w-3xl animate-rise">
           <div className="mb-6 text-center">
             <div className="text-glow text-2xl font-bold tracking-widest text-brand-100">后台大屏 · 选择课堂任务</div>
-            <p className="mt-2 text-sm text-brand-200/60">当前仅开放「传感与视觉数据清洗」，其余任务资源建设中</p>
+            <p className="mt-2 text-sm text-brand-200/60">选择课堂任务进入数据大屏</p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             {PROJECTS.map((p, pi) => (
@@ -37,14 +36,11 @@ export default function DisplayLayout() {
                     return (
                       <button
                         key={t.id}
-                        disabled={!active}
                         onClick={() => active && setEntered(true)}
-                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm transition-colors ${
-                          active ? "cursor-pointer hover:border-brand-400/50 hover:bg-brand-500/15" : "cursor-not-allowed"
-                        }`}
+                        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100 transition-colors hover:border-brand-400/50 hover:bg-brand-500/15"
                       >
-                        <span className="truncate text-brand-100">{t.title}</span>
-                        {active ? <span className="text-brand-300">进入 →</span> : <IconLock className="h-4 w-4 text-brand-200/40" />}
+                        <span className="truncate">{t.title}</span>
+                        <span className="text-brand-300">进入 →</span>
                       </button>
                     );
                   })}

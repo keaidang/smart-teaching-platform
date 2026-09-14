@@ -1,17 +1,18 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Card, SectionTitle } from "../../components/ui";
-import { IconBook, IconCheck } from "../../components/icons";
+import { IconBook } from "../../components/icons";
 import { PROJECTS } from "../../lib/course";
 
 const PCOLORS = ["#22d3ee", "#34d399", "#a78bfa", "#fbbf24"];
 
 export default function Projects() {
+  const nav = useNavigate();
   return (
     <div className="animate-rise">
       <SectionTitle
         icon={<IconBook className="h-6 w-6" />}
         title="项目学习资源"
-        sub="数智社区 · 数据生命周期四项目 · 当前开放：传感与视觉数据清洗"
+        sub="数智社区 · 数据生命周期四项目"
       />
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -32,33 +33,20 @@ export default function Projects() {
               </div>
 
               <ul className="divide-y divide-white/5">
-                {p.tasks.map((t) => {
-                  const to = `/projects/task/${t.id}`;
-                  const inner = (
-                    <>
-                      <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[11px] font-semibold ${t.active ? "text-ink-900" : "bg-white/5 text-brand-200/40"}`} style={t.active ? { background: color } : undefined}>
-                        {t.active ? <IconCheck className="h-4 w-4" strokeWidth={3} /> : t.id.slice(-2)}
+                {p.tasks.map((t, ti) => (
+                  <li key={t.id}>
+                    <button
+                      onClick={() => t.active && nav(`/projects/task/${t.id}`)}
+                      className="flex w-full items-center gap-3 px-6 py-4 text-left transition-colors hover:bg-white/5"
+                    >
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-white/5 text-[11px] font-semibold text-brand-200/60">
+                        {ti + 1}
                       </span>
-                      <span className={`min-w-0 flex-1 text-sm ${t.active ? "text-white" : "text-brand-200/50"}`}>
-                        {t.title}
-                      </span>
-                      <span className={`shrink-0 text-xs font-medium ${t.active ? "" : "text-brand-200/30"}`} style={t.active ? { color } : undefined}>
-                        {t.active ? "进入 →" : "未开放"}
-                      </span>
-                    </>
-                  );
-                  return (
-                    <li key={t.id}>
-                      {t.active ? (
-                        <Link to={to} className="flex items-center gap-3 px-6 py-4 transition-colors hover:bg-white/5">
-                          {inner}
-                        </Link>
-                      ) : (
-                        <div className="flex cursor-not-allowed items-center gap-3 px-6 py-4 opacity-70">{inner}</div>
-                      )}
-                    </li>
-                  );
-                })}
+                      <span className="min-w-0 flex-1 text-sm text-brand-100">{t.title}</span>
+                      <span className="shrink-0 text-xs font-medium text-brand-300">进入 →</span>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </Card>
           );

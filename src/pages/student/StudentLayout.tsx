@@ -8,7 +8,6 @@ import {
   IconUpload,
   IconChart,
   IconCpu,
-  IconLock,
 } from "../../components/icons";
 import { Avatar } from "../../components/ui";
 import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
@@ -61,7 +60,7 @@ export default function StudentLayout() {
           <div className="mb-6 text-center">
             <div className="text-glow text-2xl font-bold tracking-widest text-brand-100">选择课堂任务</div>
             <p className="mt-2 text-sm text-brand-200/60">
-              {student.name}，当前仅开放「传感与视觉数据清洗」
+              {student.name}，选择课堂任务开始学习
             </p>
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -70,18 +69,14 @@ export default function StudentLayout() {
                 <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
                 <div className="space-y-2">
                   {p.tasks.map((t) => {
-                    const active = t.id === ACTIVE_TASK_ID;
                     return (
                       <button
                         key={t.id}
-                        disabled={!active}
                         onClick={() => choose(t.id)}
-                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm transition-colors ${
-                          active ? "cursor-pointer hover:border-brand-400/50 hover:bg-brand-500/15" : "cursor-not-allowed"
-                        }`}
+                        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100 transition-colors hover:border-brand-400/50 hover:bg-brand-500/15"
                       >
-                        <span className="truncate text-brand-100">{t.title}</span>
-                        {active ? <span className="text-brand-300">进入 →</span> : <IconLock className="h-4 w-4 text-brand-200/40" />}
+                        <span className="truncate">{t.title}</span>
+                        <span className="text-brand-300">进入 →</span>
                       </button>
                     );
                   })}

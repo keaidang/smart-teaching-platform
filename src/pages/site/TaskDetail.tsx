@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { Card, SectionTitle } from "../../components/ui";
 import { IconBook, IconCheck, IconUpload, IconBoard } from "../../components/icons";
 import { findTask, ACTIVE_TASK_ID, ACTIVE_TASK_CHECKLIST } from "../../lib/course";
@@ -7,33 +7,12 @@ export default function TaskDetail() {
   const { taskId = "" } = useParams();
   const found = findTask(taskId);
 
-  if (!found) {
-    return (
-      <div className="animate-rise grid h-[60vh] place-items-center text-center">
-        <div>
-          <div className="text-5xl">🔒</div>
-          <h2 className="mt-4 text-xl font-semibold text-white">该任务尚未开放</h2>
-          <Link to="/projects" className="mt-4 inline-block rounded-lg border border-brand-400/30 px-4 py-2 text-sm text-brand-100 hover:bg-brand-500/15">返回项目列表</Link>
-        </div>
-      </div>
-    );
-  }
+  if (!found) return <Navigate to="/projects" replace />;
 
   const { project, task } = found;
   const active = task.id === ACTIVE_TASK_ID;
 
-  if (!active) {
-    return (
-      <div className="animate-rise grid h-[60vh] place-items-center text-center">
-        <div>
-          <div className="text-5xl">🚧</div>
-          <h2 className="mt-4 text-xl font-semibold text-white">{task.title}</h2>
-          <p className="mt-2 text-sm text-brand-200/60">该任务资源建设中，暂未开放进入。</p>
-          <Link to="/projects" className="mt-4 inline-block rounded-lg border border-brand-400/30 px-4 py-2 text-sm text-brand-100 hover:bg-brand-500/15">返回项目列表</Link>
-        </div>
-      </div>
-    );
-  }
+  if (!active) return <Navigate to="/projects" replace />;
 
   return (
     <div className="animate-rise">

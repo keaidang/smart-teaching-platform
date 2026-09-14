@@ -135,7 +135,7 @@ export async function onRequest(context) {
       }
       const online = await onlineStudents();
       return json({
-        className: "计算机应用技术 2024 级 · 数智社区",
+        className: "2465 人工智能",
         sessionTitle: "任务：传感与视觉数据清洗",
         studentCount: st.length,
         onlineCount: online.ids.length,
