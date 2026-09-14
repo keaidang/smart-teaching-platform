@@ -56,7 +56,7 @@ export const PROJECTS: ProjectDef[] = [
   },
 ];
 
-export const ACTIVE_TASK_ID = "P2T2";
+export const ACTIVE_TASK_ID = "P1T2";
 
 // 小组分组：26 人 = 第 1–5 组各 4 人，第 6 组 6 人（多出的 2 人并入最后一组）；评价均以小组为单位
 export interface GroupDef { id: string; name: string; memberIds: string[] }
@@ -121,7 +121,7 @@ export const EXERCISE_QUESTIONS: EQ[] = [
 
 export const ACTIVE_HOMEWORK = {
   id: "HW-P1T2",
-  title: "人脸特征底库交付成果",
-  description: "按任务工单 SQ-2026-001 提交交付成果材料：特征模板目录（features/）、元数据索引表（metadata.csv）、数据卡（datacard.md）与合规记录（知情同意卡、原始图像删除日志）的截图或成品照片。",
+  title: "数据质检报告",
+  description: "提交数据质检报告截图：按任务工单 SQ-2026-001 验收标准，截图需包含质量筛选结果（单张质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%）及假名化、无原图残留等合规自查项的检查结果。",
   deadline: "今日 16:30",
 };

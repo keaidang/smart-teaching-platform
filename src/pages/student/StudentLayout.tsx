@@ -52,7 +52,7 @@ export default function StudentLayout() {
     nav("/student/preview");
   };
 
-  // 登录后先选任务（仅「传感与视觉数据清洗」开放）
+  // 登录后先选任务（仅「人脸特征底库建设与交付」开放）
   if (student && !taskChosen) {
     return (
       <div className="grid min-h-screen place-items-center px-6 py-10">

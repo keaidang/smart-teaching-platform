@@ -57,7 +57,7 @@ export function mockHomeworkSubmissions(): HomeworkSubmission[] {
   return students.slice(0, 12).map((s, i) => ({
     studentId: s.id,
     name: s.name,
-    fileName: `${s.name}_人脸底库交付_${String(i + 1).padStart(2, "0")}.png`,
+    fileName: `${s.name}_数据质检报告_${String(i + 1).padStart(2, "0")}.png`,
     size: Math.round((2.4 + (i % 5) * 1.3) * 1024 * 1024),
     key: `hw/${s.id}/demo-${i + 1}.png`,
     contentType: "image/png",
