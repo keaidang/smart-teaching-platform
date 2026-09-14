@@ -39,6 +39,7 @@ export default function StudentHomework() {
   const [mine, setMine] = useState<HomeworkSubmission | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
+  const [imgErr, setImgErr] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState("");
@@ -90,6 +91,7 @@ export default function StudentHomework() {
         contentType,
       });
       setMine(created);
+      setImgErr(false);
       pickFile(null);
     } catch (e) {
       setErr(String((e as Error).message || e));
@@ -134,10 +136,11 @@ export default function StudentHomework() {
 
       {mine ? (
         <Card className="flex items-center gap-4 p-6">
-          {mine.contentType?.startsWith("image/") ? (
+          {mine.contentType?.startsWith("image/") && !imgErr ? (
             <img
               src={`/api/homework/file?sid=${mine.studentId}`}
               alt={mine.fileName}
+              onError={() => setImgErr(true)}
               className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-brand-400/30"
             />
           ) : (

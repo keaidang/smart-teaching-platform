@@ -9,10 +9,27 @@ function fmtSize(bytes: number) {
   return `${Math.round(bytes / 1024)} KB`;
 }
 
+function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
+  const [err, setErr] = useState(false);
+  if (sub.contentType?.startsWith("image/") && !err) {
+    return (
+      <img
+        src={`/api/homework/file?sid=${sub.studentId}`}
+        alt={sub.fileName}
+        onError={() => setErr(true)}
+        className="rounded-xl object-cover ring-1 ring-brand-400/30"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return <Avatar name={sub.name} color="#22d3ee" size={size} />;
+}
+
 export default function HomeworkBoard() {
   const [hw, setHw] = useState<Homework | null>(null);
   const [subs, setSubs] = useState<HomeworkSubmission[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [view, setView] = useState<HomeworkSubmission | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -38,14 +55,14 @@ export default function HomeworkBoard() {
   const total = students.length;
   const done = subs.length;
   const pct = total ? Math.round((done / total) * 100) : 0;
-  const submittedIds = new Set(subs.map((s) => s.studentId));
+  const subByStudent = new Map(subs.map((s) => [s.studentId, s]));
 
   return (
     <div className="animate-rise">
       <SectionTitle
         icon={<IconUpload className="h-6 w-6" />}
         title="课中作业 · 提交进度墙"
-        sub={hw ? "作品图片存储于 EdgeOne Blob · 元数据入 KV" : ""}
+        sub="作品图片存储于 EdgeOne Blob · 点击缩略图查看大图"
         right={<LiveBadge />}
       />
 
@@ -75,25 +92,19 @@ export default function HomeworkBoard() {
       {/* 提交墙 */}
       <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 lg:grid-cols-8">
         {students.map((s) => {
-          const sub = subs.find((x) => x.studentId === s.id);
-          const ok = submittedIds.has(s.id);
+          const sub = subByStudent.get(s.id);
+          const ok = !!sub;
           return (
-            <div
+            <button
               key={s.id}
+              disabled={!ok}
+              onClick={() => ok && sub && setView(sub)}
               className={`glass flex flex-col items-center rounded-xl p-3 text-center transition-all ${
-                ok ? "ring-1 ring-emerald-400/40" : "opacity-60"
+                ok ? "ring-1 ring-emerald-400/40 hover:scale-[1.04] hover:ring-emerald-400/70" : "cursor-default opacity-60"
               }`}
             >
               <div className="relative">
-                {sub && sub.contentType?.startsWith("image/") ? (
-                  <img
-                    src={`/api/homework/file?sid=${s.id}`}
-                    alt={s.name}
-                    className="h-14 w-14 rounded-xl object-cover ring-1 ring-brand-400/30"
-                  />
-                ) : (
-                  <Avatar name={s.name} color={s.avatarColor} size={44} />
-                )}
+                {sub ? <Thumb sub={sub} size={56} /> : <Avatar name={s.name} color={s.avatarColor} size={44} />}
                 {ok && (
                   <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-emerald-400 text-ink-900">
                     <IconCheck className="h-3.5 w-3.5" strokeWidth={3} />
@@ -104,7 +115,7 @@ export default function HomeworkBoard() {
               <div className="mt-0.5 text-[10px] text-brand-200/50">
                 {sub ? fmtSize(sub.size) : "未提交"}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -119,30 +130,57 @@ export default function HomeworkBoard() {
             .reverse()
             .slice(0, 6)
             .map((s) => (
-              <div key={s.studentId} className="flex items-center gap-4 px-5 py-3">
-                {s.contentType?.startsWith("image/") ? (
-                  <img
-                    src={`/api/homework/file?sid=${s.studentId}`}
-                    alt={s.fileName}
-                    className="h-9 w-9 rounded-lg object-cover"
-                  />
-                ) : (
-                  <Avatar name={s.name} color="#22d3ee" size={32} />
-                )}
+              <button
+                key={s.studentId}
+                onClick={() => setView(s)}
+                className="flex w-full items-center gap-4 px-5 py-3 text-left transition-colors hover:bg-white/5"
+              >
+                <Thumb sub={s} size={36} />
                 <span className="w-20 text-sm text-white">{s.name}</span>
                 <span className="min-w-0 flex-1 truncate text-sm text-brand-200/70">
                   {s.fileName}
                 </span>
-                <span className="text-xs text-brand-200/50">
-                  {fmtSize(s.size)}
-                </span>
-                <span className="w-16 text-right text-xs text-brand-200/50">
-                  {s.submittedAt}
-                </span>
-              </div>
+                <span className="text-xs text-brand-200/50">{fmtSize(s.size)}</span>
+                <span className="w-16 text-right text-xs text-brand-200/50">{s.submittedAt}</span>
+              </button>
             ))}
         </div>
       </Card>
+
+      {/* 大图灯箱 */}
+      {view && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm"
+          onClick={() => setView(null)}
+        >
+          <div
+            className="glass w-full max-w-4xl overflow-hidden rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
+              <div className="min-w-0">
+                <div className="truncate font-semibold text-white">{view.name}</div>
+                <div className="truncate text-xs text-brand-200/60">
+                  {view.fileName} · {fmtSize(view.size)} · {view.submittedAt}
+                </div>
+              </div>
+              <button
+                onClick={() => setView(null)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/15 text-brand-100 hover:bg-white/10"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid max-h-[72vh] place-items-center bg-ink-900/60 p-4">
+              <img
+                src={`/api/homework/file?sid=${view.studentId}`}
+                alt={view.fileName}
+                className="max-h-[64vh] w-auto max-w-full rounded-xl object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
