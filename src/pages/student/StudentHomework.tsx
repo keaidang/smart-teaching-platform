@@ -144,7 +144,7 @@ export default function StudentHomework() {
         <div>
           <h2 className="text-xl font-semibold text-white">提交作业</h2>
           <p className="text-sm text-brand-200/60">
-            图片内容上传课程服务器
+            作业图片上传课程服务器
           </p>
         </div>
       </div>
