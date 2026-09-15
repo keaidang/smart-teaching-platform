@@ -30,7 +30,7 @@ export const META: Record<string, string | number> = {
   teacher: "授课教师",
   semester: "2025-2026 学年第 2 学期",
   model: "全过程 · 多维 · 增值性评价（课前→课中→课后 四阶闭环）",
-  dataNote: "看板数据由学生端「课前预习 / 提交作业 / 课后知识点问答」真实作答融合生成；缺失部分以模型示例补齐。",
+  dataNote: "看板数据由学生端「课前预习 / 提交作业 / 课后知识点问答」真实作答融合生成。",
 };
 
 export const OBJECTIVES = {
