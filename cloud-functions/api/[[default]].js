@@ -14,7 +14,7 @@ const ADMIN_KEY = process.env.ADMIN_KEY || "admin";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type,x-admin-key,x-student-token",
 };
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
@@ -200,6 +200,24 @@ export async function onRequest(context) {
 
     if (path === "/students" && method === "GET") return json(await students());
 
+    // 学生登录：校验学号（姓名若提供则一并校验），签发会话令牌
+    if (path === "/student/login" && method === "POST") {
+      const { studentId, name } = await request.json();
+      const sid = String(studentId || "").trim().toUpperCase();
+      const st = (await students()).find((s) => s.id === sid);
+      if (!st) return json({ error: "学号不存在，请核对后重试" }, 401);
+      const nm = String(name || "").trim();
+      if (nm && nm !== st.name) return json({ error: "学号与姓名不匹配，请核对后重试" }, 401);
+      const token = await issueToken(st.id);
+      return json({ ok: true, token, student: st });
+    }
+    // 学生退出登录：注销会话令牌
+    if (path === "/student/logout" && method === "POST") {
+      const { studentId } = await request.json();
+      if (studentId) { try { await KV.delete(`session:${studentId}`); } catch { /* ignore */ } }
+      return json({ ok: true });
+    }
+
     if (path === "/overview" && method === "GET") {
       const st = await students();
       const pvKeys = await listKeys("preview:answer:");
@@ -247,7 +265,12 @@ export async function onRequest(context) {
       return json(rows.map((r) => ({ ...r, total: 100 })));
     }
     if (path === "/preview/answers" && method === "POST") {
-      const list = await request.json();
+      const arr = (await request.json().catch(() => null)) || [];
+      if (!Array.isArray(arr)) return json({ error: "invalid body" }, 400);
+      const sid0 = arr[0]?.studentId;
+      // 会话鉴权：只能以登录学号本人身份提交
+      if (!(await checkStudentAuth(request, sid0))) return json({ error: "请先登录后再提交" }, 401);
+      const list = arr.filter((a) => a.studentId === sid0);
       const qs = await rj("preview:questions");
       const qmap = Object.fromEntries(qs.map((q) => [q.id, q]));
       const total = qs.reduce((s, q) => s + (q.score || 0), 0);
@@ -291,6 +314,8 @@ export async function onRequest(context) {
     }
     if (path === "/homework/submissions" && method === "POST") {
       const m = await request.json();
+      // 会话鉴权：仅登录学生可为本人提交作业元数据
+      if (!(await checkStudentAuth(request, m.studentId))) return json({ error: "请先登录后再提交作业" }, 401);
       // 元数据入库同样校验格式与大小
       if (!ALLOWED_TYPES.includes(m.contentType)) return json({ error: "仅支持 PNG / JPG 格式图片" }, 400);
       const sz = Number(m.size);

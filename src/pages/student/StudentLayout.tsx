@@ -40,6 +40,7 @@ export default function StudentLayout() {
   }, [student?.id, taskChosen]);
 
   const logout = () => {
+    if (student) api.studentLogout(student.id).catch(() => {});
     setStudent(null);
     sessionStorage.removeItem(TASK_KEY);
     nav("/student");

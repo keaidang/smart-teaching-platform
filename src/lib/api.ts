@@ -29,6 +29,15 @@ type MaybeLazy<T> = T | (() => T | Promise<T>);
 const resolveFallback = async <T>(fb: MaybeLazy<T>): Promise<T> =>
   typeof fb === "function" ? await (fb as () => T | Promise<T>)() : fb;
 
+// ---------- 学生会话令牌 ----------
+const TOKEN_KEY = "stp.studentToken";
+const STUDENT_KEY = "stp.currentStudent";
+const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
+export function setStudentToken(t: string | null) {
+  if (t) localStorage.setItem(TOKEN_KEY, t);
+  else localStorage.removeItem(TOKEN_KEY);
+}
+
 async function get<T>(path: string, fallback: MaybeLazy<T>): Promise<T> {
   if (USE_MOCK) return structuredClone(await resolveFallback(fallback));
   const res = await fetch(`${BASE}${path}`);
@@ -50,11 +59,71 @@ async function post<T, B = unknown>(path: string, body: B, fallback: MaybeLazy<T
   return (await res.json()) as T;
 }
 
-export const api = {
-  // 学生（名单无敏感信息，可直接用 course.ts 数据）
-  login: (studentId: string): Promise<Student | null> =>
-    Promise.resolve(STUDENTS.find((s) => s.id === studentId) ?? null),
+// 学生写接口：自动携带会话令牌；401（令牌失效/被顶下线）时清除本地会话并回到登录页
+async function postStudent<T, B = unknown>(path: string, body: B, fallback: MaybeLazy<T>): Promise<T> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 300));
+    return structuredClone(await resolveFallback(fallback));
+  }
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-student-token": getToken() },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(STUDENT_KEY);
+    location.href = "/student";
+    throw new Error("登录已失效，请重新登录");
+  }
+  if (!res.ok) {
+    let msg = `API ${path} -> ${res.status}`;
+    try {
+      const j = await res.json();
+      msg = j.error || msg;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg);
+  }
+  return (await res.json()) as T;
+}
 
+export const api = {
+  // 学生登录：服务端校验名单并签发会话令牌（mock 模式为本地校验）
+  studentLogin: async (studentId: string, name: string): Promise<Student> => {
+    if (USE_MOCK) {
+      const s = STUDENTS.find((x) => x.id === studentId && x.name === name);
+      if (!s) throw new Error("学号与姓名不匹配，请核对后重试");
+      setStudentToken("mock");
+      return structuredClone(s);
+    }
+    const res = await fetch(`${BASE}/student/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ studentId, name }),
+    });
+    const j = await res.json().catch(() => ({} as { error?: string; token?: string; student?: Student }));
+    if (!res.ok || !j.student || !j.token) throw new Error(j.error || `HTTP ${res.status}`);
+    setStudentToken(j.token);
+    return j.student;
+  },
+  // 退出登录：注销服务端会话 + 清除本地令牌
+  studentLogout: async (studentId: string) => {
+    setStudentToken(null);
+    if (USE_MOCK) return;
+    try {
+      await fetch(`${BASE}/student/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId }),
+      });
+    } catch {
+      /* 网络失败不阻塞退出 */
+    }
+  },
+
+  // 学生（名单无敏感信息，可直接用 course.ts 数据）
   listStudents: () => get<Student[]>("/students", STUDENTS),
 
   // 课前预习（题目与答案都在服务端；判分在服务端完成）
@@ -127,11 +196,11 @@ export const api = {
       (await mockMod()).mockExerciseStats()
     ),
   submitExercise: (answers: { studentId: string; exerciseId: string; selected: number }[]) =>
-    post("/exercises/answers", answers, { ok: true }),
+    postStudent("/exercises/answers", answers, { ok: true }),
 
   // 在线心跳
   pingPresence: (studentId: string) =>
-    post("/presence", { studentId }, { ok: true }),
+    postStudent("/presence", { studentId }, { ok: true }),
 
   // AI 问答（阿里通义千问，流式）
   aiChatStream: async (

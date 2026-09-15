@@ -11,22 +11,27 @@ export default function StudentLogin() {
   const [sid, setSid] = useState("");
   const [name, setName] = useState("");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
   const [list, setList] = useState<Student[]>([]);
 
   useEffect(() => {
     api.listStudents().then(setList).catch(() => setList([]));
   }, []);
 
-  const doLogin = (id: string, nm: string) => {
-    const s = list.find(
-      (x) => x.id === id.trim().toUpperCase() && x.name === nm.trim()
-    );
-    if (!s) {
-      setErr("学号与姓名不匹配，请核对后重试");
-      return;
+  // 登录走服务端：校验名单并签发会话令牌（写接口均需携带）
+  const doLogin = async (id: string, nm: string) => {
+    if (busy) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const s = await api.studentLogin(id.trim().toUpperCase(), nm.trim());
+      setStudent(s);
+      nav("/student/preview");
+    } catch (e) {
+      setErr(String((e as Error).message || e) || "登录失败，请重试");
+    } finally {
+      setBusy(false);
     }
-    setStudent(s);
-    nav("/student/preview");
   };
 
   return (
@@ -72,9 +77,10 @@ export default function StudentLogin() {
 
         <button
           onClick={() => doLogin(sid, name)}
-          className="mt-5 w-full rounded-xl bg-brand-500 py-3.5 font-semibold text-ink-900 transition-colors hover:bg-brand-400"
+          disabled={busy}
+          className="mt-5 w-full rounded-xl bg-brand-500 py-3.5 font-semibold text-ink-900 transition-colors hover:bg-brand-400 disabled:opacity-60"
         >
-          登录系统
+          {busy ? "登录中…" : "登录系统"}
         </button>
 
         <div className="mt-6 border-t border-white/5 pt-5">
