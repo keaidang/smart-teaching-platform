@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Card, SectionTitle } from "../../components/ui";
 import { IconBook } from "../../components/icons";
-import { PROJECTS } from "../../lib/course";
+import { PROJECTS, ACTIVE_TASK_ID } from "../../lib/course";
 
 const PCOLORS = ["#22d3ee", "#34d399", "#a78bfa", "#fbbf24"];
 
 // 各任务一句话简介（展示层文案，随任务框放大同步充实）
 const TASK_DESC: Record<string, string> = {
-  P1T1: "问卷调查与网络文本抓取，形成社区民意语料库",
+  P1T1: "工单数据抓取测试：网页表格 → 结构化民意语料（含找脏数据挑战）",
   P1T2: "K230 多姿态采集 + 特征提取加密入库（企业工单 SQ-2026-001）",
   P2T1: "去重、脱敏与分类标注，产出可用的清洗语料",
   P2T2: "时间对齐、异常处理、图像去噪与点云滤波",
@@ -59,7 +59,7 @@ export default function Projects() {
                           {t.title}
                           {t.active && (
                             <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
-                              进行中
+                              {t.id === ACTIVE_TASK_ID ? "进行中" : "已开放"}
                             </span>
                           )}
                         </span>

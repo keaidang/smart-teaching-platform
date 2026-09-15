@@ -29,7 +29,7 @@ export const PROJECTS: ProjectDef[] = [
   {
     id: "P1", title: "数据感知方案设计与采集", hours: 8,
     tasks: [
-      { id: "P1T1", title: "社区民意文本数据采集", active: false },
+      { id: "P1T1", title: "社区民意文本数据采集", active: true },
       { id: "P1T2", title: "传感与视觉数据采集", active: true },
     ],
   },

@@ -13,4 +13,7 @@ dist
 
 # 原始素材图（压缩后已入 src/assets，原图只留本地）
 /images/
+
+# 本地工作截图
+/.shots/
   

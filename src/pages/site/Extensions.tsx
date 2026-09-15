@@ -8,7 +8,20 @@ const BLOCKS = [
     icon: IconTrophy,
     color: "#fbbf24",
     desc: "对接职业技能等级证书与学科竞赛，以赛促学、以证验能。",
-    items: ["1+X 证书标准与题库", "学科竞赛真题解析", "获奖作品案例集"],
+    items: [
+      {
+        name: "1+X 大数据应用开发证书",
+        desc: "对接《大数据应用开发（Python）》职业技能等级证书（中级）考核标准，配套模拟题库与评分细则，覆盖数据采集、清洗、分析全环节。",
+      },
+      {
+        name: "职业院校技能竞赛真题",
+        desc: "整理全国职业院校技能大赛「大数据应用与分析」赛项近三年真题，含赛题背景、数据集说明、解题思路与时间分配策略。",
+      },
+      {
+        name: "获奖作品案例复盘",
+        desc: "选取往届一、二等奖作品的完整答卷，从需求分析到成果汇报逐环节拆解，标注评委关注的加分点与常见扣分项。",
+      },
+    ],
     legal: false,
   },
   {
@@ -16,7 +29,20 @@ const BLOCKS = [
     icon: IconLayers,
     color: "#22d3ee",
     desc: "培养跨领域数据应用能力，打通多业务场景的数据链路。",
-    items: ["跨行业数据案例", "场景迁移方法论", "综合实训项目"],
+    items: [
+      {
+        name: "智慧交通数据案例",
+        desc: "以路口过车流量数据为对象，练习多传感器时间对齐、异常值剔除与分车型流量统计，迁移课堂上的采集与清洗规范。",
+      },
+      {
+        name: "智能巡检数据案例",
+        desc: "基于无人机巡检影像与激光点云，练习缺陷目标标注、红外测温数据关联与识别基线搭建，体验双模态数据协同。",
+      },
+      {
+        name: "场景迁移方法论",
+        desc: "把社区项目沉淀的「采集 → 清洗 → 融合 → 可视」通用链路抽象为方法论清单，指导新场景下的方案设计与工具选型。",
+      },
+    ],
     legal: false,
   },
   {
@@ -24,7 +50,20 @@ const BLOCKS = [
     icon: IconCpu,
     color: "#a78bfa",
     desc: "引入最新 AI 技术与实用工具，保持课程技术前沿性。",
-    items: ["大模型与多模态", "AI 绘图 / 生成工具", "自动化数据处理"],
+    items: [
+      {
+        name: "大模型辅助数据服务",
+        desc: "使用大模型生成标注规则初稿、辅助数据质检问答与数据卡撰写，附提示词模板与人工校核要点。",
+      },
+      {
+        name: "多模态处理脚本集",
+        desc: "图像增强、人脸检测、OCR 识别、语音转写等开箱即用的 Python 脚本，均配运行示例与参数说明。",
+      },
+      {
+        name: "自动化数据流水线",
+        desc: "用脚本串联采集入库、质量筛选与元数据生成，一键产出 datacard.md，体验企业级数据交付流程。",
+      },
+    ],
     legal: false,
   },
   {
@@ -32,7 +71,20 @@ const BLOCKS = [
     icon: IconShield,
     color: "#34d399",
     desc: "强化数据安全、隐私保护与合规意识，规范数据使用。",
-    items: ["数据安全法 / 个保法", "隐私脱敏规范", "数据合规实务"],
+    items: [
+      {
+        name: "《数据安全法》《个人信息保护法》要点",
+        desc: "梳理个人信息处理的合法性基础、敏感个人信息定义与违规罚则，配套 10 道情景判断题。",
+      },
+      {
+        name: "人脸识别专项规范",
+        desc: "GB/T 35273 与《人脸识别技术应用安全管理办法》核心条款对照，逐条对应到本任务的采集环节。",
+      },
+      {
+        name: "合规实务模板",
+        desc: "知情同意卡、原始图像删除日志、脱敏自查表等 4 套可直接套用的模板文件，交付前逐项打勾。",
+      },
+    ],
     legal: true,
   },
 ];
@@ -117,34 +169,40 @@ export default function Extensions() {
         sub="前沿技术 · 技能竞赛 · 跨领域融合 · 法律合规"
       />
 
-      <div className="grid flex-1 gap-6 md:grid-cols-2">
+      <div className="grid gap-7 md:grid-cols-2">
         {BLOCKS.map((b) => {
           const inner = (
             <>
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-5">
                 <span
-                  className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
+                  className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl"
                   style={{ background: `${b.color}1f`, color: b.color }}
                 >
-                  <b.icon className="h-6 w-6" />
+                  <b.icon className="h-7 w-7" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-xl font-semibold text-white">{b.title}</h3>
-                  <p className="mt-1.5 text-[15px] leading-relaxed text-brand-200/70">{b.desc}</p>
+                  <h3 className="text-2xl font-semibold text-white">{b.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-brand-200/70">{b.desc}</p>
                 </div>
               </div>
-              <div className="grid content-center gap-2.5 py-4 sm:grid-cols-3">
-                {b.items.map((it) => (
-                  <div
-                    key={it}
-                    className="flex min-h-[64px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-sm leading-snug text-brand-100/90"
-                  >
-                    {it}
-                  </div>
+              <ul className="mt-6 divide-y divide-white/5">
+                {b.items.map((it, i) => (
+                  <li key={it.name} className="flex gap-4 py-4 first:pt-0.5 last:pb-0.5">
+                    <span
+                      className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[13px] font-bold"
+                      style={{ background: `${b.color}1f`, color: b.color }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-base font-medium text-white">{it.name}</div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-brand-200/65">{it.desc}</p>
+                    </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
               {b.legal && (
-                <div className="mt-3 text-right text-[13px] font-medium text-emerald-300">
+                <div className="mt-5 text-right text-sm font-medium text-emerald-300">
                   点击查看法规原文对照 →
                 </div>
               )}
@@ -152,11 +210,11 @@ export default function Extensions() {
           );
 
           return b.legal ? (
-            <Card key={b.title} hover className="flex cursor-pointer flex-col p-7 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
+            <Card key={b.title} hover className="flex cursor-pointer flex-col p-8 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
               {inner}
             </Card>
           ) : (
-            <Card key={b.title} hover className="flex flex-col p-7">{inner}</Card>
+            <Card key={b.title} hover className="flex flex-col p-8">{inner}</Card>
           );
         })}
       </div>

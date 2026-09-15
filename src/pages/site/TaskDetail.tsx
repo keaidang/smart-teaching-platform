@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { Card, SectionTitle } from "../../components/ui";
 import { IconBook, IconCheck, IconUpload, IconBoard } from "../../components/icons";
-import { findTask, ACTIVE_TASK_ID, ACTIVE_TASK_CHECKLIST } from "../../lib/course";
+import { findTask, ACTIVE_TASK_CHECKLIST } from "../../lib/course";
 
 /* ---------- 工单页内的小组件（统一样式） ---------- */
 
@@ -220,11 +220,9 @@ export default function TaskDetail() {
   if (!found) return <Navigate to="/projects" replace />;
 
   const { project, task } = found;
-  const active = task.id === ACTIVE_TASK_ID;
+  const active = task.active;
 
   if (!active) return <Navigate to="/projects" replace />;
-
-  const isFaceWorkOrder = task.id === "P1T2";
 
   return (
     <div className="animate-rise">
@@ -234,60 +232,129 @@ export default function TaskDetail() {
         sub={`${project.title} · ${project.hours} 课时`}
       />
 
-      {isFaceWorkOrder ? (
+      {task.id === "P1T1" ? (
+        <P1T1Content />
+      ) : (
         <>
           <WorkOrder />
           <h3 className="mb-3 mt-8 text-sm font-medium tracking-widest text-brand-200/60">课堂任务清单（依据本工单）</h3>
-        </>
-      ) : (
-        <>
-          <Card className="mb-6 p-6">
-            <div className="text-sm leading-relaxed text-brand-200/80">
-              <b className="text-white">任务目标（工单编号 SQ-2026-001）：</b>为社区试点楼栋人脸门禁与 AI 监控联动系统建设居民<b className="text-white">人脸特征底库</b>，支撑黑名单人员预警、独居老人长时间未出入研判。使用 K230 CanMV 端侧设备采集多姿态人脸样本，完成质量筛选、特征提取与加密存储、元数据索引、数据卡与合规记录整理，最终打包交付<b className="text-white">合规的人脸特征数据集</b>（不是人脸照片）。验收硬指标：质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%（一票否决）、假名化合规、无原图残留。
-            </div>
-          </Card>
-          <h3 className="mb-3 text-sm font-medium tracking-widest text-brand-200/60">课堂任务清单</h3>
+          <div className="space-y-3">
+            {ACTIVE_TASK_CHECKLIST.map((c) => (
+              <Card key={c.step} hover className="flex items-start gap-4 p-5">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-sm font-bold text-brand-300">
+                  {c.step}
+                </span>
+                <div>
+                  <div className="font-medium text-white">{c.title}</div>
+                  <div className="mt-0.5 text-sm text-brand-200/70">{c.desc}</div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <Link to="/student/homework">
+              <Card hover className="flex items-center gap-4 p-5">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
+                <div>
+                  <div className="font-semibold text-white">提交作业</div>
+                  <div className="text-xs text-brand-200/60">上传数据质检报告截图</div>
+                </div>
+              </Card>
+            </Link>
+            <Link to="/class">
+              <Card hover className="flex items-center gap-4 p-5">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300"><IconBoard className="h-5 w-5" /></span>
+                <div>
+                  <div className="font-semibold text-white">后台大屏</div>
+                  <div className="text-xs text-brand-200/60">查看本任务课堂实时数据</div>
+                </div>
+              </Card>
+            </Link>
+          </div>
+
+          <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
+            <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「传感与视觉数据采集」配置（企业工单：人脸特征底库建设与交付）。
+          </div>
         </>
       )}
+    </div>
+  );
+}
 
+/* ---------- 项目一·任务1：社区民意文本数据采集（数据抓取测试） ---------- */
+
+const P1T1_STEPS = [
+  {
+    title: "打开数据页面",
+    desc: "点击下方「打开数据页面」，在新标签页查看「智慧社区工单管理平台 · 多平台汇总视图」，共 18 条工单、12 个字段，来源含小程序 / 12345 热线 / 网格上报。",
+  },
+  {
+    title: "练习数据抓取",
+    desc: "观察表格结构（工单编号、状态、类型、来源、区域、诉求内容等字段），把工单内容整理为 CSV / Excel，或用工具脚本抓取表格数据，体验从网页到结构化数据的采集过程。",
+  },
+  {
+    title: "找出脏数据（火眼金睛）",
+    desc: "页面数据中故意混入了脏数据：所属区域命名不统一、个别姓名和电话未脱敏、重复提交的工单、明显非法的时间格式。把它们全部找出来并记录工单编号。",
+  },
+  {
+    title: "下载留存（可选）",
+    desc: "点击「下载数据文件」把数据页面 HTML 保存到本地，用文本编辑器打开即可看到网页源码与数据表结构，作为课后抓取 / 清洗练习素材。",
+  },
+];
+
+function P1T1Content() {
+  return (
+    <>
+      <Card className="p-8">
+        <div className="text-sm leading-relaxed text-brand-200/80">
+          <b className="text-white">任务背景：</b>智慧社区项目需要采集<b className="text-white">居民诉求文本数据</b>作为民意语料。
+          本任务使用一套模拟的企业数据页面——「智慧社区工单管理平台（多平台汇总视图）」，数据已完成<b className="text-brand-300">混合脱敏</b>处理。
+          请以此页面为采集对象，完成<b className="text-amber-400">数据抓取测试</b>：认识工单数据结构、练习把网页表格转为结构化数据，并找出其中混入的脏数据。
+        </div>
+      </Card>
+
+      <h3 className="mb-3 mt-8 text-sm font-medium tracking-widest text-brand-200/60">操作指引</h3>
       <div className="space-y-3">
-        {ACTIVE_TASK_CHECKLIST.map((c) => (
-          <Card key={c.step} hover className="flex items-start gap-4 p-5">
+        {P1T1_STEPS.map((c, i) => (
+          <Card key={c.title} hover className="flex items-start gap-4 p-5">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-sm font-bold text-brand-300">
-              {c.step}
+              {i + 1}
             </span>
             <div>
               <div className="font-medium text-white">{c.title}</div>
-              <div className="mt-0.5 text-sm text-brand-200/70">{c.desc}</div>
+              <div className="mt-0.5 text-sm leading-relaxed text-brand-200/70">{c.desc}</div>
             </div>
           </Card>
         ))}
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <Link to="/student/homework">
-          <Card hover className="flex items-center gap-4 p-5">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
-            <div>
-              <div className="font-semibold text-white">提交作业</div>
-              <div className="text-xs text-brand-200/60">上传数据质检报告截图</div>
+        <a href="/resources/appeal-data.html" target="_blank" rel="noreferrer">
+          <Card hover className="flex items-center gap-4 p-6">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-500/15 text-2xl">🖥</span>
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-white">打开数据页面</div>
+              <div className="mt-0.5 text-sm text-brand-200/60">新标签页查看 18 条脱敏工单（在线浏览）</div>
             </div>
+            <span className="ml-auto shrink-0 text-sm font-medium text-brand-300">前往 →</span>
           </Card>
-        </Link>
-        <Link to="/class">
-          <Card hover className="flex items-center gap-4 p-5">
-            <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300"><IconBoard className="h-5 w-5" /></span>
-            <div>
-              <div className="font-semibold text-white">后台大屏</div>
-              <div className="text-xs text-brand-200/60">查看本任务课堂实时数据</div>
+        </a>
+        <a href="/resources/appeal-data.html" download="诉求部分脱敏后的数据.html">
+          <Card hover className="flex items-center gap-4 p-6">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-2xl">⬇</span>
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-white">下载数据文件</div>
+              <div className="mt-0.5 text-sm text-brand-200/60">保存 诉求部分脱敏后的数据.html 到本机练习</div>
             </div>
+            <span className="ml-auto shrink-0 text-sm font-medium text-emerald-300">下载 ↓</span>
           </Card>
-        </Link>
+        </a>
       </div>
 
       <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
-        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「传感与视觉数据采集」配置（企业工单：人脸特征底库建设与交付）。
+        <IconCheck className="h-4 w-4" /> 本任务为数据抓取测试任务，可进入练习；当前正在进行的主线任务仍为「传感与视觉数据采集」。
       </div>
-    </div>
+    </>
   );
 }

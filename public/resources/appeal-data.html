@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智慧社区工单管理平台 - 多平台汇总视图（混合脱敏版）</title>
+    <style>
+        body { font-family: "Microsoft YaHei", sans-serif; background: #f5f7fa; padding: 30px; }
+        h2 { color: #1a3a6b; margin-bottom: 6px; }
+        .sub { color: #6b7a90; font-size: 14px; margin-bottom: 20px; }
+        .toolbar { background: #fff; padding: 12px 20px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #e0e6ed; display: flex; gap: 16px; align-items: center; }
+        .toolbar span { font-size: 13px; color: #4a5a72; }
+        .toolbar .badge { background: #e8f0fe; color: #1a73e8; padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-radius: 0 0 8px 8px; overflow: hidden; }
+        th { background: #1a3a6b; color: #fff; font-weight: 500; font-size: 13px; padding: 12px 8px; text-align: left; white-space: nowrap; }
+        td { padding: 10px 8px; font-size: 13px; color: #2c3e50; border-bottom: 1px solid #eef2f7; }
+        tr:hover td { background: #f8faff; }
+        .status-done { color: #27ae60; }
+        .status-doing { color: #e67e22; }
+        .status-wait { color: #95a5a6; }
+        .empty { color: #c0c7d0; font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <h2>🏢 智慧社区工单管理平台</h2>
+    <div class="sub">多平台汇总视图 · 数据更新时间：2024-10-25 15:30 · 混合脱敏处理</div>
+
+    <div class="toolbar">
+        <span>📋 共 <strong>18</strong> 条工单</span>
+        <span class="badge">来源：小程序 / 12345热线 / 网格上报</span>
+    </div>
+
+    <table id="order-table">
+        <thead>
+            <tr>
+                <th>工单编号</th>
+                <th>工单状态</th>
+                <th>工单类型</th>
+                <th>工单来源</th>
+                <th>所属区域</th>
+                <th>处理人</th>
+                <th>提交人</th>
+                <th>提交时间</th>
+                <th>联系电话</th>
+                <th>地址</th>
+                <th>诉求目的</th>
+                <th>诉求内容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 正常数据（脱敏） -->
+            <tr>
+                <td>GD20241025001</td><td class="status-doing">处理中</td><td>投诉</td><td>小程序</td><td>阳光社区</td><td>张*</td><td>李*</td><td>2024-10-25 09:15</td><td>138****5678</td><td>阳光社区3栋201</td><td>噪音扰民</td><td>楼上住户每天晚上11点还在跳绳，严重影响休息，请社区协调处理。</td>
+            </tr>
+            <tr>
+                <td>GD20241025002</td><td class="status-wait">待处理</td><td>建议</td><td>12345热线</td><td>阳光社区</td><td>—</td><td>王*</td><td>2024-10-25 10:20</td><td>139****4321</td><td>阳光社区5栋102</td><td>增设设施</td><td>建议在小区东门加装快递柜，目前快递都堆在地上，容易丢失。</td>
+            </tr>
+            <tr>
+                <td>GD20241025003</td><td class="status-done">已办结</td><td>咨询</td><td>网格上报</td><td>阳光社区</td><td>赵*</td><td>陈*</td><td>2024-10-24 16:40</td><td>136****2222</td><td>阳光社区1栋501</td><td>政策咨询</td><td>想了解今年社区老年人体检什么时候开始，在哪里报名？</td>
+            </tr>
+            <!-- 脏数据：缺失提交人 -->
+            <tr>
+                <td>GD20241025004</td><td class="status-wait">待处理</td><td>投诉</td><td>小程序</td><td>阳光社区</td><td>—</td><td class="empty">—</td><td>2024-10-25 11:05</td><td>—</td><td>—</td><td>环境卫生</td><td>小区垃圾桶满了没人清理，臭味很大。</td>
+            </tr>
+            <!-- 脏数据：时间格式混乱 -->
+            <tr>
+                <td>GD20241025005</td><td class="status-doing">处理中</td><td>报修</td><td>小程序</td><td>阳光社区</td><td>刘*</td><td>周*</td><td>10月25日</td><td>150****6666</td><td>阳光社区2栋303</td><td>公共设施</td><td>楼道灯坏了，晚上上下楼很不安全，请尽快维修。</td>
+            </tr>
+            <!-- 脏数据：无效内容 -->
+            <tr>
+                <td>GD20241025006</td><td class="status-wait">待处理</td><td>其他</td><td>小程序</td><td>阳光社区</td><td>—</td><td>匿名</td><td>2024-10-25 12:00</td><td>—</td><td>—</td><td>—</td><td>123</td>
+            </tr>
+            <!-- 脏数据：重复记录（与001相同，但编号不同） -->
+            <tr>
+                <td>GD20241025007</td><td class="status-doing">处理中</td><td>投诉</td><td>小程序</td><td>阳光社区</td><td>张*</td><td>李*</td><td>2024-10-25 09:15</td><td>138****5678</td><td>阳光社区3栋201</td><td>噪音扰民</td><td>楼上住户每天晚上11点还在跳绳，严重影响休息，请社区协调处理。</td>
+            </tr>
+            <!-- 脏数据：错别字 -->
+            <tr>
+                <td>GD20241025008</td><td class="status-wait">待处理</td><td>投诉</td><td>12345热线</td><td>阳光社区</td><td>—</td><td>吴*</td><td>2024-10-25 13:20</td><td>137****8888</td><td>阳光社区4栋202</td><td>物业管理</td><td>小区门禁坏了很久，物业一直不修，安全隐换很大。</td>
+            </tr>
+            <!-- 正常数据（脱敏） -->
+            <tr>
+                <td>GD20241025009</td><td class="status-done">已办结</td><td>建议</td><td>网格上报</td><td>阳光社区</td><td>赵*</td><td>郑*</td><td>2024-10-24 15:10</td><td>135****7777</td><td>阳光社区6栋101</td><td>文化活动</td><td>建议社区多组织一些老年人书法活动，丰富退休生活。</td>
+            </tr>
+            <!-- 脏数据：电话格式错误 -->
+            <tr>
+                <td>GD20241025010</td><td class="status-wait">待处理</td><td>报修</td><td>小程序</td><td>阳光社区</td><td>—</td><td>孙*</td><td>2024-10-25 14:00</td><td>12345</td><td>阳光社区3栋402</td><td>公共设施</td><td>电梯运行有异响，希望派人检查一下。</td>
+            </tr>
+            <!-- ★ 未脱敏数据 1：正常数据，但姓名和电话完整 -->
+            <tr>
+                <td>GD20241025011</td><td class="status-doing">处理中</td><td>投诉</td><td>12345热线</td><td>阳光社区</td><td>刘*</td><td>黄婷</td><td>2024-10-25 08:30</td><td>13899990000</td><td>阳光社区2栋501</td><td>环境卫生</td><td>楼下餐饮店油烟直排，家里窗户都不敢开。</td>
+            </tr>
+            <!-- 脏数据：诉求内容与目的不符 -->
+            <tr>
+                <td>GD20241025012</td><td class="status-wait">待处理</td><td>咨询</td><td>小程序</td><td>阳光社区</td><td>—</td><td>林*</td><td>2024-10-25 14:45</td><td>136****3333</td><td>阳光社区1栋202</td><td>政策咨询</td><td>小区停车位太少了，能不能多划一些车位？</td>
+            </tr>
+            <!-- 正常数据（脱敏） -->
+            <tr>
+                <td>GD20241025013</td><td class="status-done">已办结</td><td>投诉</td><td>网格上报</td><td>阳光社区</td><td>张*</td><td>何*</td><td>2024-10-24 11:20</td><td>139****0000</td><td>阳光社区5栋303</td><td>噪音扰民</td><td>楼下棋牌室半夜还在营业，吵得睡不着觉。</td>
+            </tr>
+            <!-- 脏数据：所属区域不统一 -->
+            <tr>
+                <td>GD20241025014</td><td class="status-wait">待处理</td><td>建议</td><td>小程序</td><td>阳光小区</td><td>—</td><td>许*</td><td>2024-10-25 15:00</td><td>137****5555</td><td>阳光小区3栋</td><td>增设设施</td><td>建议增加电动车充电桩，现在飞线充电太危险了。</td>
+            </tr>
+            <!-- ★ 未脱敏数据 2：正常数据，但姓名和电话完整 -->
+            <tr>
+                <td>GD20241025015</td><td class="status-doing">处理中</td><td>报修</td><td>12345热线</td><td>阳光社区</td><td>赵*</td><td>马超</td><td>2024-10-25 07:50</td><td>13877778888</td><td>阳光社区4栋101</td><td>公共设施</td><td>小区健身器材损坏，有螺丝松动，存在安全隐患。</td>
+            </tr>
+            <!-- 脏数据：提交人姓名重复且电话相同（脱敏） -->
+            <tr>
+                <td>GD20241025016</td><td class="status-wait">待处理</td><td>投诉</td><td>小程序</td><td>阳光社区</td><td>—</td><td>李*</td><td>2024-10-25 09:15</td><td>138****5678</td><td>阳光社区3栋201</td><td>噪音扰民</td><td>楼上跳绳问题还没解决，请尽快处理。</td>
+            </tr>
+            <!-- 正常数据（脱敏） -->
+            <tr>
+                <td>GD20241025017</td><td class="status-done">已办结</td><td>咨询</td><td>网格上报</td><td>阳光社区</td><td>刘*</td><td>唐*</td><td>2024-10-24 09:00</td><td>135****4444</td><td>阳光社区6栋202</td><td>政策咨询</td><td>请问社区医保办理需要带哪些材料？</td>
+            </tr>
+            <!-- 脏数据：时间明显错误 -->
+            <tr>
+                <td>GD20241025018</td><td class="status-wait">待处理</td><td>其他</td><td>小程序</td><td>阳光社区</td><td>—</td><td>匿名</td><td>2025-13-45 99:99</td><td>—</td><td>—</td><td>—</td><td>测试数据</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
