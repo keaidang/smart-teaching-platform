@@ -24,13 +24,13 @@ export const STUDENTS = ROSTER.map((r, i) => ({
   classId: "C-2412",
 }));
 
-// 4 个项目 / 8 个任务；当前课程开放 项目一·任务2「人脸特征底库建设与交付」（工单 SQ-2026-001）
+// 4 个项目 / 8 个任务；当前课程开放 项目一·任务2「传感与视觉数据采集」（企业工单 SQ-2026-001：人脸特征底库建设与交付）
 export const PROJECTS: ProjectDef[] = [
   {
     id: "P1", title: "数据感知方案设计与采集", hours: 8,
     tasks: [
       { id: "P1T1", title: "社区民意文本数据采集", active: false },
-      { id: "P1T2", title: "人脸特征底库建设与交付", active: true },
+      { id: "P1T2", title: "传感与视觉数据采集", active: true },
     ],
   },
   {
@@ -87,7 +87,7 @@ export function allTasks() {
   return PROJECTS.flatMap((p) => p.tasks.map((t) => ({ ...t, project: p })));
 }
 
-// 当前任务：项目一·任务2 人脸特征底库建设与交付 —— 课堂任务清单（依据企业任务工单 SQ-2026-001）
+// 当前任务：项目一·任务2 传感与视觉数据采集 —— 课堂任务清单（依据企业任务工单 SQ-2026-001）
 export const ACTIVE_TASK_CHECKLIST = [
   { step: "1", title: "研读任务工单", desc: "明确委托方需求：为试点楼栋建设合规人脸特征底库，支撑黑名单预警与独居老人未出入研判；交付的是特征数据集，不是人脸照片。" },
   { step: "2", title: "合规前置准备", desc: "采集前取得每位被采集人明确同意，签署并保留知情同意卡（照片/扫描件），作为一票否决项的证据材料。" },

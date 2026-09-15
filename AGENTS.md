@@ -21,7 +21,7 @@ npm run build   # tsc --noEmit && vite build（必须过）
 真实 KV/Blob/AI 只在部署环境可用（`getStore` 依赖运行时），本地用 mock。
 
 ## 2. 关键约定（务必遵守）
-- **路由**：`/` 资源库主站；`/student` 学生端；`/class` 教师后台大屏；`/admin` 管理后台。学生/教师端都有「任务门禁」，当前仅 `P1T2 人脸特征底库建设与交付`（企业工单 SQ-2026-001，详情页完整呈现工单内容）可进入，作业为提交数据质检报告截图，其余任务按钮显示「进入」但点击无反应（**不要**显示锁/未开放/建设中）。
+- **路由**：`/` 资源库主站；`/student` 学生端；`/class` 教师后台大屏；`/admin` 管理后台。学生/教师端都有「任务门禁」，当前仅 `P1T2 传感与视觉数据采集`（对应企业工单 SQ-2026-001「人脸特征底库建设与交付」，详情页完整呈现工单内容）可进入，作业为提交数据质检报告截图，其余任务按钮显示「进入」但点击无反应（**不要**显示锁/未开放/建设中）。
 - **名单与题目两处同步**：前端演示种子在 `src/lib/mock.ts`（`previewQuestions`/`exercises`，**不含答案**，仅离线 mock 用）与 `src/lib/course.ts`（`ROSTER`/`ACTIVE_HOMEWORK`/`PROJECTS`/`GROUPS`/`ACTIVE_TASK_CHECKLIST`），后端种子在 `cloud-functions/api/[[default]].js` 顶部（`ROSTER`/`SEED_PQ`/`SEED_EX`/`SEED_HW`，**含答案，答案只存这里**）。**改任一处必须同步另一处**。
 - **答案安全铁律**：题目 `answer` 只存在云函数种子（KV）；`GET /preview/questions`、`GET /exercises` 均已剥离 `answer`，判分全在服务端（`POST /preview/answers` 返回 `results`）。`course.ts` 随主包下发，**任何含答案的题库都不得放回 `course.ts`**；`mock.ts` 也不含答案（防止构建产物泄露）。
 - **作业上传限制**：仅 PNG/JPG，单张 ≤ 5MB；前端 `StudentHomework` 与服务端 `/homework/upload-url`、`/homework/submissions` 双重校验，`upload-url` 需传 `size`。

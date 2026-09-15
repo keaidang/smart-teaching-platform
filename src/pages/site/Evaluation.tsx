@@ -110,7 +110,7 @@ export default function Evaluation() {
 const KIND_META: Record<EvalKind, { title: string; desc: string; placeholder: string }> = {
   teacher: {
     title: "教师评价",
-    desc: "以小组为单位，对 4 个项目的课堂完成情况打分（0–100 分），不打分到个人。",
+    desc: "以学习小组为单位，对 4 个项目的课堂完成情况打分（0–100 分）。",
     placeholder: "该组本阶段表现、亮点与建议…",
   },
   enterprise: {

@@ -286,7 +286,7 @@ export default function TaskDetail() {
       </div>
 
       <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
-        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「人脸特征底库建设与交付」配置。
+        <IconCheck className="h-4 w-4" /> 当前课程正在进行该任务，预习 / 作业 / 问答均已按「传感与视觉数据采集」配置（企业工单：人脸特征底库建设与交付）。
       </div>
     </div>
   );
