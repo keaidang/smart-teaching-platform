@@ -24,7 +24,9 @@ const TASK_KEY = "stp.taskChosen";
 export default function StudentLayout() {
   const { student, setStudent } = useStudent();
   const nav = useNavigate();
-  const [taskChosen, setTaskChosen] = useState(() => sessionStorage.getItem(TASK_KEY) === ACTIVE_TASK_ID);
+  // 已选任务：P1T2（主线，值 = ACTIVE_TASK_ID）或 P4T1（任务级作业）；空 = 未选
+  const [chosen, setChosen] = useState(() => sessionStorage.getItem(TASK_KEY) || "");
+  const taskChosen = !!chosen;
 
   useEffect(() => {
     if (!student || !taskChosen) return;
@@ -47,13 +49,14 @@ export default function StudentLayout() {
   };
 
   const choose = (id: string) => {
-    if (id !== ACTIVE_TASK_ID) return;
+    // P1T2 = 主线任务（预习/作业/问答全套）；P4T1 = 任务级作业，进入后直达提交页；其余暂不开放学生端
+    if (id !== ACTIVE_TASK_ID && id !== "P4T1") return;
     sessionStorage.setItem(TASK_KEY, id);
-    setTaskChosen(true);
-    nav("/student/preview");
+    setChosen(id);
+    nav(id === ACTIVE_TASK_ID ? "/student/preview" : `/student/homework?task=${id}`);
   };
 
-  // 登录后先选任务（仅「传感与视觉数据采集」开放）
+  // 登录后先选任务（P1T2 主线 + P4T1 看板作业开放）
   if (student && !taskChosen) {
     return (
       <div className="grid min-h-screen place-items-center px-6 py-10">
@@ -70,14 +73,22 @@ export default function StudentLayout() {
                 <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
                 <div className="space-y-2">
                   {p.tasks.map((t) => {
+                    const enterable = t.id === ACTIVE_TASK_ID || t.id === "P4T1";
                     return (
                       <button
                         key={t.id}
                         onClick={() => choose(t.id)}
-                        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100 transition-colors hover:border-brand-400/50 hover:bg-brand-500/15"
+                        disabled={!enterable}
+                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 px-4 py-2.5 text-sm transition-colors ${
+                          enterable
+                            ? "bg-white/5 text-brand-100 hover:border-brand-400/50 hover:bg-brand-500/15"
+                            : "cursor-not-allowed bg-white/[0.02] text-brand-200/30"
+                        }`}
                       >
                         <span className="truncate">{t.title}</span>
-                        <span className="text-brand-300">进入 →</span>
+                        <span className={enterable ? "text-brand-300" : "text-brand-200/30"}>
+                          {enterable ? "进入 →" : "未开放"}
+                        </span>
                       </button>
                     );
                   })}
@@ -93,7 +104,7 @@ export default function StudentLayout() {
     );
   }
 
-  const task = findTask(ACTIVE_TASK_ID);
+  const task = findTask(chosen || ACTIVE_TASK_ID);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -130,7 +141,7 @@ export default function StudentLayout() {
           {TABS.map((t) => (
             <NavLink
               key={t.to}
-              to={t.to}
+              to={t.to === "/student/homework" && chosen === "P4T1" ? "/student/homework?task=P4T1" : t.to}
               className={({ isActive }) =>
                 `inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   isActive

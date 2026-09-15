@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   IconBoard,
   IconChart,
@@ -16,7 +16,25 @@ const MODULES = [
 ];
 
 export default function DisplayLayout() {
-  const [entered, setEntered] = useState(false);
+  const nav = useNavigate();
+  const location = useLocation();
+  // 当前展示的任务：URL 带 task=P4T1 且在作业墙 → P4T1；否则 P1T2 主线
+  const urlTask = new URLSearchParams(location.search).get("task") || "";
+  const showingP4T1 = urlTask === "P4T1" && location.pathname.startsWith("/class/homework");
+  // 直接从任务详情页点「后台大屏」（/class/homework?task=P4T1）时跳过选择页
+  const [entered, setEntered] = useState(() => showingP4T1);
+
+  const choose = (id: string) => {
+    // P1T2 = 主线大屏；P4T1 = 直达任务作业墙；其余暂不开放
+    if (id !== ACTIVE_TASK_ID && id !== "P4T1") return;
+    if (id === ACTIVE_TASK_ID) {
+      nav("/class");
+      setEntered(true);
+    } else {
+      nav("/class/homework?task=P4T1");
+      setEntered(true);
+    }
+  };
 
   if (!entered) {
     return (
@@ -32,15 +50,22 @@ export default function DisplayLayout() {
                 <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
                 <div className="space-y-2">
                   {p.tasks.map((t) => {
-                    const active = t.id === ACTIVE_TASK_ID;
+                    const enterable = t.id === ACTIVE_TASK_ID || t.id === "P4T1";
                     return (
                       <button
                         key={t.id}
-                        onClick={() => active && setEntered(true)}
-                        className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100 transition-colors hover:border-brand-400/50 hover:bg-brand-500/15"
+                        onClick={() => choose(t.id)}
+                        disabled={!enterable}
+                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 px-4 py-2.5 text-sm transition-colors ${
+                          enterable
+                            ? "bg-white/5 text-brand-100 hover:border-brand-400/50 hover:bg-brand-500/15"
+                            : "cursor-not-allowed bg-white/[0.02] text-brand-200/30"
+                        }`}
                       >
                         <span className="truncate">{t.title}</span>
-                        <span className="text-brand-300">进入 →</span>
+                        <span className={enterable ? "text-brand-300" : "text-brand-200/30"}>
+                          {enterable ? "进入 →" : "未开放"}
+                        </span>
                       </button>
                     );
                   })}
@@ -56,7 +81,7 @@ export default function DisplayLayout() {
     );
   }
 
-  const task = findTask(ACTIVE_TASK_ID);
+  const task = showingP4T1 ? findTask("P4T1") : findTask(ACTIVE_TASK_ID);
 
   return (
     <div className="flex min-h-screen flex-col">
