@@ -144,7 +144,7 @@ export default function StudentHomework() {
         <div>
           <h2 className="text-xl font-semibold text-white">提交作业</h2>
           <p className="text-sm text-brand-200/60">
-            作品图片直传 EdgeOne Blob 存储，元数据入 KV
+            图片内容上传课程服务器
           </p>
         </div>
       </div>
