@@ -110,14 +110,14 @@ export default function Extensions() {
   }
 
   return (
-    <div className="animate-rise">
+    <div className="flex flex-1 flex-col animate-rise">
       <SectionTitle
         icon={<IconExpand className="h-6 w-6" />}
         title="拓展课程资源"
         sub="前沿技术 · 技能竞赛 · 跨领域融合 · 法律合规"
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid flex-1 gap-6 md:grid-cols-2">
         {BLOCKS.map((b) => {
           const inner = (
             <>
@@ -152,11 +152,11 @@ export default function Extensions() {
           );
 
           return b.legal ? (
-            <Card key={b.title} hover className="cursor-pointer p-6 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
+            <Card key={b.title} hover className="h-full cursor-pointer p-6 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
               {inner}
             </Card>
           ) : (
-            <Card key={b.title} hover className="p-6">{inner}</Card>
+            <Card key={b.title} hover className="h-full p-6">{inner}</Card>
           );
         })}
       </div>

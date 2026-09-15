@@ -20,9 +20,14 @@ const GUIDE_STEPS = [
   { step: "01", title: "课程定位", desc: "Python 数据采集全流程" },
   { step: "02", title: "四阶闭环", desc: "需求 → 采集 → 清洗融合 → 可视化" },
   { step: "03", title: "三维目标", desc: "知识 · 能力 · 素养" },
+  { step: "04", title: "学习路径", desc: "课前预习 → 课中实操 → 课后习题 → 项目交付" },
 ];
 
-const TECH_TAGS = ["Python", "PySerial", "Requests", "BeautifulSoup", "Pandas", "NumPy", "Kepler.gl", "ECharts"];
+const TECH_GROUPS = [
+  { name: "数据采集", color: "#22d3ee", tags: ["Python", "Requests", "BeautifulSoup", "PySerial"] },
+  { name: "清洗处理", color: "#34d399", tags: ["Pandas", "NumPy"] },
+  { name: "可视化呈现", color: "#a78bfa", tags: ["ECharts", "Kepler.gl"] },
+];
 
 export default function SiteHome() {
   const { hash } = useLocation();
@@ -81,19 +86,20 @@ export default function SiteHome() {
               <p className="text-sm text-brand-200/60">快速了解课程全局与学习路径</p>
             </div>
           </div>
-          <div className="mt-5 grid flex-1 content-center gap-3">
+          <div className="mt-5 flex min-h-0 flex-1 flex-col gap-3">
             {GUIDE_STEPS.map((g) => (
               <div
                 key={g.step}
-                className="group flex items-center gap-4 rounded-xl border border-brand-400/10 bg-brand-500/[0.04] px-4 py-3 transition-colors hover:border-brand-400/25 hover:bg-brand-500/[0.08]"
+                className="group flex min-h-0 flex-1 items-center gap-4 rounded-xl border border-brand-400/10 bg-brand-500/[0.04] px-5 transition-colors hover:border-brand-400/25 hover:bg-brand-500/[0.08]"
               >
-                <span className="text-glow text-lg font-extrabold tracking-wider text-brand-400/70 transition-colors group-hover:text-brand-300">
+                <span className="text-glow text-xl font-extrabold tracking-wider text-brand-400/70 transition-colors group-hover:text-brand-300">
                   {g.step}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="text-[15px] font-semibold text-white">{g.title}</div>
                   <div className="truncate text-[13px] text-brand-200/65">{g.desc}</div>
                 </div>
+                <span className="h-2 w-2 shrink-0 rounded-full bg-brand-400/40 transition-colors group-hover:bg-brand-300" />
               </div>
             ))}
           </div>
@@ -109,18 +115,30 @@ export default function SiteHome() {
               <p className="text-sm text-brand-200/60">工具、环境与技术基础速查</p>
             </div>
           </div>
-          <div className="mt-5 flex flex-1 flex-wrap content-center gap-2.5">
-            {TECH_TAGS.map((t) => (
-              <span
-                key={t}
-                className="rounded-xl border border-brand-400/20 bg-brand-500/5 px-4 py-2 text-sm font-medium text-brand-100 transition-colors hover:border-brand-400/40 hover:bg-brand-500/12"
+          <div className="mt-5 flex min-h-0 flex-1 flex-col gap-3">
+            {TECH_GROUPS.map((g) => (
+              <div
+                key={g.name}
+                className="flex min-h-0 flex-1 flex-col justify-center rounded-xl border border-brand-400/10 bg-brand-500/[0.04] px-5 py-3 transition-colors hover:border-brand-400/25 hover:bg-brand-500/[0.08]"
               >
-                {t}
-              </span>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ background: g.color }} />
+                  <span className="text-[13px] font-semibold tracking-wide" style={{ color: g.color }}>
+                    {g.name}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {g.tags.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-lg border border-brand-400/20 bg-brand-500/5 px-3.5 py-1.5 text-[13px] font-medium text-brand-100 transition-colors hover:border-brand-400/40 hover:bg-brand-500/12"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
             ))}
-          </div>
-          <div className="mt-4 border-t border-brand-400/10 pt-3 text-xs leading-relaxed text-brand-200/50">
-            覆盖串口通信 · 网络爬虫 · 数据清洗 · 可视化呈现四大技术栈，课堂实操与项目开发即查即用。
           </div>
         </Card>
       </div>

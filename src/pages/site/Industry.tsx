@@ -72,7 +72,7 @@ export default function Industry() {
   const cur = CASES.find((c) => c.id === active)!;
 
   return (
-    <div className="animate-rise">
+    <div className="flex flex-1 flex-col animate-rise">
       <SectionTitle
         icon={<IconFactory className="h-6 w-6" />}
         title="产教融合资源"
@@ -110,9 +110,9 @@ export default function Industry() {
         </div>
       </Card>
 
-      <div className="mt-5 grid gap-5 md:grid-cols-3">
+      <div className="mt-5 grid flex-1 gap-5 md:grid-cols-3">
         {cur.resources.map((r) => (
-          <Card key={r.title} hover className="flex flex-col p-6">
+          <Card key={r.title} hover className="flex h-full flex-col p-6">
             <h4 className="text-base font-semibold text-white">{r.title}</h4>
             <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-200/70">{r.desc}</p>
             <ul className="mt-4 space-y-2 border-t border-white/5 pt-4">

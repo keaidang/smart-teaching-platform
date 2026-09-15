@@ -32,7 +32,7 @@ export default function Evaluation() {
   const avgVa = +(D.students.reduce((s, x) => s + x.valueAdded, 0) / D.students.length).toFixed(1);
 
   return (
-    <div className="animate-rise">
+    <div className="flex flex-1 flex-col animate-rise">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
