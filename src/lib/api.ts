@@ -136,7 +136,7 @@ export const api = {
       (await mockMod()).mockPreviewScores()
     ),
   submitPreview: (answers: PreviewAnswer[]): Promise<PreviewSubmitResult> =>
-    post("/preview/answers", answers, async () => {
+    postStudent("/preview/answers", answers, async () => {
       // 离线演示：mock 不含答案，按学号生成演示分数
       const m = await mockMod();
       const total = m.previewQuestions.reduce((s, q) => s + q.score, 0);
@@ -163,7 +163,7 @@ export const api = {
     contentType: string;
     size: number;
   }) =>
-    post<{ url: string; key: string; expiresAt: number }>(
+    postStudent<{ url: string; key: string; expiresAt: number }>(
       "/homework/upload-url",
       payload,
       {
@@ -179,7 +179,7 @@ export const api = {
     key: string;
     contentType: string;
   }) =>
-    post<HomeworkSubmission>("/homework/submissions", meta, {
+    postStudent<HomeworkSubmission>("/homework/submissions", meta, {
       ...meta,
       name: STUDENTS.find((s) => s.id === meta.studentId)?.name || meta.studentId,
       submittedAt: new Date().toLocaleTimeString("zh-CN", {
