@@ -110,12 +110,12 @@ export default function Industry() {
         </div>
       </Card>
 
-      <div className="mt-5 grid flex-1 gap-5 md:grid-cols-3">
+      <div className="mt-5 grid gap-5 md:grid-cols-3">
         {cur.resources.map((r) => (
-          <Card key={r.title} hover className="flex h-full flex-col p-7">
+          <Card key={r.title} hover className="flex flex-col p-7">
             <h4 className="text-lg font-semibold text-white">{r.title}</h4>
             <p className="mt-2.5 text-[15px] leading-relaxed text-brand-200/70">{r.desc}</p>
-            <div className="my-auto pt-4">
+            <div className="pt-4">
               <div className="mb-3 text-[11px] font-medium tracking-widest text-brand-200/45">包含资源</div>
               <ul className="space-y-3.5 border-t border-white/5 pt-4">
                 {r.items.map((it) => (

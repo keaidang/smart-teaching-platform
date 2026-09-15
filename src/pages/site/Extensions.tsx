@@ -133,11 +133,11 @@ export default function Extensions() {
                   <p className="mt-1.5 text-[15px] leading-relaxed text-brand-200/70">{b.desc}</p>
                 </div>
               </div>
-              <div className="grid flex-1 content-center gap-2.5 py-4 sm:grid-cols-3">
+              <div className="grid content-center gap-2.5 py-4 sm:grid-cols-3">
                 {b.items.map((it) => (
                   <div
                     key={it}
-                    className="flex min-h-[72px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-sm leading-snug text-brand-100/90"
+                    className="flex min-h-[64px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-sm leading-snug text-brand-100/90"
                   >
                     {it}
                   </div>
@@ -152,11 +152,11 @@ export default function Extensions() {
           );
 
           return b.legal ? (
-            <Card key={b.title} hover className="flex h-full cursor-pointer flex-col p-7 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
+            <Card key={b.title} hover className="flex cursor-pointer flex-col p-7 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
               {inner}
             </Card>
           ) : (
-            <Card key={b.title} hover className="flex h-full flex-col p-7">{inner}</Card>
+            <Card key={b.title} hover className="flex flex-col p-7">{inner}</Card>
           );
         })}
       </div>

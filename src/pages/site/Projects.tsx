@@ -44,12 +44,12 @@ export default function Projects() {
                 </div>
               </div>
 
-              <ul className="flex flex-1 flex-col justify-evenly divide-y divide-white/5">
+              <ul className="divide-y divide-white/5">
                 {p.tasks.map((t, ti) => (
-                  <li key={t.id} className="flex min-h-0 items-stretch">
+                  <li key={t.id} className="flex items-stretch">
                     <button
                       onClick={() => t.active && nav(`/projects/task/${t.id}`)}
-                      className="group flex w-full items-center gap-4 px-7 py-4 text-left transition-colors hover:bg-white/5"
+                      className="group flex w-full items-center gap-4 px-7 py-5 text-left transition-colors hover:bg-white/5"
                     >
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/5 text-sm font-semibold text-brand-200/70">
                         {ti + 1}
