@@ -72,26 +72,16 @@ export default function StudentLayout() {
               <div key={p.id} className="glass rounded-2xl p-5">
                 <div className="mb-3 font-semibold text-white">{pi + 1}. {p.title}</div>
                 <div className="space-y-2">
-                  {p.tasks.map((t) => {
-                    const enterable = t.id === ACTIVE_TASK_ID || t.id === "P4T1";
-                    return (
-                      <button
-                        key={t.id}
-                        onClick={() => choose(t.id)}
-                        disabled={!enterable}
-                        className={`flex w-full items-center justify-between rounded-xl border border-white/10 px-4 py-2.5 text-sm transition-colors ${
-                          enterable
-                            ? "bg-white/5 text-brand-100 hover:border-brand-400/50 hover:bg-brand-500/15"
-                            : "cursor-not-allowed bg-white/[0.02] text-brand-200/30"
-                        }`}
-                      >
-                        <span className="truncate">{t.title}</span>
-                        <span className={enterable ? "text-brand-300" : "text-brand-200/30"}>
-                          {enterable ? "进入 →" : "未开放"}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {p.tasks.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => choose(t.id)}
+                      className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100 transition-colors hover:border-brand-400/50 hover:bg-brand-500/15"
+                    >
+                      <span className="truncate">{t.title}</span>
+                      <span className="text-brand-300">进入 →</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             ))}
