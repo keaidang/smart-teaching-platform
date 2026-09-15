@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   IconBook,
   IconCpu,
@@ -9,10 +10,10 @@ import {
 import { Card } from "../../components/ui";
 
 const MODULES = [
-  { to: "/projects", title: "项目学习资源", desc: "围绕数据生命周期构建的全流程实战项目", icon: IconBook, color: "#22d3ee" },
-  { to: "/industry", title: "产教融合资源", desc: "真实行业场景与企业级资源产学对接", icon: IconFactory, color: "#34d399" },
-  { to: "/extensions", title: "拓展课程资源", desc: "前沿技术 · 赛证融通 · 跨领域 · 合规", icon: IconExpand, color: "#a78bfa" },
-  { to: "/evaluation", title: "教学评价资源", desc: "多维 · 智能 · 全过程学习质量评价", icon: IconGauge, color: "#fbbf24" },
+  { id: "mod-projects", to: "/projects", title: "项目学习资源", desc: "围绕数据生命周期构建的全流程实战项目", icon: IconBook, color: "#22d3ee" },
+  { id: "mod-industry", to: "/industry", title: "产教融合资源", desc: "真实行业场景与企业级资源产学对接", icon: IconFactory, color: "#34d399" },
+  { id: "mod-extensions", to: "/extensions", title: "拓展课程资源", desc: "前沿技术 · 赛证融通 · 跨领域 · 合规", icon: IconExpand, color: "#a78bfa" },
+  { id: "mod-evaluation", to: "/evaluation", title: "教学评价资源", desc: "多维 · 智能 · 全过程学习质量评价", icon: IconGauge, color: "#fbbf24" },
 ];
 
 function Placeholder({ label }: { label: string }) {
@@ -31,6 +32,23 @@ function Placeholder({ label }: { label: string }) {
 }
 
 export default function SiteHome() {
+  const { hash } = useLocation();
+  const [flash, setFlash] = useState<string | null>(null);
+
+  // 从大屏等入口带锚点跳转进来时：滚动到对应模块并短暂高亮
+  useEffect(() => {
+    if (!hash) return;
+    const id = hash.slice(1);
+    const t = setTimeout(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setFlash(id);
+      setTimeout(() => setFlash(null), 2400);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [hash]);
+
   return (
     <div className="animate-rise space-y-8">
       <div className="relative overflow-hidden rounded-3xl border border-brand-400/15 bg-gradient-to-b from-brand-500/10 to-transparent px-8 py-12 text-center">
@@ -104,23 +122,33 @@ export default function SiteHome() {
         </h3>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {MODULES.map((m) => (
-            <Link key={m.to} to={m.to}>
-              <Card hover className="h-full p-6">
-                <span
-                  className="grid h-12 w-12 place-items-center rounded-xl"
-                  style={{ background: `${m.color}22`, color: m.color }}
-                >
-                  <m.icon className="h-6 w-6" />
-                </span>
-                <div className="mt-4 text-lg font-semibold text-white">{m.title}</div>
-                <div className="mt-1.5 text-sm leading-relaxed text-brand-200/60">
-                  {m.desc}
-                </div>
-                <div className="mt-4 text-sm font-medium" style={{ color: m.color }}>
-                  进入 →
-                </div>
-              </Card>
-            </Link>
+            <div
+              key={m.id}
+              id={m.id}
+              className={`scroll-mt-24 rounded-2xl transition-all duration-500 ${
+                flash === m.id
+                  ? "ring-2 ring-brand-400/80 shadow-[0_0_45px_rgba(34,211,238,0.4)]"
+                  : ""
+              }`}
+            >
+              <Link to={m.to}>
+                <Card hover className="h-full p-6">
+                  <span
+                    className="grid h-12 w-12 place-items-center rounded-xl"
+                    style={{ background: `${m.color}22`, color: m.color }}
+                  >
+                    <m.icon className="h-6 w-6" />
+                  </span>
+                  <div className="mt-4 text-lg font-semibold text-white">{m.title}</div>
+                  <div className="mt-1.5 text-sm leading-relaxed text-brand-200/60">
+                    {m.desc}
+                  </div>
+                  <div className="mt-4 text-sm font-medium" style={{ color: m.color }}>
+                    进入 →
+                  </div>
+                </Card>
+              </Link>
+            </div>
           ))}
         </div>
       </div>

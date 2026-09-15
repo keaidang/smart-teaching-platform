@@ -17,19 +17,19 @@ const MODULE_CARDS = [
     title: "项目学习",
     sub: "数据生命周期实战",
     icon: IconBook,
-    to: "/class",
+    to: "/#mod-projects",
   },
   {
     title: "产教融合",
     sub: "行业场景案例",
     icon: IconIdea,
-    to: "/class",
+    to: "/#mod-industry",
   },
   {
     title: "教学评价",
     sub: "达成度看板",
     icon: IconChart,
-    to: "/class",
+    to: "/#mod-evaluation",
   },
 ];
 
