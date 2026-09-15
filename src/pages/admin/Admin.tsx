@@ -147,6 +147,12 @@ export default function Admin() {
             <button disabled={busy} onClick={() => { if (confirm("确定整体重播种？将清空全部并写入最新名单/题目。")) run(adminApi.reseed, "已重新播种"); }}
               className="mt-4 w-full rounded-lg bg-fuchsia-400 py-2.5 font-semibold text-ink-900 hover:bg-fuchsia-300 disabled:opacity-50">重新播种</button>
           </div>
+          <div className="rounded-xl border border-sky-400/25 bg-sky-400/5 p-5">
+            <div className="font-semibold text-sky-200">清空打分（教师评价 + 小组打分）</div>
+            <p className="mt-1 text-sm text-brand-200/70">删除全部教师评价与小组打分（教师/企业/AI 测评三类），名单、题目与作答记录保留。</p>
+            <button disabled={busy} onClick={() => { if (confirm("确定清空全部打分数据？教师评价与小组打分将不可恢复。")) run(adminApi.clearEvals, "已清空打分数据"); }}
+              className="mt-4 w-full rounded-lg bg-sky-400 py-2.5 font-semibold text-ink-900 hover:bg-sky-300 disabled:opacity-50">清空打分</button>
+          </div>
         </div>
         {busy && <p className="mt-4 text-sm text-brand-200/60">处理中…</p>}
         {msg && <p className="mt-4 text-sm text-emerald-300">✓ {msg}</p>}

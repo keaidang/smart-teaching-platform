@@ -183,6 +183,7 @@ export const api = {
     fileName: string;
     size: number;
     key: string;
+    thumbKey?: string;
     contentType: string;
     task?: string;
   }) =>
@@ -297,8 +298,18 @@ export const api = {
 };
 
 // 作业图片地址：任务级提交带 task 参数，默认（P1T2）不带
-export function homeworkFileUrl(studentId: string, task?: string) {
-  return `/api/homework/file?sid=${studentId}${task ? `&task=${task}` : ""}`;
+// thumb=true 请求缩略图（老提交无缩略图时服务端回退原图）；
+// v=存储 key 作版本参数：重新提交后 URL 变化，配合服务端长缓存避免重复下载
+export function homeworkFileUrl(
+  studentId: string,
+  task?: string,
+  opts?: { thumb?: boolean; v?: string }
+) {
+  const p = new URLSearchParams({ sid: studentId });
+  if (task) p.set("task", task);
+  if (opts?.thumb) p.set("thumb", "1");
+  if (opts?.v) p.set("v", opts.v);
+  return `/api/homework/file?${p.toString()}`;
 }
 
 // ---------- 管理端（始终走真实后端，不受 mock 影响） ----------
@@ -334,6 +345,8 @@ export const adminApi = {
     adminReq<{ ok: boolean; deleted: number }>("/admin/reset-submissions", "POST", key),
   clearBlob: (key: string) =>
     adminReq<{ ok: boolean; deleted: number }>("/admin/clear-blob", "POST", key),
+  clearEvals: (key: string) =>
+    adminReq<{ ok: boolean; deleted: number }>("/admin/clear-evals", "POST", key),
   resetAll: (key: string) =>
     adminReq<{ ok: boolean; kvDeleted: number; blobDeleted: number }>("/admin/reset-all", "POST", key),
   reseed: (key: string) =>

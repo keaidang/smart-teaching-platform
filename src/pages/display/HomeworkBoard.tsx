@@ -15,8 +15,11 @@ function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
   if (sub.contentType?.startsWith("image/") && !err) {
     return (
       <img
-        src={homeworkFileUrl(sub.studentId, sub.task)}
+        // 缩略图 + v 版本参数（长缓存）；老提交无缩略图时服务端回退原图
+        src={homeworkFileUrl(sub.studentId, sub.task, { thumb: true, v: sub.key })}
         alt={sub.fileName}
+        loading="lazy"
+        decoding="async"
         onError={() => setErr(true)}
         className="rounded-xl object-cover ring-1 ring-brand-400/30"
         style={{ width: size, height: size }}
@@ -69,9 +72,9 @@ export default function HomeworkBoard() {
   return (
     <div className="animate-rise">
       <SectionTitle
-        icon={<IconUpload className="h-6 w-6" />}
+        icon={<IconUpload className="h-8 w-8" />}
         title="课中作业 · 提交进度墙"
-        sub="作品图片存储于 EdgeOne Blob · 点击缩略图查看大图"
+        large
         right={<LiveBadge />}
       />
 
@@ -199,8 +202,10 @@ export default function HomeworkBoard() {
             </div>
             <div className="grid max-h-[72vh] place-items-center bg-ink-900/60 p-4">
               <img
-                src={`/api/homework/file?sid=${view.studentId}`}
+                // 大图：按需加载原图（一次只打开一张）
+                src={homeworkFileUrl(view.studentId, view.task, { v: view.key })}
                 alt={view.fileName}
+                decoding="async"
                 className="max-h-[64vh] w-auto max-w-full rounded-xl object-contain"
               />
             </div>

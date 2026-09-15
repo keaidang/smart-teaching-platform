@@ -50,6 +50,8 @@ export interface HomeworkSubmission {
   fileName: string;
   size: number;
   key: string;
+  // 缩略图 Blob key（上传时前端生成的小图）；老提交缺省 → 读图回退原图
+  thumbKey?: string;
   contentType?: string;
   submittedAt: string;
   // 任务级作业标记（如 P4T1）；缺省 = P1T2 默认作业

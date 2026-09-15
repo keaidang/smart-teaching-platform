@@ -38,6 +38,31 @@ function putWithProgress(
   });
 }
 
+// 生成缩略图：长边 ≤480px 的 JPEG（白底，避免透明 PNG 转黑）；失败返回 null（提交不缩略图，读图回退原图）
+async function makeThumb(file: File): Promise<Blob | null> {
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, 480 / Math.max(bmp.width, bmp.height));
+    const w = Math.max(1, Math.round(bmp.width * scale));
+    const h = Math.max(1, Math.round(bmp.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(bmp, 0, 0, w, h);
+    bmp.close?.();
+    const blob = await new Promise<Blob | null>((r) =>
+      canvas.toBlob((b) => r(b), "image/jpeg", 0.7)
+    );
+    return blob && blob.size > 0 ? blob : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function StudentHomework() {
   const { student } = useStudent();
   // 任务级作业：/student/homework?task=P4T1 → P4T1 作业；缺省 = P1T2 默认作业
@@ -109,11 +134,33 @@ export default function StudentHomework() {
       });
       if (url) await putWithProgress(url, file, contentType, setProgress);
       else setProgress(100);
+      // 缩略图（作业墙用，避免全班原图同时加载拖垮带宽）；失败不影响提交
+      let thumbKey: string | undefined;
+      const thumb = await makeThumb(file);
+      if (thumb) {
+        try {
+          const thumbName = file.name.replace(/\.[^.]+$/, "") + ".thumb.jpg";
+          const t = await api.getHomeworkUploadUrl({
+            studentId: student.id,
+            fileName: thumbName,
+            contentType: "image/jpeg",
+            size: thumb.size,
+            task,
+          });
+          if (t.url) {
+            const res = await fetch(t.url, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: thumb });
+            if (res.ok) thumbKey = t.key;
+          }
+        } catch {
+          /* 缩略图失败不阻塞提交 */
+        }
+      }
       const created = await api.submitHomeworkMeta({
         studentId: student.id,
         fileName: file.name,
         size: file.size,
         key,
+        thumbKey,
         contentType,
         task,
       });
@@ -165,7 +212,7 @@ export default function StudentHomework() {
         <Card className="flex items-center gap-4 p-6">
           {mine.contentType?.startsWith("image/") && !imgErr ? (
             <img
-              src={homeworkFileUrl(mine.studentId, mine.task || task)}
+              src={homeworkFileUrl(mine.studentId, mine.task || task, { thumb: true, v: mine.key })}
               alt={mine.fileName}
               onError={() => setImgErr(true)}
               className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-brand-400/30"

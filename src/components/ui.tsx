@@ -26,22 +26,24 @@ export function SectionTitle({
   title,
   sub,
   right,
+  large = false,
 }: {
   icon?: ReactNode;
   title: string;
   sub?: string;
   right?: ReactNode;
+  large?: boolean;
 }) {
   return (
     <div className="mb-5 flex items-end justify-between">
       <div className="flex items-center gap-3">
         {icon && (
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
+          <span className={`grid place-items-center rounded-xl bg-brand-500/15 text-brand-300 ${large ? "h-14 w-14" : "h-11 w-11"}`}>
             {icon}
           </span>
         )}
         <div>
-          <h2 className="text-2xl font-semibold tracking-wide text-white">
+          <h2 className={`font-semibold tracking-wide text-white ${large ? "text-3xl sm:text-4xl" : "text-2xl"}`}>
             {title}
           </h2>
           {sub && <p className="mt-0.5 text-sm text-brand-200/70">{sub}</p>}

@@ -19,7 +19,9 @@ const CORS = {
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json; charset=UTF-8", ...CORS },
+    // JSON 一律禁缓存：名单/提交/成绩都是实时课堂数据，轮询必须拿到最新值
+    // （作业图片走 /homework/file，单独用 v 版本参数 + 长缓存，互不影响）
+    headers: { "Content-Type": "application/json; charset=UTF-8", "Cache-Control": "no-store", ...CORS },
   });
 const nowHM = () =>
   new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Shanghai" });
@@ -181,6 +183,19 @@ export async function onRequest(context) {
       let deleted = 0;
       for (const b of all.blobs) {
         try { await FILES.delete(b.key); deleted++; } catch { /* ignore */ }
+      }
+      return json({ ok: true, deleted });
+    }
+
+    // 清空打分：教师评价（teacher-eval:*）+ 小组打分（group-eval:*，教师/企业/AI 三类）
+    if (path === "/admin/clear-evals" && method === "POST") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      const all = await KV.list({ consistency: "strong" });
+      let deleted = 0;
+      for (const b of all.blobs) {
+        if (/^(teacher-eval:|group-eval:)/.test(b.key)) {
+          try { await KV.delete(b.key); deleted++; } catch { /* ignore */ }
+        }
       }
       return json({ ok: true, deleted });
     }
@@ -360,10 +375,12 @@ export async function onRequest(context) {
       if (!(sz > 0) || sz > MAX_UPLOAD) return json({ error: "图片大小必须在 5MB 以内" }, 400);
       const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
       const task = TASK_HOMEWORKS[m.task] ? m.task : "";
+      // thumbKey：可选的缩略图 Blob key（前端上传时生成的小图）；老提交无此字段，读图时回退原图
       const meta = {
         studentId: m.studentId, name: byId[m.studentId]?.name || m.studentId,
         fileName: m.fileName, size: Number(m.size) || 0, key: m.key,
         contentType: m.contentType || "image/png", submittedAt: nowHM(),
+        ...(m.thumbKey ? { thumbKey: String(m.thumbKey) } : {}),
         ...(task ? { task } : {}),
       };
       await wj(task ? `homework:sub:${task}:${m.studentId}` : `homework:sub:${m.studentId}`, meta);
@@ -372,12 +389,16 @@ export async function onRequest(context) {
     if (path.startsWith("/homework/file") && method === "GET") {
       const sid = url.searchParams.get("sid");
       const task = url.searchParams.get("task") || "";
+      const wantThumb = url.searchParams.get("thumb") === "1";
       if (!sid) return json({ error: "sid required" }, 400);
       const meta = await rj(task ? `homework:sub:${task}:${sid}` : `homework:sub:${sid}`);
       if (!meta?.key) return new Response("not found", { status: 404, headers: CORS });
-      const buf = await FILES.get(meta.key, { type: "arrayBuffer", consistency: "strong" });
+      // 缩略图请求优先用 thumbKey，没有则回退原图；URL 带 v（=key）版本参数，内容可长缓存
+      const blobKey = wantThumb && meta.thumbKey ? meta.thumbKey : meta.key;
+      const buf = await FILES.get(blobKey, { type: "arrayBuffer", consistency: "strong" });
       if (!buf) return new Response("not found", { status: 404, headers: CORS });
-      return new Response(buf, { headers: { "Content-Type": meta.contentType || "image/png", "Cache-Control": "no-cache", ...CORS } });
+      const contentType = wantThumb && meta.thumbKey ? "image/jpeg" : meta.contentType || "image/png";
+      return new Response(buf, { headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=604800", ...CORS } });
     }
 
     // 课后知识点问答（答案不下发；正确率统计接口携带答案标位，供教师大屏公布）
