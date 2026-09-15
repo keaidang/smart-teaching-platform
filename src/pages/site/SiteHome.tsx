@@ -8,8 +8,6 @@ import {
   IconGauge,
 } from "../../components/icons";
 import { Card } from "../../components/ui";
-import homeImg1 from "../../assets/home-1.jpg";
-import homeImg2 from "../../assets/home-2.jpg";
 
 const MODULES = [
   { id: "mod-projects", to: "/projects", title: "项目学习资源", desc: "围绕数据生命周期构建的全流程实战项目", icon: IconBook, color: "#22d3ee" },
@@ -18,21 +16,13 @@ const MODULES = [
   { id: "mod-evaluation", to: "/evaluation", title: "教学评价资源", desc: "多维 · 智能 · 全过程学习质量评价", icon: IconGauge, color: "#fbbf24" },
 ];
 
-function HomeBanner({ src, alt, position }: { src: string; alt: string; position?: string }) {
-  return (
-    <div className="group relative h-56 overflow-hidden rounded-2xl border border-brand-400/20 sm:h-60">
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        className={`h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03] ${position ?? ""}`}
-      />
-      {/* 上下渐变压暗，融入深色界面 */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-900/70 via-transparent to-ink-900/30" />
-      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/5" />
-    </div>
-  );
-}
+const GUIDE_STEPS = [
+  { step: "01", title: "课程定位", desc: "Python 数据采集全流程" },
+  { step: "02", title: "四阶闭环", desc: "需求 → 采集 → 清洗融合 → 可视化" },
+  { step: "03", title: "三维目标", desc: "知识 · 能力 · 素养" },
+];
+
+const TECH_TAGS = ["Python", "PySerial", "Requests", "BeautifulSoup", "Pandas", "NumPy", "Kepler.gl", "ECharts"];
 
 export default function SiteHome() {
   const { hash } = useLocation();
@@ -53,26 +43,35 @@ export default function SiteHome() {
   }, [hash]);
 
   return (
-    <div className="animate-rise space-y-8">
-      <div className="relative overflow-hidden rounded-3xl border border-brand-400/15 bg-gradient-to-b from-brand-500/10 to-transparent px-8 py-12 text-center">
-        <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(600px_circle_at_50%_-10%,rgba(34,211,238,0.25),transparent_70%)]" />
-        <div className="relative">
-          <span className="inline-block rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1 text-xs font-medium tracking-widest text-brand-200">
-            数智社区 · 数据全生命周期
-          </span>
-          <h1 className="mt-5 bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-4xl font-extrabold tracking-wide text-transparent md:text-5xl">
-            数智社区 · 教学资源库
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-brand-200/75">
-            以 Python 数据采集为核心，融合项目实战、产教资源、拓展课程与智能达成度评价，
-            面向师生提供一体化的数据服务教学资源平台。
-          </p>
+    <div className="flex flex-col gap-5 lg:h-full lg:min-h-0">
+      {/* 顶部横幅：紧凑单行式 hero */}
+      <div className="relative shrink-0 overflow-hidden rounded-2xl border border-brand-400/15 bg-gradient-to-r from-brand-500/12 via-brand-500/4 to-transparent px-7 py-5">
+        <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(500px_circle_at_15%_0%,rgba(34,211,238,0.22),transparent_70%)]" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="bg-gradient-to-r from-white via-brand-100 to-brand-300 bg-clip-text text-2xl font-extrabold tracking-wide text-transparent lg:text-3xl">
+                数智社区 · 教学资源库
+              </h1>
+              <span className="rounded-full border border-brand-400/30 bg-brand-500/10 px-3 py-0.5 text-[11px] font-medium tracking-widest text-brand-200">
+                数据全生命周期
+              </span>
+            </div>
+            <p className="mt-1.5 max-w-3xl text-[13px] leading-relaxed text-brand-200/70">
+              以 Python 数据采集为核心，融合项目实战、产教资源、拓展课程与智能达成度评价，面向师生提供一体化的数据服务教学资源平台。
+            </p>
+          </div>
+          <div className="hidden shrink-0 items-center gap-6 text-right md:flex">
+            <Stat value="4" label="实战项目" />
+            <Stat value="8" label="任务工单" />
+            <Stat value="20+" label="技术工具" />
+          </div>
         </div>
       </div>
 
-      {/* 课程导学 + 技术资源库 */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card hover className="p-7">
+      {/* 中部：课程导学 + 技术资源库（放大主区） */}
+      <div className="grid min-h-0 flex-1 gap-5 md:grid-cols-2">
+        <Card hover className="flex h-full min-h-0 flex-col p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
               <IconBook className="h-6 w-6" />
@@ -82,17 +81,25 @@ export default function SiteHome() {
               <p className="text-sm text-brand-200/60">快速了解课程全局与学习路径</p>
             </div>
           </div>
-          <ul className="mt-5 space-y-2.5 text-sm text-brand-100/80">
-            {["课程定位：Python 数据采集全流程", "四阶闭环：需求→采集→清洗融合→可视化", "三维目标：知识 · 能力 · 素养"].map((t) => (
-              <li key={t} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
-                {t}
-              </li>
+          <div className="mt-5 grid flex-1 content-center gap-3">
+            {GUIDE_STEPS.map((g) => (
+              <div
+                key={g.step}
+                className="group flex items-center gap-4 rounded-xl border border-brand-400/10 bg-brand-500/[0.04] px-4 py-3 transition-colors hover:border-brand-400/25 hover:bg-brand-500/[0.08]"
+              >
+                <span className="text-glow text-lg font-extrabold tracking-wider text-brand-400/70 transition-colors group-hover:text-brand-300">
+                  {g.step}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[15px] font-semibold text-white">{g.title}</div>
+                  <div className="truncate text-[13px] text-brand-200/65">{g.desc}</div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </Card>
 
-        <Card hover className="p-7">
+        <Card hover className="flex h-full min-h-0 flex-col p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300">
               <IconCpu className="h-6 w-6" />
@@ -102,28 +109,28 @@ export default function SiteHome() {
               <p className="text-sm text-brand-200/60">工具、环境与技术基础速查</p>
             </div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["Python", "PySerial", "Requests", "BeautifulSoup", "Pandas", "NumPy", "Kepler.gl", "ECharts"].map((t) => (
-              <span key={t} className="rounded-lg border border-brand-400/20 bg-brand-500/5 px-3 py-1.5 text-xs text-brand-100">
+          <div className="mt-5 flex flex-1 flex-wrap content-center gap-2.5">
+            {TECH_TAGS.map((t) => (
+              <span
+                key={t}
+                className="rounded-xl border border-brand-400/20 bg-brand-500/5 px-4 py-2 text-sm font-medium text-brand-100 transition-colors hover:border-brand-400/40 hover:bg-brand-500/12"
+              >
                 {t}
               </span>
             ))}
           </div>
+          <div className="mt-4 border-t border-brand-400/10 pt-3 text-xs leading-relaxed text-brand-200/50">
+            覆盖串口通信 · 网络爬虫 · 数据清洗 · 可视化呈现四大技术栈，课堂实操与项目开发即查即用。
+          </div>
         </Card>
       </div>
 
-      {/* 图片1（智慧社区数据采集）/ 图片2（数据技术工具链） */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <HomeBanner src={homeImg1} alt="智慧社区数据采集场景插画" position="[object-position:center_72%]" />
-        <HomeBanner src={homeImg2} alt="数据技术工具链插画" />
-      </div>
-
-      {/* 四大模块快捷导航 */}
-      <div>
-        <h3 className="mb-4 text-sm font-medium tracking-widest text-brand-200/60">
+      {/* 底部：四大模块快捷导航 */}
+      <div className="shrink-0">
+        <h3 className="mb-3 text-xs font-medium tracking-widest text-brand-200/50">
           核心资源模块
         </h3>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {MODULES.map((m) => (
             <div
               key={m.id}
@@ -135,18 +142,20 @@ export default function SiteHome() {
               }`}
             >
               <Link to={m.to}>
-                <Card hover className="h-full p-6">
-                  <span
-                    className="grid h-12 w-12 place-items-center rounded-xl"
-                    style={{ background: `${m.color}22`, color: m.color }}
-                  >
-                    <m.icon className="h-6 w-6" />
-                  </span>
-                  <div className="mt-4 text-lg font-semibold text-white">{m.title}</div>
-                  <div className="mt-1.5 text-sm leading-relaxed text-brand-200/60">
+                <Card hover className="h-full p-5">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="grid h-10 w-10 place-items-center rounded-xl"
+                      style={{ background: `${m.color}22`, color: m.color }}
+                    >
+                      <m.icon className="h-5 w-5" />
+                    </span>
+                    <div className="text-[15px] font-semibold text-white">{m.title}</div>
+                  </div>
+                  <div className="mt-3 text-[13px] leading-relaxed text-brand-200/60">
                     {m.desc}
                   </div>
-                  <div className="mt-4 text-sm font-medium" style={{ color: m.color }}>
+                  <div className="mt-3 text-sm font-medium" style={{ color: m.color }}>
                     进入 →
                   </div>
                 </Card>
@@ -155,6 +164,15 @@ export default function SiteHome() {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="text-glow text-2xl font-extrabold text-brand-300">{value}</div>
+      <div className="mt-0.5 text-xs text-brand-200/50">{label}</div>
     </div>
   );
 }
