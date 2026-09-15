@@ -9,7 +9,8 @@ export interface PreviewQuestion {
   id: string;
   title: string;
   options: string[];
-  answer: number;
+  // 答案仅存在于服务端（云函数 KV），任何 GET 接口都不下发；离线 mock 也不携带
+  answer?: number;
   score: number;
 }
 
@@ -17,7 +18,15 @@ export interface PreviewAnswer {
   studentId: string;
   questionId: string;
   selected: number;
-  correct: boolean;
+  // 由服务端判分后写入，客户端不计算
+  correct?: boolean;
+}
+
+// 提交预习后的服务端返回：判分在服务端完成，results 按学号给出成绩
+export interface PreviewSubmitResult {
+  ok: boolean;
+  saved?: number;
+  results?: Record<string, { score: number; total: number; answered: number }>;
 }
 
 export interface PreviewScore {
@@ -49,12 +58,15 @@ export interface Exercise {
   id: string;
   title: string;
   options: string[];
-  answer: number;
+  // 答案仅存在于服务端；学生端获取题目时不下发
+  answer?: number;
 }
 
 export interface ExerciseStat {
   exerciseId: string;
   title: string;
+  // 教师大屏「公布答案」标位使用（来自服务端统计接口）
+  answer?: number;
   correctRate: number;
   attempts: number;
   distribution: number[];

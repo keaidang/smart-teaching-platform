@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
-import type { PreviewAnswer, PreviewQuestion } from "../../lib/types";
+import type { PreviewAnswer, PreviewQuestion, PreviewScore } from "../../lib/types";
 import { IconCheck, IconTrophy } from "../../components/icons";
 import { Card } from "../../components/ui";
 
@@ -13,10 +13,16 @@ export default function StudentPreview() {
     null
   );
   const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState("");
+  const [prev, setPrev] = useState<PreviewScore | null>(null);
 
   useEffect(() => {
     api.getPreviewQuestions().then(setQs);
-  }, []);
+    api
+      .getPreviewScores()
+      .then((rows) => setPrev(rows.find((r) => r.studentId === student?.id) ?? null))
+      .catch(() => {});
+  }, [student?.id]);
 
   const answered = Object.keys(picks).length;
   const allDone = qs.length > 0 && answered === qs.length;
@@ -24,22 +30,25 @@ export default function StudentPreview() {
   const submit = async () => {
     if (!student || !allDone) return;
     setSubmitting(true);
-    const scoreOf = (qid: string) => qs.find((q) => q.id === qid)?.score ?? 0;
-    const total = qs.reduce((a, q) => a + q.score, 0);
-    let score = 0;
-    const answers: PreviewAnswer[] = qs.map((q) => {
-      const correct = picks[q.id] === q.answer;
-      if (correct) score += scoreOf(q.id);
-      return {
-        studentId: student.id,
-        questionId: q.id,
-        selected: picks[q.id],
-        correct,
-      };
-    });
-    await api.submitPreview(answers);
-    setResult({ score, total });
-    setSubmitting(false);
+    setErr("");
+    // 判分在服务端完成：答案从不下发前端，这里只上传选项
+    const answers: PreviewAnswer[] = qs.map((q) => ({
+      studentId: student.id,
+      questionId: q.id,
+      selected: picks[q.id],
+    }));
+    try {
+      const res = await api.submitPreview(answers);
+      const r = res.results?.[student.id];
+      setResult({
+        score: r?.score ?? 0,
+        total: r?.total ?? qs.reduce((s, q) => s + q.score, 0),
+      });
+    } catch (e) {
+      setErr(`提交失败：${String((e as Error).message || e)}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (result) {
@@ -49,11 +58,18 @@ export default function StudentPreview() {
           <IconCheck className="h-8 w-8" strokeWidth={2.5} />
         </span>
         <h2 className="mt-5 text-xl font-semibold text-white">预习作答已提交</h2>
-        <p className="mt-1 text-sm text-brand-200/70">成绩已实时同步至讲台大屏</p>
+        <p className="mt-1 text-sm text-brand-200/70">
+          成绩已实时同步至讲台大屏 · 系统以最后一次提交为准
+        </p>
         <div className="my-6 text-6xl font-bold text-brand-300">
           {result.score}
           <span className="text-2xl text-brand-200/50">/{result.total}</span>
         </div>
+        {prev && (
+          <p className="-mt-3 mb-4 text-xs text-brand-200/50">
+            上一次提交成绩：{prev.score} 分（已被本次覆盖）
+          </p>
+        )}
         <button
           onClick={() => {
             setResult(null);
@@ -61,7 +77,7 @@ export default function StudentPreview() {
           }}
           className="rounded-xl border border-brand-400/30 px-6 py-2.5 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
         >
-          查看题目回顾
+          重新作答
         </button>
       </Card>
     );
@@ -80,6 +96,15 @@ export default function StudentPreview() {
           </p>
         </div>
       </div>
+
+      {prev && (
+        <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm leading-relaxed text-amber-200">
+          <span className="mt-0.5 shrink-0 font-bold">!</span>
+          <p>
+            你已提交过预习（当前成绩 <b>{prev.score}</b> 分）。可重新作答，系统以<b>最后一次提交</b>为准。
+          </p>
+        </div>
+      )}
 
       <div className="space-y-5">
         {qs.map((q, qi) => (
@@ -122,6 +147,11 @@ export default function StudentPreview() {
       </div>
 
       <div className="sticky bottom-4 mt-6">
+        {err && (
+          <p className="mb-2 rounded-lg border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-center text-sm text-rose-300">
+            {err}
+          </p>
+        )}
         <button
           disabled={!allDone || submitting}
           onClick={submit}

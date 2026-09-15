@@ -99,25 +99,8 @@ export const ACTIVE_TASK_CHECKLIST = [
   { step: "8", title: "验收与打包交付", desc: "自查可用率 ≥80%（一票否决）、假名化合规、无原图残留（0 张）；整个交付文件夹压缩为 SQ-2026-001_第X组.zip 统一提交。" },
 ];
 
-// 课前检测：图像采集基础知识（项目一·任务2，对应工单 SQ-2026-001；6 题，分值合计 100）
-export interface Q { id: string; title: string; options: string[]; answer: number; score: number; lesson: string; kp: string; dim: string }
-export const PREVIEW_QUESTIONS: Q[] = [
-  { id: "PQ1", lesson: "L2", kp: "kp5", dim: "能力", score: 15, title: "在采集人脸图像时，工单要求图像质量分不能低于（ ），才能被视为基础合格。", options: ["0.3", "0.5", "0.8", "1.0"], answer: 1 },
-  { id: "PQ2", lesson: "L2", kp: "kp5", dim: "能力", score: 15, title: "人脸区域的最小边长必须达到（ ）像素，才能满足后续底库建模的尺寸要求。", options: ["40", "60", "80", "120"], answer: 2 },
-  { id: "PQ3", lesson: "L2", kp: "kp5", dim: "知识", score: 15, title: "为了避免人脸被裁切导致特征提取失败，检测框距离图像边缘的最小距离应不低于（ ）像素。", options: ["0", "5", "10", "50"], answer: 2 },
-  { id: "PQ4", lesson: "L2", kp: "kp10", dim: "能力", score: 15, title: "为了让模型能适应不同角度的人脸，采集时同一人至少需要采集（ ）张不同姿态的样本。", options: ["1", "2", "3", "5"], answer: 2 },
-  { id: "PQ5", lesson: "L2", kp: "kp10", dim: "知识", score: 20, title: "按照任务工单中企业交付验收标准，试点批次人脸数据的可用样本占比（可用率）不得低于（ ），否则一票否决。", options: ["50%", "70%", "80%", "95%"], answer: 2 },
-  { id: "PQ6", lesson: "L2", kp: "kp12", dim: "素养", score: 20, title: "关于合规底线，采集与处理人脸数据时，以下哪种做法是正确的？（ ）", options: ["将拍摄的原始人脸照片和特征数据一起存入底库，方便比对", "原始人脸图像提取特征后必须立即删除，不得存储", "为了方便联系，直接在 CSV 表格中写入被采集人的真实姓名", "为了数据安全，将包含人脸信息的 CSV 文件通过互联网发送给甲方"], answer: 1 },
-];
-
-// 课后知识点问答（传感与视觉数据清洗）
-export interface EQ { id: string; title: string; options: string[]; answer: number; lesson: string; kp: string; dim: string }
-export const EXERCISE_QUESTIONS: EQ[] = [
-  { id: "EX1", lesson: "L3", kp: "kp7", dim: "能力", title: "连续型缺失值最稳妥的处理方式是？", options: ["一律删除整行", "按分布做均值/中位数插补", "填 0", "随机填充"], answer: 1 },
-  { id: "EX2", lesson: "L3", kp: "kp8", dim: "能力", title: "点云与图像配准对齐的关键是？", options: ["统一时间/空间与内外参标定", "都转成 CSV", "提高分辨率", "增加颜色"], answer: 0 },
-  { id: "EX3", lesson: "L3", kp: "kp11", dim: "素养", title: "数据清洗记录‘数据质量报告’的主要意义是？", options: ["应付检查", "可追溯、保证工程规范与质量", "拖慢进度", "没有意义"], answer: 1 },
-  { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "采集含人脸的视觉数据，清洗时应注意？", options: ["公开传播", "隐私脱敏与合规", "长期留存原图", "随意标注"], answer: 1 },
-];
+// 课前检测 / 课后习题的题库已移至：src/lib/mock.ts（离线演示，不含答案）+ cloud-functions/api（线上，含答案）。
+// 安全约定：course.ts 随主包下发，任何含答案的题库都不得放在这里。
 
 export const ACTIVE_HOMEWORK = {
   id: "HW-P1T2",

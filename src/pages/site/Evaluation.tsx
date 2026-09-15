@@ -27,7 +27,8 @@ export default function Evaluation() {
   const [area, setArea] = useState<EvalKind | "dashboard">("teacher");
   const [tab, setTab] = useState("overview");
   const D = useMemo(() => buildEvalData(), []);
-  const p3 = D.projects.find((p) => p.id === "P3")!;
+  // 当前开课项目 = 已计算达成度的项目（项目一，L1/L2 已开展）；其余项目看板显示“未开始”
+  const cur = D.projects.find((p) => p.achievement !== null) ?? D.projects[0];
   const avgVa = +(D.students.reduce((s, x) => s + x.valueAdded, 0) / D.students.length).toFixed(1);
 
   return (
@@ -91,7 +92,7 @@ export default function Evaluation() {
             ))}
           </div>
 
-          {tab === "overview" && <Overview D={D} p3={p3} avgVa={avgVa} />}
+          {tab === "overview" && <Overview D={D} cur={cur} avgVa={avgVa} />}
           {tab === "lesson" && <LessonView D={D} />}
           {tab === "kp" && <KpView D={D} />}
           {tab === "student" && <StudentView D={D} />}
@@ -324,14 +325,16 @@ function Kpi({ v, l, s, color }: { v: string; l: string; s?: string; color?: str
   );
 }
 
-function Overview({ D, p3, avgVa }: { D: D; p3: D["projects"][number]; avgVa: number }) {
+function Overview({ D, cur, avgVa }: { D: D; cur: D["projects"][number]; avgVa: number }) {
   const tiers: Record<string, number> = {};
   D.students.forEach((s) => (tiers[s.tier] = (tiers[s.tier] || 0) + 1));
-  const ca = p3.classAchieve!;
+  const ca = cur.classAchieve!;
+  // 未开课项目（achievement 为空）在图中显示“未开始”
+  const pending = D.projects.map((p) => p.achievement == null);
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-        <Kpi v={pct(p3.achievement!)} l="项目总达成度" s="三维加权均值" />
+        <Kpi v={pct(cur.achievement!)} l="当前项目达成度" s={`${cur.name}（进行中）`} />
         <Kpi v={`${D.students.length}`} l="参评学生" s={`${tiers["基础层"] || 0}基础 / ${tiers["提高层"] || 0}提高 / ${tiers["拓展层"] || 0}拓展`} />
         <Kpi v={pct(ca.k)} l="知识维度达成" color={COL.k} s="懂采集原理" />
         <Kpi v={pct(ca.a)} l="能力维度达成" color={COL.a} s={`能多源融合 · 增值+${avgVa}`} />
@@ -345,12 +348,12 @@ function Overview({ D, p3, avgVa }: { D: D; p3: D["projects"][number]; avgVa: nu
           })} />
         </Card>
         <Card className="p-6">
-          <h4 className="mb-2 font-semibold text-white">四个项目达成度对标（课程共64学时）</h4>
+          <h4 className="mb-2 font-semibold text-white">四个项目达成度对标（课程共 30 学时）</h4>
           <EChart height={320} option={dark({
             grid: { left: 10, right: 20, top: 30, bottom: 40, containLabel: true },
-            xAxis: { type: "category", data: D.projects.map((p) => p.name.replace(/数据.*/, "")), axisLabel: { interval: 0, fontSize: 11 } },
+            xAxis: { type: "category", data: D.projects.map((p) => p.name), axisLabel: { interval: 0, fontSize: 10 } },
             yAxis: { type: "value", max: 1, axisLabel: { formatter: (v: number) => v * 100 + "%" } },
-            series: [{ type: "bar", barWidth: "46%", data: D.projects.map((p) => ({ value: p.achievement, itemStyle: { color: p.id === "P3" ? "#22d3ee" : "rgba(103,232,249,0.35)" } })), label: { show: true, position: "top", formatter: (p: any) => pct(p.value), color: "#cffafe" } }],
+            series: [{ type: "bar", barWidth: "46%", data: D.projects.map((p, i) => ({ value: p.achievement ?? 0, itemStyle: { color: pending[i] ? "rgba(148,163,184,0.15)" : "#22d3ee" } })), label: { show: true, position: "top", formatter: (p: any) => (pending[p.dataIndex] ? "未开始" : pct(p.value)), color: "#cffafe" } }],
           })} />
         </Card>
       </div>

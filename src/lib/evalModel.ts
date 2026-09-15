@@ -1,5 +1,5 @@
 // 课程目标达成度评价数据模型（移植自 course-eval/gen_data.py，同结构、可注入真实数据）
-import { ROSTER } from "./course";
+import { ROSTER, PROJECTS as COURSE_PROJECTS } from "./course";
 
 export interface Dim3 { k: number; a: number; q: number }
 export interface LessonStudent extends Dim3 { pre: number; mid: number; post: number }
@@ -24,8 +24,8 @@ export interface EvalData {
 
 export const META: Record<string, string | number> = {
   course: "信息采集技术",
-  project: "城市“小微区域”环境与设施数据智能采集",
-  hours: 16,
+  project: "数智社区 · 数据采集与治理（4 个项目）",
+  hours: 30,
   className: "2465 人工智能",
   teacher: "授课教师",
   semester: "2025-2026 学年第 2 学期",
@@ -69,12 +69,15 @@ export const KNOWLEDGE_POINTS: KnowledgePoint[] = [
   { id: "kp12", name: "数据伦理与合规采集", dim: "素养", lessons: ["L3", "L4"] },
 ];
 
-export const PROJECTS: Project[] = [
-  { id: "P1", name: "智慧教室环境数据采集", hours: 16, lessons: [], achievement: 0.84 },
-  { id: "P2", name: "校园公共区域数据智能采集", hours: 16, lessons: [], achievement: 0.86 },
-  { id: "P3", name: "城市“小微区域”环境与设施数据智能采集", hours: 16, lessons: ["L1", "L2", "L3", "L4"], achievement: null },
-  { id: "P4", name: "老旧小区楼道安全与环境监测", hours: 16, lessons: [], achievement: 0.83 },
-];
+// 项目口径与「教学评价资源区」打分部分完全一致（同一份 course.ts PROJECTS）：名称 / 学时 / 顺序均以打分区为准。
+// 当前课程进行到 项目一（L1、L2 已开展），其余项目未开始（achievement = null，看板显示“未开始”）。
+export const PROJECTS: Project[] = COURSE_PROJECTS.map((p) => ({
+  id: p.id,
+  name: p.title,
+  hours: p.hours,
+  lessons: p.id === "P1" ? ["L1", "L2"] : [],
+  achievement: null,
+}));
 
 export const LESSONS: Omit<Lesson, "students" | "classAchieve">[] = [
   { id: "L1", idx: 1, name: "任务1 需求确定与方案设计", pre: "区域环境与设施数据采集需求调研（微课+预习测验）", mid: "需求分析研讨 + 采集方案设计（引-讨-练-展-验-评）", post: "采集方案优化与小组互评", kpIds: ["kp1", "kp2", "kp11"] },
@@ -159,14 +162,17 @@ export function buildEvalData(real: RealScores = {}): EvalData {
     return { id: s.id, name: s.name, tier: s.tier, kpMastery, valueAdded, lessonTrend };
   });
 
-  const allk = lessons.reduce((a, l) => a + l.classAchieve.k, 0) / 4;
-  const alla = lessons.reduce((a, l) => a + l.classAchieve.a, 0) / 4;
-  const allq = lessons.reduce((a, l) => a + l.classAchieve.q, 0) / 4;
-  const projects = PROJECTS.map((p) =>
-    p.id === "P3"
-      ? { ...p, classAchieve: { k: +allk.toFixed(3), a: +alla.toFixed(3), q: +allq.toFixed(3) }, achievement: +((allk + alla + allq) / 3).toFixed(3) }
-      : p
-  );
+  // 已开课项目（有 lessons）按其各堂课 classAchieve 均值计算达成度；未开课项目保持 null（未开始）
+  const projects = PROJECTS.map((p) => {
+    const ls = p.lessons
+      .map((id) => lessons.find((l) => l.id === id))
+      .filter((l): l is Lesson => !!l);
+    if (!ls.length) return p;
+    const k = +(ls.reduce((acc, l) => acc + l.classAchieve.k, 0) / ls.length).toFixed(3);
+    const a = +(ls.reduce((acc, l) => acc + l.classAchieve.a, 0) / ls.length).toFixed(3);
+    const q = +(ls.reduce((acc, l) => acc + l.classAchieve.q, 0) / ls.length).toFixed(3);
+    return { ...p, classAchieve: { k, a, q }, achievement: +((k + a + q) / 3).toFixed(3) };
+  });
 
   return { meta: META, objectives: OBJECTIVES, knowledgePoints: KNOWLEDGE_POINTS, projects, lessons, students: evalStudents };
 }

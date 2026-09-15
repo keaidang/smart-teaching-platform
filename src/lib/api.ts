@@ -9,19 +9,15 @@ import type {
   PreviewAnswer,
   PreviewQuestion,
   PreviewScore,
+  PreviewSubmitResult,
   Student,
   TeacherEval,
 } from "./types";
-import {
-  exercises,
-  homeworks,
-  mockExerciseStats,
-  mockHomeworkSubmissions,
-  mockOverview,
-  mockPreviewScores,
-  previewQuestions,
-  students,
-} from "./mock";
+import { STUDENTS } from "./course";
+
+// mock 数据惰性加载：只有 VITE_USE_MOCK=true 的离线演示才会拉取该 chunk，
+// 生产构建中 USE_MOCK 为字面量 false，此动态 import 会被构建器消除，不进入产物。
+const mockMod = () => import("./mock");
 
 // 生产环境：EdgeOne 云函数与前端同源部署，走 /api 即可。
 // 本地开发：vite 已把 /api 代理到本地 Node API（见 vite.config.ts）。
@@ -29,17 +25,21 @@ import {
 const BASE = (import.meta.env.VITE_API_BASE as string) || "/api";
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
-async function get<T>(path: string, fallback: T): Promise<T> {
-  if (USE_MOCK) return structuredClone(fallback);
+type MaybeLazy<T> = T | (() => T | Promise<T>);
+const resolveFallback = async <T>(fb: MaybeLazy<T>): Promise<T> =>
+  typeof fb === "function" ? await (fb as () => T | Promise<T>)() : fb;
+
+async function get<T>(path: string, fallback: MaybeLazy<T>): Promise<T> {
+  if (USE_MOCK) return structuredClone(await resolveFallback(fallback));
   const res = await fetch(`${BASE}${path}`);
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
   return (await res.json()) as T;
 }
 
-async function post<T, B = unknown>(path: string, body: B, fallback: T): Promise<T> {
+async function post<T, B = unknown>(path: string, body: B, fallback: MaybeLazy<T>): Promise<T> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 400));
-    return fallback;
+    return resolveFallback(fallback);
   }
   const res = await fetch(`${BASE}${path}`, {
     method: "POST",
@@ -51,24 +51,49 @@ async function post<T, B = unknown>(path: string, body: B, fallback: T): Promise
 }
 
 export const api = {
-  // 学生
+  // 学生（名单无敏感信息，可直接用 course.ts 数据）
   login: (studentId: string): Promise<Student | null> =>
-    Promise.resolve(students.find((s) => s.id === studentId) ?? null),
+    Promise.resolve(STUDENTS.find((s) => s.id === studentId) ?? null),
 
-  listStudents: () => get<Student[]>("/students", students),
+  listStudents: () => get<Student[]>("/students", STUDENTS),
 
-  // 课前预习
+  // 课前预习（题目与答案都在服务端；判分在服务端完成）
   getPreviewQuestions: () =>
-    get<PreviewQuestion[]>("/preview/questions", previewQuestions),
-  getPreviewScores: () => get<PreviewScore[]>("/preview/scores", mockPreviewScores()),
-  submitPreview: (answers: PreviewAnswer[]) =>
-    post("/preview/answers", answers, { ok: true }),
+    get<PreviewQuestion[]>("/preview/questions", async () =>
+      (await mockMod()).previewQuestions
+    ),
+  getPreviewScores: () =>
+    get<PreviewScore[]>("/preview/scores", async () =>
+      (await mockMod()).mockPreviewScores()
+    ),
+  submitPreview: (answers: PreviewAnswer[]): Promise<PreviewSubmitResult> =>
+    post("/preview/answers", answers, async () => {
+      // 离线演示：mock 不含答案，按学号生成演示分数
+      const m = await mockMod();
+      const total = m.previewQuestions.reduce((s, q) => s + q.score, 0);
+      const groups: Record<string, PreviewAnswer[]> = {};
+      for (const a of answers) (groups[a.studentId] ||= []).push(a);
+      const results: PreviewSubmitResult["results"] = {};
+      for (const [sid, arr] of Object.entries(groups)) {
+        const seed = Number(sid.slice(-3)) || 1;
+        results[sid] = { score: 60 + (seed % 40), total, answered: arr.length };
+      }
+      return { ok: true, saved: Object.keys(groups).length, results };
+    }),
 
-  // 课中作业（图片走 Blob 预签名直传，元数据走 KV）
-  getHomework: () => get<Homework[]>("/homework", homeworks),
+  // 课中作业（图片走 Blob 预签名直传，元数据走 KV；仅 PNG/JPG 且 ≤5MB）
+  getHomework: () =>
+    get<Homework[]>("/homework", async () => (await mockMod()).homeworks),
   getHomeworkSubmissions: () =>
-    get<HomeworkSubmission[]>("/homework/submissions", mockHomeworkSubmissions()),
-  getHomeworkUploadUrl: (payload: { studentId: string; fileName: string; contentType: string }) =>
+    get<HomeworkSubmission[]>("/homework/submissions", async () =>
+      (await mockMod()).mockHomeworkSubmissions()
+    ),
+  getHomeworkUploadUrl: (payload: {
+    studentId: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+  }) =>
     post<{ url: string; key: string; expiresAt: number }>(
       "/homework/upload-url",
       payload,
@@ -87,17 +112,20 @@ export const api = {
   }) =>
     post<HomeworkSubmission>("/homework/submissions", meta, {
       ...meta,
-      name: students.find((s) => s.id === meta.studentId)?.name || meta.studentId,
+      name: STUDENTS.find((s) => s.id === meta.studentId)?.name || meta.studentId,
       submittedAt: new Date().toLocaleTimeString("zh-CN", {
         hour: "2-digit",
         minute: "2-digit",
       }),
     }),
 
-  // 课后习题
-  getExercises: () => get<Exercise[]>("/exercises", exercises),
+  // 课后习题（答案不下发；正确率统计含答案标位，供教师大屏公布）
+  getExercises: () =>
+    get<Exercise[]>("/exercises", async () => (await mockMod()).exercises),
   getExerciseStats: () =>
-    get<ExerciseStat[]>("/exercises/stats", mockExerciseStats()),
+    get<ExerciseStat[]>("/exercises/stats", async () =>
+      (await mockMod()).mockExerciseStats()
+    ),
   submitExercise: (answers: { studentId: string; exerciseId: string; selected: number }[]) =>
     post("/exercises/answers", answers, { ok: true }),
 
@@ -168,14 +196,15 @@ export const api = {
   },
 
   // 大屏概览
-  getOverview: () => get<ClassOverview>("/overview", mockOverview()),
+  getOverview: () =>
+    get<ClassOverview>("/overview", async () => (await mockMod()).mockOverview()),
 
   // 教师评价
   getEvaluations: () => get<TeacherEval[]>("/evaluations", []),
   saveEvaluation: (e: { studentId: string; scores: Record<string, number>; comment: string }) =>
     post<TeacherEval>("/evaluations", e, {
       studentId: e.studentId,
-      name: students.find((s) => s.id === e.studentId)?.name || e.studentId,
+      name: STUDENTS.find((s) => s.id === e.studentId)?.name || e.studentId,
       scores: e.scores,
       comment: e.comment,
       updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),

@@ -92,7 +92,8 @@ export default function ExerciseBoard() {
               <div className="space-y-3">
                 {q?.options.map((opt, oi) => {
                   const v = s.distribution[oi] ?? 0;
-                  const isAns = oi === q.answer;
+                  // 答案标位来自服务端统计接口（题目列表接口不下发答案）
+                  const isAns = oi === s.answer;
                   return (
                     <div key={oi}>
                       <div className="mb-1 flex items-center justify-between text-xs">

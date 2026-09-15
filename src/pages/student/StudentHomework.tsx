@@ -10,6 +10,10 @@ function fmtSize(bytes: number) {
   return `${Math.round(bytes / 1024)} KB`;
 }
 
+// 作业上传限制：仅 PNG / JPG，且不超过 5MB（与服务端 /homework/upload-url 校验一致）
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
+const MAX_SIZE = 5 * 1024 * 1024;
+
 // 把文件 PUT 到预签名 URL（直传到 Blob，带进度）
 function putWithProgress(
   url: string,
@@ -63,10 +67,26 @@ export default function StudentHomework() {
   }, [student?.id]);
 
   const pickFile = (f: File | null) => {
-    setFile(f);
     setErr("");
-    if (f && f.type.startsWith("image/")) setPreview(URL.createObjectURL(f));
-    else setPreview("");
+    if (!f) {
+      setFile(null);
+      setPreview("");
+      return;
+    }
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      setFile(null);
+      setPreview("");
+      setErr("仅支持 PNG / JPG 格式图片，请重新选择");
+      return;
+    }
+    if (f.size > MAX_SIZE) {
+      setFile(null);
+      setPreview("");
+      setErr(`图片大小不能超过 5MB（当前 ${fmtSize(f.size)}），请压缩后重新选择`);
+      return;
+    }
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   };
 
   const submit = async () => {
@@ -75,11 +95,12 @@ export default function StudentHomework() {
     setProgress(0);
     setErr("");
     try {
-      const contentType = file.type || "application/octet-stream";
+      const contentType = file.type || "image/png";
       const { url, key } = await api.getHomeworkUploadUrl({
         studentId: student.id,
         fileName: file.name,
         contentType,
+        size: file.size,
       });
       if (url) await putWithProgress(url, file, contentType, setProgress);
       else setProgress(100);
@@ -160,7 +181,7 @@ export default function StudentHomework() {
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg"
             className="hidden"
             onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
           />
@@ -178,7 +199,7 @@ export default function StudentHomework() {
               <IconUpload className="h-8 w-8 text-brand-300" />
             )}
             <span className="mt-3 text-sm text-brand-100">
-              {file ? file.name : "点击选择作品图片（PNG / JPG）"}
+              {file ? file.name : "点击选择作品图片（PNG / JPG，不超过 5MB）"}
             </span>
             {file && (
               <span className="mt-1 text-xs text-brand-200/50">

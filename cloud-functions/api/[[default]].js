@@ -46,12 +46,12 @@ const SEED_PQ = [
   { id: "PQ6", lesson: "L2", kp: "kp12", dim: "素养", title: "关于合规底线，采集与处理人脸数据时，以下哪种做法是正确的？（ ）", options: ["将拍摄的原始人脸照片和特征数据一起存入底库，方便比对", "原始人脸图像提取特征后必须立即删除，不得存储", "为了方便联系，直接在 CSV 表格中写入被采集人的真实姓名", "为了数据安全，将包含人脸信息的 CSV 文件通过互联网发送给甲方"], answer: 1, score: 20 },
 ];
 
-// 课后知识点问答题（传感与视觉数据清洗）
+// 课后知识点问答题（人脸特征底库建设与交付 · 对应工单 SQ-2026-001；答案仅存服务端，不下发前端）
 const SEED_EX = [
-  { id: "EX1", lesson: "L3", kp: "kp7", dim: "能力", title: "连续型缺失值最稳妥的处理方式是？", options: ["一律删除整行", "按分布做均值/中位数插补", "填 0", "随机填充"], answer: 1 },
-  { id: "EX2", lesson: "L3", kp: "kp8", dim: "能力", title: "点云与图像配准对齐的关键是？", options: ["统一时间/空间与内外参标定", "都转成 CSV", "提高分辨率", "增加颜色"], answer: 0 },
-  { id: "EX3", lesson: "L3", kp: "kp11", dim: "素养", title: "数据清洗记录‘数据质量报告’的主要意义是？", options: ["应付检查", "可追溯、保证工程规范与质量", "拖慢进度", "没有意义"], answer: 1 },
-  { id: "EX4", lesson: "L3", kp: "kp12", dim: "素养", title: "采集含人脸的视觉数据，清洗时应注意？", options: ["公开传播", "隐私脱敏与合规", "长期留存原图", "随意标注"], answer: 1 },
+  { id: "EX1", lesson: "L2", kp: "kp5", dim: "能力", title: "质量筛选时发现某张人脸样本的人脸框最小边只有 60 像素（工单要求 ≥80px），正确的处理方式是？", options: ["把图像放大 1.5 倍，让人脸框达到 80 像素后入库", "判定为不可用样本，安排补拍并重新采集", "降低筛选阈值，直接放行入库", "裁掉人脸框以外的背景，使边长相对变大"], answer: 1 },
+  { id: "EX2", lesson: "L2", kp: "kp12", dim: "素养", title: "特征提取完成后，设备本地还残留一批原始人脸照片，符合工单合规要求的做法是？", options: ["压缩打包留档，方便日后核查", "移动到备份目录长期保存", "加密后连同特征一起交付给委托方", "立即删除，并在删除日志中记录"], answer: 3 },
+  { id: "EX3", lesson: "L2", kp: "kp12", dim: "素养", title: "metadata.csv 中的 person_id 字段应如何填写？", options: ["直接填写被采集人的真实姓名，便于追溯", "填写手机号，方便联系本人", "使用假名化编号（如 P001）", "留空不填，交付时再补"], answer: 2 },
+  { id: "EX4", lesson: "L2", kp: "kp10", dim: "能力", title: "试点批次统计可用率为 76%，低于验收标准（≥80%，一票否决项），正确的处置是？", options: ["修改统计口径，把边缘样本计入可用", "直接交付，并向委托方说明客观原因", "删除不合格样本后按剩余数量重新计算比例", "按工单要求补拍补采，直至可用率达到 80% 以上再交付"], answer: 3 },
 ];
 
 const SEED_HW = { id: "HW-P1T2", title: "数据质检报告", description: "提交数据质检报告截图：按任务工单 SQ-2026-001 验收标准，截图需包含质量筛选结果（单张质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%）及假名化、无原图残留等合规自查项的检查结果。", deadline: "今日 16:30" };
@@ -69,6 +69,10 @@ async function ensureSeed() {
   seeded = true;
 }
 async function students() { return (await rj("students")) || []; }
+
+// 作业上传限制：仅 PNG / JPG，且不超过 5MB（与前端校验一致，服务端为准）
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
+const MAX_UPLOAD = 5 * 1024 * 1024;
 
 async function onlineStudents() {
   const keys = await listKeys("presence:");
@@ -176,7 +180,12 @@ export async function onRequest(context) {
       if (!authorized()) return json({ error: "forbidden" }, 403);
       const all = await KV.list({ consistency: "strong" });
       let deleted = 0;
-      for (const b of all.blobs) { try { await KV.delete(b.key); deleted++; } catch { /* ignore */ } }
+      for (const b of all.blobs) {
+        // 只清除作答 / 提交 / 心跳类数据；小组评价（group-eval:*）与教师评价（teacher-eval:*）保留
+        if (/^(preview:answer:|exercise:answer:|homework:sub:|presence:)/.test(b.key)) {
+          try { await KV.delete(b.key); deleted++; } catch { /* ignore */ }
+        }
+      }
       await wj("students", SEED_STUDENTS);
       await wj("preview:questions", SEED_PQ);
       await wj("exercises", SEED_EX);
@@ -221,8 +230,11 @@ export async function onRequest(context) {
       return json({ onlineCount: online.ids.length, ids: online.ids });
     }
 
-    // 课前预习
-    if (path === "/preview/questions" && method === "GET") return json(await rj("preview:questions"));
+    // 课前预习（答案不下发，判分在服务端）
+    if (path === "/preview/questions" && method === "GET") {
+      const qs = (await rj("preview:questions")) || [];
+      return json(qs.map(({ answer, ...q }) => q));
+    }
     if (path === "/preview/scores" && method === "GET") {
       const keys = await listKeys("preview:answer:");
       const rows = [];
@@ -234,9 +246,11 @@ export async function onRequest(context) {
       const list = await request.json();
       const qs = await rj("preview:questions");
       const qmap = Object.fromEntries(qs.map((q) => [q.id, q]));
+      const total = qs.reduce((s, q) => s + (q.score || 0), 0);
       const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
       const groups = {};
       for (const a of list) (groups[a.studentId] ||= []).push(a);
+      const results = {};
       for (const [sid, arr] of Object.entries(groups)) {
         let score = 0; const answers = [];
         for (const a of arr) {
@@ -246,8 +260,10 @@ export async function onRequest(context) {
           answers.push({ questionId: a.questionId, lesson: q.lesson, kp: q.kp, dim: q.dim, selected: a.selected, correct });
         }
         await wj(`preview:answer:${sid}`, { studentId: sid, name: byId[sid]?.name || sid, score, answered: answers.length, answers });
+        results[sid] = { score, total, answered: answers.length };
       }
-      return json({ ok: true, saved: Object.keys(groups).length });
+      // 重复提交：同号覆盖写入（以最后一次为准），并把成绩返回给学生端展示
+      return json({ ok: true, saved: Object.keys(groups).length, results });
     }
 
     // 课中作业
@@ -259,7 +275,11 @@ export async function onRequest(context) {
       return json(rows);
     }
     if (path === "/homework/upload-url" && method === "POST") {
-      const { studentId, fileName, contentType } = await request.json();
+      const { studentId, fileName, contentType, size } = await request.json();
+      // 服务端强制校验：仅 PNG / JPG，且 ≤ 5MB
+      if (!ALLOWED_TYPES.includes(contentType)) return json({ error: "仅支持 PNG / JPG 格式图片" }, 400);
+      const sz = Number(size);
+      if (!(sz > 0) || sz > MAX_UPLOAD) return json({ error: "图片大小必须在 5MB 以内" }, 400);
       const safe = String(fileName || "upload").replace(/[^\w.\-一-龥]/g, "_");
       const key = `hw/${studentId}/${Date.now()}-${safe}`;
       const { url: putUrl, expiresAt } = await FILES.createUploadUrl(key, { contentType: contentType || "application/octet-stream", expireSeconds: 3600 });
@@ -267,6 +287,10 @@ export async function onRequest(context) {
     }
     if (path === "/homework/submissions" && method === "POST") {
       const m = await request.json();
+      // 元数据入库同样校验格式与大小
+      if (!ALLOWED_TYPES.includes(m.contentType)) return json({ error: "仅支持 PNG / JPG 格式图片" }, 400);
+      const sz = Number(m.size);
+      if (!(sz > 0) || sz > MAX_UPLOAD) return json({ error: "图片大小必须在 5MB 以内" }, 400);
       const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
       const meta = {
         studentId: m.studentId, name: byId[m.studentId]?.name || m.studentId,
@@ -286,8 +310,11 @@ export async function onRequest(context) {
       return new Response(buf, { headers: { "Content-Type": meta.contentType || "image/png", "Cache-Control": "no-cache", ...CORS } });
     }
 
-    // 课后知识点问答
-    if (path === "/exercises" && method === "GET") return json(await rj("exercises"));
+    // 课后知识点问答（答案不下发；正确率统计接口携带答案标位，供教师大屏公布）
+    if (path === "/exercises" && method === "GET") {
+      const exs = (await rj("exercises")) || [];
+      return json(exs.map(({ answer, ...e }) => e));
+    }
     if (path === "/exercises/stats" && method === "GET") {
       const exs = await rj("exercises");
       const keys = await listKeys("exercise:answer:");
@@ -301,7 +328,7 @@ export async function onRequest(context) {
           s.distribution[a.selected] = (s.distribution[a.selected] || 0) + 1;
         }
       }
-      return json(stats.map((s) => ({ exerciseId: s.exerciseId, title: s.title, correctRate: s.attempts ? Math.round((s.correctCount / s.attempts) * 100) : 0, attempts: s.attempts, distribution: s.distribution })));
+      return json(stats.map((s) => ({ exerciseId: s.exerciseId, title: s.title, answer: s.answer, correctRate: s.attempts ? Math.round((s.correctCount / s.attempts) * 100) : 0, attempts: s.attempts, distribution: s.distribution })));
     }
     if (path === "/exercises/answers" && method === "POST") {
       const list = await request.json();

@@ -22,7 +22,10 @@ npm run build   # tsc --noEmit && vite build（必须过）
 
 ## 2. 关键约定（务必遵守）
 - **路由**：`/` 资源库主站；`/student` 学生端；`/class` 教师后台大屏；`/admin` 管理后台。学生/教师端都有「任务门禁」，当前仅 `P1T2 人脸特征底库建设与交付`（企业工单 SQ-2026-001，详情页完整呈现工单内容）可进入，作业为提交数据质检报告截图，其余任务按钮显示「进入」但点击无反应（**不要**显示锁/未开放/建设中）。
-- **名单与题目两处同步**：前端种子在 `src/lib/course.ts`（`ROSTER`/`PREVIEW_QUESTIONS`/`EXERCISE_QUESTIONS`/`ACTIVE_HOMEWORK`/`PROJECTS`/`EVAL_DIMENSIONS`），后端种子在 `cloud-functions/api/[[default]].js` 顶部（`ROSTER`/`SEED_PQ`/`SEED_EX`/`SEED_HW`）。**改任一处必须同步另一处**。
+- **名单与题目两处同步**：前端演示种子在 `src/lib/mock.ts`（`previewQuestions`/`exercises`，**不含答案**，仅离线 mock 用）与 `src/lib/course.ts`（`ROSTER`/`ACTIVE_HOMEWORK`/`PROJECTS`/`GROUPS`/`ACTIVE_TASK_CHECKLIST`），后端种子在 `cloud-functions/api/[[default]].js` 顶部（`ROSTER`/`SEED_PQ`/`SEED_EX`/`SEED_HW`，**含答案，答案只存这里**）。**改任一处必须同步另一处**。
+- **答案安全铁律**：题目 `answer` 只存在云函数种子（KV）；`GET /preview/questions`、`GET /exercises` 均已剥离 `answer`，判分全在服务端（`POST /preview/answers` 返回 `results`）。`course.ts` 随主包下发，**任何含答案的题库都不得放回 `course.ts`**；`mock.ts` 也不含答案（防止构建产物泄露）。
+- **作业上传限制**：仅 PNG/JPG，单张 ≤ 5MB；前端 `StudentHomework` 与服务端 `/homework/upload-url`、`/homework/submissions` 双重校验，`upload-url` 需传 `size`。
+- **预习可重复提交**：同一学号重复提交覆盖 KV（以最后一次为准），学生端提交前会提示“已提交过（当前成绩 X 分）”。
 - **KV 种子只在 `students` 键缺失时自动写入**（`ensureSeed`）。改了名单/题目 → 部署后需调用重播种（见 §6），否则线上仍是旧数据。
 - **班级固定 26 人**（学号 `20241216501`–`20241216526`，已剔除休学/集训）；答题/提交/在线/评价等记录可重置，但名单固定。
 - **提交作者**：git 已配 `keaidang <keaidang@gmail.com>`。
@@ -39,14 +42,16 @@ npm run build   # tsc --noEmit && vite build（必须过）
 | `homework:sub:<学号>` | 作业元数据 `{...,fileName,size,key,contentType,submittedAt}` |
 | `exercise:answer:<学号>` | 课后问答作答 |
 | `teacher-eval:<学号>` | 教师评价 `{scores:{classroom,homework,knowledge,quality},comment,updatedAt}` |
+| `group-eval:<teacher\|enterprise\|ai>:<组号>` | 小组评价（6 组 × 4 项目 0–100 分 + 评语） |
 | `presence:<学号>` | 在线心跳 `{ts}`（近 60s 算在线） |
 
 作业图片二进制在 Blob `homework`（`hw/<学号>/<ts>-<名>`），`homework:sub` 存其 `key`。
 `reset-submissions`/`reset-all` 会清掉 `preview:answer/homework:sub/exercise:answer/presence/teacher-eval`，保留 `students/preview:questions/exercises/homework`。
+`reseed` 只清 `preview:answer/homework:sub/exercise:answer/presence`，**保留 `group-eval:*` 与 `teacher-eval:*`**（换题不打丢已打的分）。
 
 ## 4. 接口一览（`/api/*`，云函数内）
-GET：`health` `students` `overview` `preview/questions` `preview/scores` `homework` `homework/submissions` `homework/file?sid=` `exercises` `exercises/stats` `evaluations` `admin/stats` `presence`
-POST：`preview/answers` `homework/upload-url` `homework/submissions` `exercises/answers` `ai/chat`(SSE) `evaluations` `presence` `reseed` `admin/reset-submissions` `admin/clear-blob` `admin/reset-all`
+GET：`health` `students` `overview` `preview/questions`（无 answer）`preview/scores` `homework` `homework/submissions` `homework/file?sid=` `exercises`（无 answer）`exercises/stats`（含答案标位，供大屏公布）`evaluations` `admin/stats` `presence`
+POST：`preview/answers`（服务端判分，返回 `{results:{<学号>:{score,total,answered}}}`）`homework/upload-url`（需 `size`，仅 PNG/JPG ≤5MB）`homework/submissions`（同校验）`exercises/answers` `ai/chat`(SSE) `evaluations` `group-evals` `presence` `reseed` `admin/reset-submissions` `admin/clear-blob` `admin/reset-all`
 管理端点需 `x-admin-key`（或 `?key=`）等于 `ADMIN_KEY`。
 
 ## 5. 环境变量
@@ -72,9 +77,9 @@ EdgeOne CLI 已登录（`edgeone whoami`），项目已 `link`；环境变量可
 1. **达成度看板接真实数据（最重要）**：`src/pages/site/Evaluation.tsx` 现用 `buildEvalData()` 示例数据。需：
    - 后端加 `GET /api/evaluation`：把 KV 的 `preview:answer`(课前)/`homework:sub`(课中)/`exercise:answer`(课后) 按 `lesson`/`kp`/`dim` 聚合成 `evalModel.ts` 的 `RealScores`（课前/课中/课后 0–100），喂给 `buildEvalData(real)`（注入点已留）。
    - 教师评价 4 维（`teacher-eval`）可映射进「课堂表现/课后作业」等维度或画像。
-2. **内容替换（占位→正式）**：`course.ts` 的 `PROJECTS`/`ACTIVE_TASK_CHECKLIST`/`PREVIEW_QUESTIONS`/`EXERCISE_QUESTIONS`、`Industry.tsx` 4 案例、各模块「资源」实际文件/链接上传（目前只有结构占位）。
+2. **内容替换（占位→正式）**：`course.ts` 的 `PROJECTS`/`ACTIVE_TASK_CHECKLIST`、`mock.ts` + 云函数的题库、`Industry.tsx` 4 案例、各模块「资源」实际文件/链接上传（目前只有结构占位）。
 3. **资源库资源上传/展示**：项目/案例点开应有真实资料列表（文件走 Blob，元数据走 KV，参考作业上传的预签名直传）。
-4. **安全**：`/preview/questions`、`/exercises` 目前把 `answer` 下发前端（可作弊）→ 改为不下发、纯服务端判分；写接口加学生会话令牌防伪造；生产换 `ADMIN_KEY`、收敛 `reseed`。
+4. **安全（答案已收敛，见 §2 铁律）**：剩余 —— 写接口加学生会话令牌防伪造；生产换强 `ADMIN_KEY`、收敛 `reseed`；`/exercises/stats` 含答案标位（大屏公布用，公开可拉，介意可加管理鉴权）。
 5. **体验/健壮性**：全局 ErrorBoundary、接口失败提示、presence 过期键清理、Evaluation 首包可再瘦身（manualChunks）。
 6. **多任务/多班扩展**（若需要）：当前单班单任务；`course.ts` 与 KV 键可按 `classId`/`taskId` 分区。
 
