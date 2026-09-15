@@ -79,7 +79,7 @@ EdgeOne CLI 已登录（`edgeone whoami`），项目已 `link`；环境变量可
    - 教师评价 4 维（`teacher-eval`）可映射进「课堂表现/课后作业」等维度或画像。
 2. **内容替换（占位→正式）**：`course.ts` 的 `PROJECTS`/`ACTIVE_TASK_CHECKLIST`、`mock.ts` + 云函数的题库、`Industry.tsx` 4 案例、各模块「资源」实际文件/链接上传（目前只有结构占位）。
 3. **资源库资源上传/展示**：项目/案例点开应有真实资料列表（文件走 Blob，元数据走 KV，参考作业上传的预签名直传）。
-4. **安全（答案已收敛，见 §2 铁律）**：剩余 —— 写接口加学生会话令牌防伪造；生产换强 `ADMIN_KEY`、收敛 `reseed`；`/exercises/stats` 含答案标位（大屏公布用，公开可拉，介意可加管理鉴权）。
+4. **安全（答案已收敛，见 §2 铁律）**：~~写接口加学生会话令牌~~ **已完成**（`POST /api/student/login` 签发令牌存 KV `session:*`，学生写接口强制校验 `x-student-token` 且限本人学号；前端 401 自动回登录页；reseed 保留会话）。剩余 —— 生产换强 `ADMIN_KEY`、收敛 `reseed`；`/exercises/stats` 含答案标位（大屏公布用，公开可拉，介意可加管理鉴权）。
 5. **体验/健壮性**：全局 ErrorBoundary、接口失败提示、presence 过期键清理、Evaluation 首包可再瘦身（manualChunks）。
 6. **多任务/多班扩展**（若需要）：当前单班单任务；`course.ts` 与 KV 键可按 `classId`/`taskId` 分区。
 
