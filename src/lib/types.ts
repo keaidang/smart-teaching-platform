@@ -52,6 +52,8 @@ export interface HomeworkSubmission {
   key: string;
   contentType?: string;
   submittedAt: string;
+  // 任务级作业标记（如 P4T1）；缺省 = P1T2 默认作业
+  task?: string;
 }
 
 export interface Exercise {

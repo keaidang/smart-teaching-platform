@@ -24,7 +24,7 @@ export const STUDENTS = ROSTER.map((r, i) => ({
   classId: "C-2412",
 }));
 
-// 4 个项目 / 8 个任务；当前课程开放 项目一·任务2「传感与视觉数据采集」（企业工单 SQ-2026-001：人脸特征底库建设与交付）
+// 4 个项目 / 8 个任务；已开放：P1T1（练习）、P1T2（进行中主线）、P4T1（独立作业：社区物联感知看板设计与实现）
 export const PROJECTS: ProjectDef[] = [
   {
     id: "P1", title: "数据感知方案设计与采集", hours: 8,
@@ -50,7 +50,7 @@ export const PROJECTS: ProjectDef[] = [
   {
     id: "P4", title: "社区综合治理数据可视化", hours: 6,
     tasks: [
-      { id: "P4T1", title: "社区数据单维度看板设计", active: false },
+      { id: "P4T1", title: "社区数据单维度看板设计", active: true },
       { id: "P4T2", title: "综合治理大屏设计与汇报", active: false },
     ],
   },
@@ -106,5 +106,14 @@ export const ACTIVE_HOMEWORK = {
   id: "HW-P1T2",
   title: "数据质检报告",
   description: "提交数据质检报告截图：按任务工单 SQ-2026-001 验收标准，截图需包含质量筛选结果（单张质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%）及假名化、无原图残留等合规自查项的检查结果。",
+  deadline: "今日 16:30",
+};
+
+// 项目四·任务1 作业（任务级，与 ACTIVE_HOMEWORK 的 P1T2「数据质检报告」相互独立）
+// 线上种子在云函数 TASK_HOMEWORKS；这里同步一份仅供离线 mock 与展示使用（不含敏感数据）
+export const P4T1_HOMEWORK = {
+  id: "HW-P4T1",
+  title: "社区物联感知看板设计与实现",
+  description: "提交看板作品截图：基于社区物联感知数据（如环境温湿度、人流变化、设备状态等任一维度），设计并实现一个单维度数据看板（ECharts 等图表工具均可），截图需完整包含看板标题、图表效果与关键数据结论。",
   deadline: "今日 16:30",
 };

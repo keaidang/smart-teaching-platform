@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api } from "../../lib/api";
+import { useSearchParams } from "react-router-dom";
+import { api, homeworkFileUrl } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
 import type { Homework, HomeworkSubmission } from "../../lib/types";
 import { IconCheck, IconClock, IconUpload } from "../../components/icons";
@@ -39,6 +40,9 @@ function putWithProgress(
 
 export default function StudentHomework() {
   const { student } = useStudent();
+  // 任务级作业：/student/homework?task=P4T1 → P4T1 作业；缺省 = P1T2 默认作业
+  const [searchParams] = useSearchParams();
+  const task = searchParams.get("task") || undefined;
   const [hw, setHw] = useState<Homework | null>(null);
   const [mine, setMine] = useState<HomeworkSubmission | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -53,8 +57,8 @@ export default function StudentHomework() {
     let alive = true;
     const load = async () => {
       const [h, subs] = await Promise.all([
-        api.getHomework(),
-        api.getHomeworkSubmissions(),
+        api.getHomework(task),
+        api.getHomeworkSubmissions(task),
       ]);
       if (!alive) return;
       setHw(h[0] ?? null);
@@ -64,7 +68,7 @@ export default function StudentHomework() {
     return () => {
       alive = false;
     };
-  }, [student?.id]);
+  }, [student?.id, task]);
 
   const pickFile = (f: File | null) => {
     setErr("");
@@ -101,6 +105,7 @@ export default function StudentHomework() {
         fileName: file.name,
         contentType,
         size: file.size,
+        task,
       });
       if (url) await putWithProgress(url, file, contentType, setProgress);
       else setProgress(100);
@@ -110,6 +115,7 @@ export default function StudentHomework() {
         size: file.size,
         key,
         contentType,
+        task,
       });
       setMine(created);
       setImgErr(false);
@@ -159,7 +165,7 @@ export default function StudentHomework() {
         <Card className="flex items-center gap-4 p-6">
           {mine.contentType?.startsWith("image/") && !imgErr ? (
             <img
-              src={`/api/homework/file?sid=${mine.studentId}`}
+              src={homeworkFileUrl(mine.studentId, mine.task || task)}
               alt={mine.fileName}
               onError={() => setImgErr(true)}
               className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-brand-400/30"

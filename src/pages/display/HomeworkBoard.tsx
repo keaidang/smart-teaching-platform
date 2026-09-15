@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { api } from "../../lib/api";
+import { useSearchParams } from "react-router-dom";
+import { api, homeworkFileUrl } from "../../lib/api";
 import type { Homework, HomeworkSubmission, Student } from "../../lib/types";
 import { IconCheck, IconClock, IconUpload } from "../../components/icons";
 import { Avatar, Bar, Card, LiveBadge, SectionTitle } from "../../components/ui";
@@ -14,7 +15,7 @@ function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
   if (sub.contentType?.startsWith("image/") && !err) {
     return (
       <img
-        src={`/api/homework/file?sid=${sub.studentId}`}
+        src={homeworkFileUrl(sub.studentId, sub.task)}
         alt={sub.fileName}
         onError={() => setErr(true)}
         className="rounded-xl object-cover ring-1 ring-brand-400/30"
@@ -25,7 +26,15 @@ function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
   return <Avatar name={sub.name} color="#22d3ee" size={size} />;
 }
 
+// 作业任务切换页签：两个任务的作业数据相互独立（P1T2 走旧键，任务级走 homework:sub:{task}:{学号}）
+const HW_TABS = [
+  { id: "", label: "P1T2 · 数据质检报告" },
+  { id: "P4T1", label: "P4T1 · 社区物联感知看板" },
+];
+
 export default function HomeworkBoard() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const task = searchParams.get("task") || "";
   const [hw, setHw] = useState<Homework | null>(null);
   const [subs, setSubs] = useState<HomeworkSubmission[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -35,8 +44,8 @@ export default function HomeworkBoard() {
     let alive = true;
     const load = async () => {
       const [h, s, st] = await Promise.all([
-        api.getHomework(),
-        api.getHomeworkSubmissions(),
+        api.getHomework(task || undefined),
+        api.getHomeworkSubmissions(task || undefined),
         api.listStudents(),
       ]);
       if (!alive) return;
@@ -50,7 +59,7 @@ export default function HomeworkBoard() {
       alive = false;
       clearInterval(t);
     };
-  }, []);
+  }, [task]);
 
   const total = students.length;
   const done = subs.length;
@@ -65,6 +74,23 @@ export default function HomeworkBoard() {
         sub="作品图片存储于 EdgeOne Blob · 点击缩略图查看大图"
         right={<LiveBadge />}
       />
+
+      {/* 任务切换页签（两任务作业相互独立） */}
+      <div className="mb-5 flex gap-2">
+        {HW_TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setSearchParams(t.id ? { task: t.id } : {})}
+            className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+              task === t.id
+                ? "bg-brand-500 text-ink-900"
+                : "glass text-brand-200/70 hover:text-white"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {hw && (
         <Card className="mb-6 flex flex-col gap-5 p-6 lg:flex-row lg:items-center">

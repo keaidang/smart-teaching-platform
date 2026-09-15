@@ -60,17 +60,24 @@ const SEED_EX = [
 
 const SEED_HW = { id: "HW-P1T2", title: "数据质检报告", description: "提交数据质检报告截图：按任务工单 SQ-2026-001 验收标准，截图需包含质量筛选结果（单张质量分 ≥0.5、人脸框最小边 ≥80px、距边缘 ≥10px、可用率 ≥80%）及假名化、无原图残留等合规自查项的检查结果。", deadline: "今日 16:30" };
 
+// 任务级作业（与 P1T2 的「数据质检报告」相互独立）：KV 键 homework:task:{taskId}，提交存 homework:sub:{taskId}:{学号}，图片 Blob 前缀 hw/{taskId}/
+// 不带 task 参数的旧接口仍走 homework / homework:sub:{学号}（P1T2 专用），互不影响
+const TASK_HOMEWORKS = {
+  P4T1: { id: "HW-P4T1", title: "社区物联感知看板设计与实现", description: "提交看板作品截图：基于社区物联感知数据（如环境温湿度、人流变化、设备状态等任一维度），设计并实现一个单维度数据看板（ECharts 等图表工具均可），截图需完整包含看板标题、图表效果与关键数据结论。", deadline: "今日 16:30" },
+};
+
 let seeded = false;
 async function ensureSeed() {
   if (seeded) return;
   const s = await rj("students");
   if (!s) {
-    await wj("students", SEED_STUDENTS);
-    await wj("preview:questions", SEED_PQ);
-    await wj("exercises", SEED_EX);
-    await wj("homework", SEED_HW);
-  }
-  seeded = true;
+      await wj("students", SEED_STUDENTS);
+      await wj("preview:questions", SEED_PQ);
+      await wj("exercises", SEED_EX);
+      await wj("homework", SEED_HW);
+      for (const [tid, hw] of Object.entries(TASK_HOMEWORKS)) await wj(`homework:task:${tid}`, hw);
+    }
+    seeded = true;
 }
 async function students() { return (await rj("students")) || []; }
 
@@ -161,7 +168,8 @@ export async function onRequest(context) {
       const all = await KV.list({ consistency: "strong" });
       let deleted = 0;
       for (const b of all.blobs) {
-        if (keep.has(b.key)) continue;
+        // homework:task:* 是任务作业种子数据，重置提交时保留
+        if (keep.has(b.key) || b.key.startsWith("homework:task:")) continue;
         try { await KV.delete(b.key); deleted++; } catch { /* ignore */ }
       }
       return json({ ok: true, deleted, kept: [...keep] });
@@ -183,7 +191,7 @@ export async function onRequest(context) {
       const all = await KV.list({ consistency: "strong" });
       let kvDeleted = 0;
       for (const b of all.blobs) {
-        if (keep.has(b.key)) continue;
+        if (keep.has(b.key) || b.key.startsWith("homework:task:")) continue;
         try { await KV.delete(b.key); kvDeleted++; } catch { /* ignore */ }
       }
       const files = await FILES.list({ consistency: "strong" });
@@ -208,6 +216,7 @@ export async function onRequest(context) {
       await wj("preview:questions", SEED_PQ);
       await wj("exercises", SEED_EX);
       await wj("homework", SEED_HW);
+      for (const [tid, hw] of Object.entries(TASK_HOMEWORKS)) await wj(`homework:task:${tid}`, hw);
       seeded = true;
       return json({ ok: true, deleted, students: SEED_STUDENTS.length, preview: SEED_PQ.length, exercises: SEED_EX.length });
     }
@@ -308,16 +317,27 @@ export async function onRequest(context) {
       return json({ ok: true, saved: Object.keys(groups).length, results });
     }
 
-    // 课中作业
-    if (path === "/homework" && method === "GET") return json([await rj("homework")]);
+    // 课中作业（?task=P4T1 等任务参数 → 任务级作业；不传 → P1T2 默认作业，逻辑不变）
+    if (path === "/homework" && method === "GET") {
+      const task = url.searchParams.get("task") || "";
+      if (task && TASK_HOMEWORKS[task]) {
+        let meta = await rj(`homework:task:${task}`);
+        if (!meta) { meta = TASK_HOMEWORKS[task]; await wj(`homework:task:${task}`, meta); } // 懒播种
+        return json([meta]);
+      }
+      return json([await rj("homework")]);
+    }
     if (path === "/homework/submissions" && method === "GET") {
+      const task = url.searchParams.get("task") || "";
       const keys = await listKeys("homework:sub:");
+      // 任务级键形如 homework:sub:P4T1:{学号}；旧 P1T2 键为 homework:sub:{纯数字学号}，互不混入
+      const wanted = task ? keys.filter((k) => k.startsWith(`homework:sub:${task}:`)) : keys.filter((k) => /^homework:sub:\d+$/.test(k));
       const rows = [];
-      for (const k of keys) { const d = await rj(k); if (d) rows.push(d); }
+      for (const k of wanted) { const d = await rj(k); if (d) rows.push(d); }
       return json(rows);
     }
     if (path === "/homework/upload-url" && method === "POST") {
-      const { studentId, fileName, contentType, size } = await request.json();
+      const { studentId, fileName, contentType, size, task: bodyTask } = await request.json();
       // 会话鉴权：仅登录学生可为本人申请上传签名
       if (!(await checkStudentAuth(request, studentId))) return json({ error: "请先登录后再提交作业" }, 401);
       // 服务端强制校验：仅 PNG / JPG，且 ≤ 5MB
@@ -325,7 +345,8 @@ export async function onRequest(context) {
       const sz = Number(size);
       if (!(sz > 0) || sz > MAX_UPLOAD) return json({ error: "图片大小必须在 5MB 以内" }, 400);
       const safe = String(fileName || "upload").replace(/[^\w.\-一-龥]/g, "_");
-      const key = `hw/${studentId}/${Date.now()}-${safe}`;
+      const task = String(bodyTask || "");
+      const key = task ? `hw/${task}/${studentId}/${Date.now()}-${safe}` : `hw/${studentId}/${Date.now()}-${safe}`;
       const { url: putUrl, expiresAt } = await FILES.createUploadUrl(key, { contentType: contentType || "application/octet-stream", expireSeconds: 3600 });
       return json({ url: putUrl, key, expiresAt });
     }
@@ -338,18 +359,21 @@ export async function onRequest(context) {
       const sz = Number(m.size);
       if (!(sz > 0) || sz > MAX_UPLOAD) return json({ error: "图片大小必须在 5MB 以内" }, 400);
       const byId = Object.fromEntries((await students()).map((s) => [s.id, s]));
+      const task = TASK_HOMEWORKS[m.task] ? m.task : "";
       const meta = {
         studentId: m.studentId, name: byId[m.studentId]?.name || m.studentId,
         fileName: m.fileName, size: Number(m.size) || 0, key: m.key,
         contentType: m.contentType || "image/png", submittedAt: nowHM(),
+        ...(task ? { task } : {}),
       };
-      await wj(`homework:sub:${m.studentId}`, meta);
+      await wj(task ? `homework:sub:${task}:${m.studentId}` : `homework:sub:${m.studentId}`, meta);
       return json(meta, 201);
     }
     if (path.startsWith("/homework/file") && method === "GET") {
       const sid = url.searchParams.get("sid");
+      const task = url.searchParams.get("task") || "";
       if (!sid) return json({ error: "sid required" }, 400);
-      const meta = await rj(`homework:sub:${sid}`);
+      const meta = await rj(task ? `homework:sub:${task}:${sid}` : `homework:sub:${sid}`);
       if (!meta?.key) return new Response("not found", { status: 404, headers: CORS });
       const buf = await FILES.get(meta.key, { type: "arrayBuffer", consistency: "strong" });
       if (!buf) return new Response("not found", { status: 404, headers: CORS });

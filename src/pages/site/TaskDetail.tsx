@@ -234,6 +234,8 @@ export default function TaskDetail() {
 
       {task.id === "P1T1" ? (
         <P1T1Content />
+      ) : task.id === "P4T1" ? (
+        <P4T1Content />
       ) : (
         <>
           <WorkOrder />
@@ -354,6 +356,82 @@ function P1T1Content() {
 
       <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
         <IconCheck className="h-4 w-4" /> 本任务为数据抓取测试任务，可进入练习；当前正在进行的主线任务仍为「传感与视觉数据采集」。
+      </div>
+    </>
+  );
+}
+
+/* ---------- 项目四·任务1：社区数据单维度看板设计 ---------- */
+
+const P4T1_STEPS = [
+  {
+    title: "选定数据维度",
+    desc: "从社区物联感知数据中任选一个维度作为看板主题：环境温湿度、人流变化、设备状态、能耗等。维度越聚焦，看板结论越清晰。",
+  },
+  {
+    title: "梳理数据结构",
+    desc: "明确该维度的字段含义、数据量级与时间范围（如逐小时温湿度序列、逐日人流量），判断适合的图表类型：趋势用折线图、对比用柱状图、占比用饼图 / 环形图。",
+  },
+  {
+    title: "实现看板",
+    desc: "使用 ECharts（或表格工具 + 图表）实现单维度看板：包含看板标题、核心指标卡（如最大值 / 平均值 / 最新值）与主图表，配色统一、坐标轴与单位标注完整。",
+  },
+  {
+    title: "提炼数据结论",
+    desc: "在看板上写出 1–2 条关键数据结论（如「下午 2 点人流达到峰值 320 人」），让看数据的人不用逐个图表分析就能得到答案。",
+  },
+];
+
+function P4T1Content() {
+  return (
+    <>
+      <Card className="p-8">
+        <div className="text-sm leading-relaxed text-brand-200/80">
+          <b className="text-white">任务背景：</b>社区物联感知设备持续产生环境、人流与设备状态等数据，
+          管理者需要一张<b className="text-white">聚焦单一维度的数据看板</b>来快速掌握运行状况。
+          本任务请选择一个感知维度，完成<b className="text-amber-400">看板设计与实现</b>，
+          并将最终看板截图提交到平台作业（作业：社区物联感知看板设计与实现）。
+        </div>
+      </Card>
+
+      <h3 className="mb-3 mt-8 text-sm font-medium tracking-widest text-brand-200/60">操作指引</h3>
+      <div className="space-y-3">
+        {P4T1_STEPS.map((c, i) => (
+          <Card key={c.title} hover className="flex items-start gap-4 p-5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-sm font-bold text-brand-300">
+              {i + 1}
+            </span>
+            <div>
+              <div className="font-medium text-white">{c.title}</div>
+              <div className="mt-0.5 text-sm leading-relaxed text-brand-200/70">{c.desc}</div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <Link to="/student/homework?task=P4T1">
+          <Card hover className="flex items-center gap-4 p-5">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300"><IconUpload className="h-5 w-5" /></span>
+            <div>
+              <div className="font-semibold text-white">提交作业</div>
+              <div className="text-xs text-brand-200/60">上传社区物联感知看板作品截图</div>
+            </div>
+          </Card>
+        </Link>
+        <Link to="/class/homework?task=P4T1">
+          <Card hover className="flex items-center gap-4 p-5">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-500/15 text-emerald-300"><IconBoard className="h-5 w-5" /></span>
+            <div>
+              <div className="font-semibold text-white">后台大屏</div>
+              <div className="text-xs text-brand-200/60">查看本任务作业提交进度墙</div>
+            </div>
+          </Card>
+        </Link>
+      </div>
+
+      <div className="mt-6 flex items-center gap-2 text-xs text-emerald-300">
+        <IconCheck className="h-4 w-4" /> 本任务作业与项目一·任务2 的「数据质检报告」相互独立，分别统计、互不影响。
       </div>
     </>
   );

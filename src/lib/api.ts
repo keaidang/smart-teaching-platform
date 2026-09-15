@@ -13,7 +13,7 @@ import type {
   Student,
   TeacherEval,
 } from "./types";
-import { STUDENTS } from "./course";
+import { STUDENTS, P4T1_HOMEWORK } from "./course";
 
 // mock 数据惰性加载：只有 VITE_USE_MOCK=true 的离线演示才会拉取该 chunk，
 // 生产构建中 USE_MOCK 为字面量 false，此动态 import 会被构建器消除，不进入产物。
@@ -151,24 +151,30 @@ export const api = {
     }),
 
   // 课中作业（图片走 Blob 预签名直传，元数据走 KV；仅 PNG/JPG 且 ≤5MB）
-  getHomework: () =>
-    get<Homework[]>("/homework", async () => (await mockMod()).homeworks),
-  getHomeworkSubmissions: () =>
-    get<HomeworkSubmission[]>("/homework/submissions", async () =>
-      (await mockMod()).mockHomeworkSubmissions()
+  // task 缺省 = P1T2 默认作业；传任务 id（如 P4T1）→ 任务级作业，数据与 P1T2 相互独立
+  getHomework: (task?: string) =>
+    get<Homework[]>(
+      `/homework${task ? `?task=${task}` : ""}`,
+      async () => (task ? [P4T1_HOMEWORK] : (await mockMod()).homeworks)
+    ),
+  getHomeworkSubmissions: (task?: string) =>
+    get<HomeworkSubmission[]>(
+      `/homework/submissions${task ? `?task=${task}` : ""}`,
+      async () => (task ? [] : (await mockMod()).mockHomeworkSubmissions())
     ),
   getHomeworkUploadUrl: (payload: {
     studentId: string;
     fileName: string;
     contentType: string;
     size: number;
+    task?: string;
   }) =>
     postStudent<{ url: string; key: string; expiresAt: number }>(
       "/homework/upload-url",
       payload,
       {
         url: "",
-        key: `hw/${payload.studentId}/${Date.now()}-${payload.fileName}`,
+        key: `${payload.task ? `${payload.task}/` : ""}hw/${payload.studentId}/${Date.now()}-${payload.fileName}`,
         expiresAt: 0,
       }
     ),
@@ -178,6 +184,7 @@ export const api = {
     size: number;
     key: string;
     contentType: string;
+    task?: string;
   }) =>
     postStudent<HomeworkSubmission>("/homework/submissions", meta, {
       ...meta,
@@ -288,6 +295,11 @@ export const api = {
       updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
     }),
 };
+
+// 作业图片地址：任务级提交带 task 参数，默认（P1T2）不带
+export function homeworkFileUrl(studentId: string, task?: string) {
+  return `/api/homework/file?sid=${studentId}${task ? `&task=${task}` : ""}`;
+}
 
 // ---------- 管理端（始终走真实后端，不受 mock 影响） ----------
 async function adminReq<T>(path: string, method: "GET" | "POST", key: string): Promise<T> {
