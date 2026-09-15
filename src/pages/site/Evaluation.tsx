@@ -41,7 +41,7 @@ export default function Evaluation() {
           <div>
             <h2 className="text-2xl font-semibold text-white">教学评价资源区</h2>
             <p className="mt-0.5 text-sm text-brand-200/70">
-              教师评价 · 企业评价 · AI 工具测评 · 达成度看板（26 人 · 6 小组 · 以小组为单位打分）
+              教师评价 · 企业评价 · AI 工具测评 · 达成度看板（28 人 · 7 小组 · 以小组为单位打分）
             </p>
           </div>
         </div>

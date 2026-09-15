@@ -27,7 +27,7 @@ npm run build   # tsc --noEmit && vite build（必须过）
 - **作业上传限制**：仅 PNG/JPG，单张 ≤ 5MB；前端 `StudentHomework` 与服务端 `/homework/upload-url`、`/homework/submissions` 双重校验，`upload-url` 需传 `size`。
 - **预习可重复提交**：同一学号重复提交覆盖 KV（以最后一次为准），学生端提交前会提示“已提交过（当前成绩 X 分）”。
 - **KV 种子只在 `students` 键缺失时自动写入**（`ensureSeed`）。改了名单/题目 → 部署后需调用重播种（见 §6），否则线上仍是旧数据。
-- **班级固定 26 人**（学号 `20241216501`–`20241216526`，已剔除休学/集训）；答题/提交/在线/评价等记录可重置，但名单固定。
+- **班级固定 28 人**（学号 `20241216501`–`20241216528`，已剔除休学/集训，后补徐馨 527、陶高宇 528）；答题/提交/在线/评价等记录可重置，但名单固定。
 - **提交作者**：git 已配 `keaidang <keaidang@gmail.com>`。
 - **绝不提交** `.env`、`.edgeone/`（含 CLI 令牌）；密钥只放 `.env`（已 gitignore）与 EdgeOne 控制台环境变量。
 - 深色玻璃拟态主题，品牌色 cyan（`--color-brand-*`，见 `src/index.css`）；新页面沿用 `Card/SectionTitle/Avatar/Bar` 等 `src/components/ui.tsx`。
@@ -42,7 +42,7 @@ npm run build   # tsc --noEmit && vite build（必须过）
 | `homework:sub:<学号>` | 作业元数据 `{...,fileName,size,key,contentType,submittedAt}` |
 | `exercise:answer:<学号>` | 课后问答作答 |
 | `teacher-eval:<学号>` | 教师评价 `{scores:{classroom,homework,knowledge,quality},comment,updatedAt}` |
-| `group-eval:<teacher\|enterprise\|ai>:<组号>` | 小组评价（6 组 × 4 项目 0–100 分 + 评语） |
+| `group-eval:<teacher\|enterprise\|ai>:<组号>` | 小组评价（7 组 × 4 项目 0–100 分 + 评语） |
 | `presence:<学号>` | 在线心跳 `{ts}`（近 60s 算在线） |
 
 作业图片二进制在 Blob `homework`（`hw/<学号>/<ts>-<名>`），`homework:sub` 存其 `key`。

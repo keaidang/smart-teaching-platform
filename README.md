@@ -51,7 +51,7 @@
 
 | 键 | 含义 |
 |---|---|
-| `students` | 班级名单（26 人，学号 20241216501–526） |
+| `students` | 班级名单（28 人，学号 20241216501–528） |
 | `preview:questions` / `exercises` / `homework` | 题目与作业定义（种子） |
 | `preview:answer:<学号>` | 课前预习作答 + 得分（含 lesson/kp/dim 标签） |
 | `homework:sub:<学号>` | 作业提交元数据（文件名/大小/`key`/时间） |

@@ -4,7 +4,7 @@ export interface Roster { id: string; name: string }
 export interface TaskDef { id: string; title: string; active: boolean }
 export interface ProjectDef { id: string; title: string; hours: number; tasks: TaskDef[] }
 
-// 26 人班级名单（学号 1–26 连续；已剔除休学 1 人、集训 3 人）
+// 28 人班级名单（学号 1–28 连续；已剔除休学 1 人、集训 3 人，后补徐馨、陶高宇）
 export const ROSTER: Roster[] = [
   { id: "20241216501", name: "孙天一" }, { id: "20241216502", name: "王英杰" }, { id: "20241216503", name: "马彦如" },
   { id: "20241216504", name: "杨诗意" }, { id: "20241216505", name: "龚宸宇" }, { id: "20241216506", name: "张昊祯" },
@@ -15,6 +15,7 @@ export const ROSTER: Roster[] = [
   { id: "20241216519", name: "黄杨萌" }, { id: "20241216520", name: "宋子娴" }, { id: "20241216521", name: "葛子骏" },
   { id: "20241216522", name: "刘佳鑫" }, { id: "20241216523", name: "郑智童" }, { id: "20241216524", name: "张哲" },
   { id: "20241216525", name: "周国栋" }, { id: "20241216526", name: "张郁贤" },
+  { id: "20241216527", name: "徐馨" }, { id: "20241216528", name: "陶高宇" },
 ];
 
 const AVATAR_COLORS = ["#22d3ee", "#34d399", "#a78bfa", "#f472b6", "#fbbf24", "#60a5fa", "#f87171", "#4ade80"];
@@ -58,7 +59,7 @@ export const PROJECTS: ProjectDef[] = [
 
 export const ACTIVE_TASK_ID = "P1T2";
 
-// 小组分组：26 人 = 第 1–5 组各 4 人，第 6 组 6 人（多出的 2 人并入最后一组）；评价均以小组为单位
+// 小组分组：28 人 = 7 组 × 4 人；评价均以小组为单位
 export interface GroupDef { id: string; name: string; memberIds: string[] }
 export const GROUPS: GroupDef[] = [
   { id: "G1", name: "第1组", memberIds: ROSTER.slice(0, 4).map((r) => r.id) },
@@ -66,7 +67,8 @@ export const GROUPS: GroupDef[] = [
   { id: "G3", name: "第3组", memberIds: ROSTER.slice(8, 12).map((r) => r.id) },
   { id: "G4", name: "第4组", memberIds: ROSTER.slice(12, 16).map((r) => r.id) },
   { id: "G5", name: "第5组", memberIds: ROSTER.slice(16, 20).map((r) => r.id) },
-  { id: "G6", name: "第6组", memberIds: ROSTER.slice(20, 26).map((r) => r.id) },
+  { id: "G6", name: "第6组", memberIds: ROSTER.slice(20, 24).map((r) => r.id) },
+  { id: "G7", name: "第7组", memberIds: ROSTER.slice(24, 28).map((r) => r.id) },
 ];
 export function groupMemberNames(g: GroupDef) {
   return g.memberIds.map((id) => ROSTER.find((r) => r.id === id)?.name || id);
