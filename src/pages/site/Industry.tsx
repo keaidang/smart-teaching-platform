@@ -99,30 +99,33 @@ export default function Industry() {
         })}
       </div>
 
-      <Card className="mt-6 p-6">
+      <Card className="mt-6 p-7">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{cur.icon}</span>
           <h3 className="text-lg font-semibold text-white">{cur.name}</h3>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-brand-200/80">{cur.scene}</p>
-        <div className="mt-3 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-brand-100/80">
+        <p className="mt-2.5 text-[15px] leading-relaxed text-brand-200/80">{cur.scene}</p>
+        <div className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-[15px] text-brand-100/85">
           <b className="text-brand-300">采集要点：</b>{cur.collect}
         </div>
       </Card>
 
       <div className="mt-5 grid flex-1 gap-5 md:grid-cols-3">
         {cur.resources.map((r) => (
-          <Card key={r.title} hover className="flex h-full flex-col p-6">
-            <h4 className="text-base font-semibold text-white">{r.title}</h4>
-            <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-200/70">{r.desc}</p>
-            <ul className="mt-4 space-y-2 border-t border-white/5 pt-4">
-              {r.items.map((it) => (
-                <li key={it} className="flex items-center gap-2 text-sm text-brand-100/80">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: cur.color }} />
-                  {it}
-                </li>
-              ))}
-            </ul>
+          <Card key={r.title} hover className="flex h-full flex-col p-7">
+            <h4 className="text-lg font-semibold text-white">{r.title}</h4>
+            <p className="mt-2.5 text-[15px] leading-relaxed text-brand-200/70">{r.desc}</p>
+            <div className="my-auto pt-4">
+              <div className="mb-3 text-[11px] font-medium tracking-widest text-brand-200/45">包含资源</div>
+              <ul className="space-y-3.5 border-t border-white/5 pt-4">
+                {r.items.map((it) => (
+                  <li key={it} className="flex items-center gap-2.5 text-[15px] text-brand-100/85">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cur.color }} />
+                    {it}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </Card>
         ))}
       </div>

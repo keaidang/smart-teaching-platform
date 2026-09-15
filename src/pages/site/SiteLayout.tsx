@@ -35,14 +35,14 @@ export default function SiteLayout() {
           </div>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-2.5">
+        <nav className="space-y-1.5">
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
               className={({ isActive }) =>
-                `group flex min-h-0 flex-1 items-center gap-3 rounded-xl px-3 py-3 transition-all ${
+                `group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all ${
                   isActive
                     ? "bg-gradient-to-r from-brand-500/25 to-brand-500/5 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.35)]"
                     : "hover:bg-white/5"
@@ -64,7 +64,7 @@ export default function SiteLayout() {
           ))}
         </nav>
 
-        <div className="mt-4 border-t border-brand-400/10 px-3 pt-4 text-[11px] leading-relaxed text-brand-200/35">
+        <div className="mt-auto border-t border-brand-400/10 px-3 pt-4 text-[11px] leading-relaxed text-brand-200/35">
           《人工智能数据服务》
           <br />
           校企融合 · 真实任务工单

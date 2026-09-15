@@ -129,22 +129,22 @@ export default function Extensions() {
                   <b.icon className="h-6 w-6" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-lg font-semibold text-white">{b.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-brand-200/70">{b.desc}</p>
+                  <h3 className="text-xl font-semibold text-white">{b.title}</h3>
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-brand-200/70">{b.desc}</p>
                 </div>
               </div>
-              <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              <div className="grid flex-1 content-center gap-2.5 py-4 sm:grid-cols-3">
                 {b.items.map((it) => (
                   <div
                     key={it}
-                    className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-xs text-brand-100/80"
+                    className="flex min-h-[72px] items-center justify-center rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center text-sm leading-snug text-brand-100/90"
                   >
                     {it}
                   </div>
                 ))}
               </div>
               {b.legal && (
-                <div className="mt-3 text-right text-xs font-medium text-emerald-300">
+                <div className="mt-3 text-right text-[13px] font-medium text-emerald-300">
                   点击查看法规原文对照 →
                 </div>
               )}
@@ -152,11 +152,11 @@ export default function Extensions() {
           );
 
           return b.legal ? (
-            <Card key={b.title} hover className="h-full cursor-pointer p-6 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
+            <Card key={b.title} hover className="flex h-full cursor-pointer flex-col p-7 ring-emerald-400/30 transition-shadow hover:ring-1" onClick={() => setLegal(true)}>
               {inner}
             </Card>
           ) : (
-            <Card key={b.title} hover className="h-full p-6">{inner}</Card>
+            <Card key={b.title} hover className="flex h-full flex-col p-7">{inner}</Card>
           );
         })}
       </div>

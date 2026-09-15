@@ -10,10 +10,26 @@ import {
 import { Card } from "../../components/ui";
 
 const MODULES = [
-  { id: "mod-projects", to: "/projects", title: "项目学习资源", desc: "围绕数据生命周期构建的全流程实战项目", icon: IconBook, color: "#22d3ee" },
-  { id: "mod-industry", to: "/industry", title: "产教融合资源", desc: "真实行业场景与企业级资源产学对接", icon: IconFactory, color: "#34d399" },
-  { id: "mod-extensions", to: "/extensions", title: "拓展课程资源", desc: "前沿技术 · 赛证融通 · 跨领域 · 合规", icon: IconExpand, color: "#a78bfa" },
-  { id: "mod-evaluation", to: "/evaluation", title: "教学评价资源", desc: "多维 · 智能 · 全过程学习质量评价", icon: IconGauge, color: "#fbbf24" },
+  {
+    id: "mod-projects", to: "/projects", title: "项目学习资源",
+    desc: "围绕数据生命周期构建的全流程实战项目", icon: IconBook, color: "#22d3ee",
+    points: ["数据感知方案设计与采集", "多源数据清洗治理", "融合存储与可视化"],
+  },
+  {
+    id: "mod-industry", to: "/industry", title: "产教融合资源",
+    desc: "真实行业场景与企业级资源产学对接", icon: IconFactory, color: "#34d399",
+    points: ["四大行业应用场景", "企业脱敏工单库", "标准规范与案例包"],
+  },
+  {
+    id: "mod-extensions", to: "/extensions", title: "拓展课程资源",
+    desc: "前沿技术 · 赛证融通 · 跨领域 · 合规", icon: IconExpand, color: "#a78bfa",
+    points: ["AI 前沿技术工具包", "1+X 证书与竞赛融通", "数据服务法律合规"],
+  },
+  {
+    id: "mod-evaluation", to: "/evaluation", title: "教学评价资源",
+    desc: "多维 · 智能 · 全过程学习质量评价", icon: IconGauge, color: "#fbbf24",
+    points: ["小组制多元评价", "达成度智能看板", "全过程学习画像"],
+  },
 ];
 
 const GUIDE_STEPS = [
@@ -74,8 +90,8 @@ export default function SiteHome() {
         </div>
       </div>
 
-      {/* 中部：课程导学 + 技术资源库（放大主区） */}
-      <div className="grid min-h-0 flex-1 gap-5 md:grid-cols-2">
+      {/* 中部：课程导学 + 技术资源库（高度收敛） */}
+      <div className="grid min-h-0 flex-[5] gap-5 md:grid-cols-2">
         <Card hover className="flex h-full min-h-0 flex-col p-6">
           <div className="flex items-center gap-3">
             <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
@@ -143,12 +159,12 @@ export default function SiteHome() {
         </Card>
       </div>
 
-      {/* 底部：四大模块快捷导航 */}
-      <div className="shrink-0">
+      {/* 底部：四大模块快捷导航（加高 + 内容充实） */}
+      <div className="flex min-h-0 flex-[4] flex-col">
         <h3 className="mb-3 text-xs font-medium tracking-widest text-brand-200/50">
           核心资源模块
         </h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid min-h-0 flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {MODULES.map((m) => (
             <div
               key={m.id}
@@ -159,11 +175,11 @@ export default function SiteHome() {
                   : ""
               }`}
             >
-              <Link to={m.to}>
-                <Card hover className="h-full p-5">
+              <Link to={m.to} className="block h-full">
+                <Card hover className="flex h-full flex-col p-5">
                   <div className="flex items-center gap-3">
                     <span
-                      className="grid h-10 w-10 place-items-center rounded-xl"
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
                       style={{ background: `${m.color}22`, color: m.color }}
                     >
                       <m.icon className="h-5 w-5" />
@@ -173,6 +189,14 @@ export default function SiteHome() {
                   <div className="mt-3 text-[13px] leading-relaxed text-brand-200/60">
                     {m.desc}
                   </div>
+                  <ul className="mt-3 flex-1 space-y-2 border-t border-white/5 pt-3">
+                    {m.points.map((pt) => (
+                      <li key={pt} className="flex items-center gap-2 text-[13px] text-brand-100/75">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: m.color }} />
+                        <span className="truncate">{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
                   <div className="mt-3 text-sm font-medium" style={{ color: m.color }}>
                     进入 →
                   </div>
