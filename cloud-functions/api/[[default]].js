@@ -74,6 +74,20 @@ async function ensureSeed() {
 }
 async function students() { return (await rj("students")) || []; }
 
+// ---------- 学生会话令牌：登录签发，写接口校验（x-student-token）----------
+// 一个学号同一时间只保留最新一个有效令牌：新设备登录会使旧设备令牌失效
+async function issueToken(studentId) {
+  const token = (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`).replace(/-/g, "");
+  await wj(`session:${studentId}`, { token, ts: Date.now() });
+  return token;
+}
+async function checkStudentAuth(request, studentId) {
+  const token = request.headers.get("x-student-token");
+  if (!token || !studentId) return false;
+  const s = await rj(`session:${studentId}`);
+  return !!s && s.token === token;
+}
+
 // 作业上传限制：仅 PNG / JPG，且不超过 5MB（与前端校验一致，服务端为准）
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 const MAX_UPLOAD = 5 * 1024 * 1024;
@@ -240,10 +254,11 @@ export async function onRequest(context) {
       });
     }
 
-    // 在线心跳（学生端每 ~20s 调用；近 60s 有心跳 = 在线）
+    // 在线心跳（学生端每 ~20s 调用；近 60s 有心跳 = 在线；需会话令牌）
     if (path === "/presence" && method === "POST") {
       const { studentId } = await request.json();
       if (!studentId) return json({ error: "studentId required" }, 400);
+      if (!(await checkStudentAuth(request, studentId))) return json({ error: "请先登录" }, 401);
       await wj(`presence:${studentId}`, { studentId, ts: Date.now() });
       return json({ ok: true, ts: Date.now() });
     }
@@ -303,6 +318,8 @@ export async function onRequest(context) {
     }
     if (path === "/homework/upload-url" && method === "POST") {
       const { studentId, fileName, contentType, size } = await request.json();
+      // 会话鉴权：仅登录学生可为本人申请上传签名
+      if (!(await checkStudentAuth(request, studentId))) return json({ error: "请先登录后再提交作业" }, 401);
       // 服务端强制校验：仅 PNG / JPG，且 ≤ 5MB
       if (!ALLOWED_TYPES.includes(contentType)) return json({ error: "仅支持 PNG / JPG 格式图片" }, 400);
       const sz = Number(size);
@@ -360,7 +377,12 @@ export async function onRequest(context) {
       return json(stats.map((s) => ({ exerciseId: s.exerciseId, title: s.title, answer: s.answer, correctRate: s.attempts ? Math.round((s.correctCount / s.attempts) * 100) : 0, attempts: s.attempts, distribution: s.distribution })));
     }
     if (path === "/exercises/answers" && method === "POST") {
-      const list = await request.json();
+      const arr = (await request.json().catch(() => null)) || [];
+      if (!Array.isArray(arr)) return json({ error: "invalid body" }, 400);
+      const sid0 = arr[0]?.studentId;
+      // 会话鉴权：只能以登录学号本人身份提交
+      if (!(await checkStudentAuth(request, sid0))) return json({ error: "请先登录后再提交" }, 401);
+      const list = arr.filter((a) => a.studentId === sid0);
       const exs = await rj("exercises");
       const emap = Object.fromEntries(exs.map((e) => [e.id, e]));
       const groups = {};
