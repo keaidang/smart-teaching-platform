@@ -22,41 +22,41 @@ export default function SiteLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-6 backdrop-blur-xl">
-        <div className="mb-8 flex items-center gap-3 px-2">
-          <Logo size={40} />
+      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-brand-400/15 bg-ink-900/40 px-4 py-7 backdrop-blur-xl">
+        <div className="mb-10 flex items-center gap-3 px-2">
+          <Logo size={44} />
           <div>
-            <div className="text-glow text-lg font-bold tracking-widest text-brand-100">
+            <div className="text-glow text-2xl font-bold tracking-widest text-brand-100">
               数智社区
             </div>
-            <div className="mt-0.5 text-xs tracking-widest text-brand-300/60">
+            <div className="mt-0.5 text-sm tracking-widest text-brand-300/60">
               教学资源库
             </div>
           </div>
         </div>
 
-        <nav className="space-y-1.5">
+        <nav className="space-y-3">
           {NAV.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.end}
               className={({ isActive }) =>
-                `group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all ${
+                `group flex items-center gap-4 rounded-xl px-4 py-3.5 transition-all ${
                   isActive
                     ? "bg-gradient-to-r from-brand-500/25 to-brand-500/5 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.35)]"
                     : "hover:bg-white/5"
                 }`
               }
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-brand-300 group-hover:text-brand-200">
-                <n.icon className="h-5 w-5" />
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-brand-500/15 text-brand-300 group-hover:text-brand-200">
+                <n.icon className="h-6 w-6" />
               </span>
               <span className="min-w-0">
-                <span className="block text-[15px] font-medium tracking-wide text-white">
+                <span className="block text-lg font-medium tracking-wide text-white">
                   {n.label}
                 </span>
-                <span className="block truncate text-[11px] text-brand-200/50">
+                <span className="block truncate text-[13px] text-brand-200/50">
                   {n.desc}
                 </span>
               </span>
@@ -64,7 +64,7 @@ export default function SiteLayout() {
           ))}
         </nav>
 
-        <div className="mt-auto border-t border-brand-400/10 px-3 pt-4 text-[11px] leading-relaxed text-brand-200/35">
+        <div className="mt-auto border-t border-brand-400/10 px-3 pt-4 text-[13px] leading-relaxed text-brand-200/40">
           《人工智能数据服务》
           <br />
           校企融合 · 真实任务工单
