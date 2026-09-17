@@ -119,32 +119,33 @@ export default function Extensions() {
     return (
       <div className="animate-rise">
         <SectionTitle
-          icon={<IconShield className="h-6 w-6" />}
+          icon={<IconShield className="h-8 w-8" />}
           title="数据服务法律法规 · 合规依据"
           sub="人脸特征数据集采集合规要求 · 法规原文对照"
+          large
         />
 
         <button
           onClick={() => setLegal(false)}
-          className="mb-6 rounded-lg border border-brand-400/25 px-4 py-2 text-sm text-brand-100 transition-colors hover:bg-brand-500/15"
+          className="mb-7 rounded-lg border border-brand-400/25 px-5 py-2.5 text-lg text-brand-100 transition-colors hover:bg-brand-500/15"
         >
           ← 返回拓展课程资源
         </button>
 
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
           {LEGAL_QUOTES.map((q) => (
-            <Card key={q.source} hover className="flex flex-col p-6" >
+            <Card key={q.source} hover className="flex flex-col p-8" >
               <div
-                className="flex-grow rounded-r-xl bg-white/[0.04] px-5 py-4"
-                style={{ borderLeft: `4px solid ${q.color}` }}
+                className="flex-grow rounded-r-xl bg-white/[0.04] px-6 py-6"
+                style={{ borderLeft: `5px solid ${q.color}` }}
               >
-                <p className="text-[15px] italic leading-relaxed text-brand-100/90">“{q.text}”</p>
-                {q.note && <p className="mt-2 text-xs text-brand-200/50">{q.note}</p>}
+                <p className="text-2xl font-medium italic leading-relaxed text-white">“{q.text}”</p>
+                {q.note && <p className="mt-3 text-lg leading-relaxed text-brand-200/70">{q.note}</p>}
               </div>
-              <div className="mt-4 flex items-center gap-3 border-t border-dashed border-white/10 pt-4">
-                <span className="text-sm font-bold tracking-widest text-white">出处</span>
+              <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-dashed border-white/10 pt-5">
+                <span className="text-lg font-bold tracking-widest text-white">出处</span>
                 <span
-                  className="rounded-full border px-3 py-1 font-mono text-xs"
+                  className="rounded-full border px-5 py-2 font-mono text-base font-medium"
                   style={{ borderColor: `${q.color}80`, background: `${q.color}2e`, color: q.color }}
                 >
                   {q.source}
@@ -154,7 +155,7 @@ export default function Extensions() {
           ))}
         </div>
 
-        <p className="mt-6 text-center text-xs text-brand-200/40">
+        <p className="mt-8 text-center text-sm text-brand-200/40">
           数智社区 · 信息采集技术综合实训 · 《人工智能数据服务》· 校企融合真实任务工单
         </p>
       </div>
@@ -202,7 +203,7 @@ export default function Extensions() {
                 ))}
               </ul>
               {b.legal && (
-                <div className="mt-5 text-right text-sm font-medium text-emerald-300">
+                <div className="mt-5 text-right text-base font-semibold text-emerald-300">
                   点击查看法规原文对照 →
                 </div>
               )}
