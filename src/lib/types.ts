@@ -104,3 +104,56 @@ export interface GroupEval {
   comment: string;
   updatedAt: string;
 }
+
+// ===== 全过程测评（8 任务 × 课前/课中/课后）与学情分析 =====
+export type Phase = "pre" | "mid" | "post";
+
+export interface BankQuestion {
+  id: string;
+  title: string;
+  options: string[];
+  score: number;
+  // 答案仅存在于服务端；前端题库（含 mock）不携带
+}
+
+export interface PhaseScore {
+  studentId: string;
+  name: string;
+  taskId: string;
+  phase: Phase;
+  score: number;
+  total: number;
+  answered: number;
+}
+
+export interface StudentProfile {
+  studentId: string;
+  name: string;
+  radarPre: number[];
+  radarPost: number[];
+  knowledge: { name: string; score: number }[];
+  preAvg: number;
+  postAvg: number;
+  growth: number;
+  completion: number;
+  mastery: number;
+}
+
+export interface ClassAnalytics {
+  taskAvg: { id: string; title: string; avg: number; pre: number; mid: number; post: number }[];
+  skills: { name: string; values: number[] }[];
+  students: { id: string; name: string; pre: number; post: number }[];
+  profiles: StudentProfile[];
+}
+
+export interface GraphStats {
+  totalKnowledge: number;
+  linkedKnowledge: number;
+  masteryAvg: number;
+  completionAvg: number;
+  taskLink: { classroom: number; ideology: number; training: number; exam: number };
+  cloud: { name: string; heat: number }[];
+  bands: { label: string; value: number }[];
+  students: { id: string; name: string; completion: number; mastery: number }[];
+  knowledge: { id: string; name: string; type: string; mark: string; task: string; mastery: number; completion: number }[];
+}

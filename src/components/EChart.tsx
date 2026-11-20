@@ -32,22 +32,22 @@ export function EChart({
   return <div ref={ref} className={className} style={{ width: "100%", height }} />;
 }
 
-// 深色主题基线：统一文字/坐标轴/提示框配色
+// 浅色主题基线：统一文字/坐标轴/提示框配色
 export function dark(option: Record<string, unknown>): EChartsOption {
   const axisStyle = {
-    axisLine: { lineStyle: { color: "rgba(165,243,252,0.25)" } },
-    axisLabel: { color: "rgba(207,250,254,0.7)" },
-    splitLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } },
+    axisLine: { lineStyle: { color: "rgba(15,23,42,0.15)" } },
+    axisLabel: { color: "#64748b" },
+    splitLine: { lineStyle: { color: "rgba(15,23,42,0.08)" } },
   };
   return {
-    textStyle: { color: "rgba(230,246,251,0.9)", fontFamily: "inherit" },
+    textStyle: { color: "#334155", fontFamily: "inherit" },
     tooltip: {
-      backgroundColor: "rgba(6,32,42,0.95)",
-      borderColor: "rgba(34,211,238,0.3)",
-      textStyle: { color: "#e6f6fb" },
+      backgroundColor: "rgba(255,255,255,0.98)",
+      borderColor: "rgba(15,23,42,0.1)",
+      textStyle: { color: "#0f172a" },
       ...((option.tooltip as object) || {}),
     },
-    legend: { textStyle: { color: "rgba(207,250,254,0.8)" }, ...((option.legend as object) || {}) },
+    legend: { textStyle: { color: "#475569" }, ...((option.legend as object) || {}) },
     ...option,
     // 合并坐标轴深色样式
     xAxis: Array.isArray(option.xAxis)

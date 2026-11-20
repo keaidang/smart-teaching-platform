@@ -1,11 +1,16 @@
 import type {
+  BankQuestion,
+  ClassAnalytics,
   ClassOverview,
   EvalKind,
   Exercise,
   ExerciseStat,
+  GraphStats,
   GroupEval,
   Homework,
   HomeworkSubmission,
+  Phase,
+  PhaseScore,
   PreviewAnswer,
   PreviewQuestion,
   PreviewScore,
@@ -87,6 +92,36 @@ async function postStudent<T, B = unknown>(path: string, body: B, fallback: Mayb
     throw new Error(msg);
   }
   return (await res.json()) as T;
+}
+
+// 第一版学情接口：真实后端优先；后端未部署/不可达时自动回退内置演示数据，
+// 保证离线开发环境也能完整演示（生产部署后无缝切换真实数据）。
+async function getFlex<T>(path: string, fb: MaybeLazy<T>): Promise<T> {
+  if (USE_MOCK) return structuredClone(await resolveFallback(fb));
+  try {
+    const res = await fetch(`${BASE}${path}`);
+    if (res.ok) return (await res.json()) as T;
+  } catch {
+    /* 后端不可达 → 回退演示数据 */
+  }
+  return structuredClone(await resolveFallback(fb));
+}
+async function postFlex<T, B = unknown>(path: string, body: B, fb: MaybeLazy<T>): Promise<T> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 300));
+    return structuredClone(await resolveFallback(fb));
+  }
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-student-token": getToken() },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) return (await res.json()) as T;
+  } catch {
+    /* 后端不可达 → 回退演示判分 */
+  }
+  return structuredClone(await resolveFallback(fb));
 }
 
 export const api = {
@@ -295,6 +330,29 @@ export const api = {
       ...e,
       updatedAt: new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
     }),
+
+  // ===== 全过程测评：8 任务 × 课前/课中/课后 =====
+  getTaskBank: (taskId: string, phase: Phase) =>
+    getFlex<BankQuestion[]>(`/tasks/${taskId}/bank?phase=${phase}`, async () =>
+      (await mockMod()).mockTaskBank(taskId, phase)
+    ),
+  getPhaseScores: (taskId?: string, phase?: Phase) =>
+    getFlex<PhaseScore[]>(
+      `/phase-scores${taskId || phase ? `?${new URLSearchParams({ ...(taskId ? { task: taskId } : {}), ...(phase ? { phase } : {}) }).toString()}` : ""}`,
+      async () => (await mockMod()).mockPhaseScores(taskId, phase)
+    ),
+  submitPhaseAnswers: (payload: { studentId: string; taskId: string; phase: Phase; answers: { questionId: string; selected: number }[] }) =>
+    postFlex<{ ok: boolean; score: number; total: number; answered: number }>(
+      "/phase-answers",
+      payload,
+      async () => (await mockMod()).mockSubmitPhase(payload.studentId, payload.taskId, payload.phase, payload.answers.length)
+    ),
+
+  // ===== 学情分析 =====
+  getClassAnalytics: () =>
+    getFlex<ClassAnalytics>("/analytics/class", async () => (await mockMod()).mockClassAnalytics()),
+  getGraphStats: () =>
+    getFlex<GraphStats>("/analytics/graph", async () => (await mockMod()).mockGraphStats()),
 };
 
 // 作业图片地址：任务级提交带 task 参数，默认（P1T2）不带

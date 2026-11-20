@@ -3,8 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { api, homeworkFileUrl } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
 import type { Homework, HomeworkSubmission } from "../../lib/types";
-import { IconCheck, IconClock, IconUpload } from "../../components/icons";
-import { Card } from "../../components/ui";
+import { IconCheck, IconClock, IconShield, IconUpload } from "../../components/icons";
+import { Bar, Card, SectionTitle, Tag, TONE_HEX } from "../../components/ui";
 
 function fmtSize(bytes: number) {
   if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -14,6 +14,19 @@ function fmtSize(bytes: number) {
 // 作业上传限制：仅 PNG / JPG，且不超过 5MB（与服务端 /homework/upload-url 校验一致）
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 const MAX_SIZE = 5 * 1024 * 1024;
+
+// 提交规范清单：依据当前作业描述与工单 SQ-2026-001 验收标准整理（P1T2 质检报告 / P4T1 看板作品）
+const SPEC_P1T2 = [
+  { title: "质量筛选结果", desc: "截图需体现：单张质量分 ≥0.5 · 人脸框最小边 ≥80px · 距图像边缘 ≥10px" },
+  { title: "可用率达标", desc: "可用率 ≥80%（工单一票否决项），截图需包含可用率统计结果" },
+  { title: "合规自查项", desc: "person_id 假名化（如 P001）· 无原图残留 · 知情同意记录齐全" },
+];
+const SPEC_P4T1 = [
+  { title: "单维度看板", desc: "任选一个社区物联感知维度：环境温湿度 / 人流变化 / 设备状态等" },
+  { title: "设计并实现", desc: "ECharts 等图表工具均可，完成一个可运行的单维度数据看板" },
+  { title: "截图完整", desc: "截图需完整包含看板标题、图表效果与关键数据结论" },
+];
+const FORMAT_RULES = ["仅支持 PNG / JPG 格式", "单张图片不超过 5MB", "截图清晰完整、关键信息可读"];
 
 // 把文件 PUT 到预签名 URL（直传到 Blob，带进度）
 function putWithProgress(
@@ -177,60 +190,102 @@ export default function StudentHomework() {
 
   if (!hw)
     return (
-      <div className="grid h-40 place-items-center text-brand-200/60">
+      <div className="grid h-40 place-items-center text-slate-500">
         加载作业信息…
       </div>
     );
 
+  const isP4T1 = task === "P4T1";
+  const specItems = isP4T1 ? SPEC_P4T1 : SPEC_P1T2;
+
   return (
     <div className="animate-rise space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
-          <IconUpload className="h-5 w-5" />
-        </span>
-        <div>
-          <h2 className="text-xl font-semibold text-white">提交作业</h2>
-          <p className="text-sm text-brand-200/60">
-            作业图片上传课程服务器
-          </p>
+      <div className="hero-mesh tone-amber relative overflow-hidden rounded-2xl border border-slate-900/10 px-6 py-7">
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag tone={isP4T1 ? "rose" : "cyan"}>{isP4T1 ? "P4T1 · 任务级作业" : "P1T2 · 主线作业"}</Tag>
+          <Tag tone="rose">
+            <IconClock className="mr-1 h-3.5 w-3.5" /> 截止 {hw.deadline}
+          </Tag>
+          {mine ? <Tag tone="emerald">已提交</Tag> : <Tag tone="amber">待提交</Tag>}
         </div>
+        <h1 className="grad-text mt-3 text-3xl font-extrabold tracking-wide">提交作业</h1>
+        <p className="mt-1.5 text-base text-slate-600">
+          {hw.title} · 作品图片直传课程服务器，对照验收标准一次到位！
+        </p>
       </div>
 
-      <Card className="p-6">
+      <Card tone="amber" className="rise-1 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-lg font-semibold text-white">{hw.title}</h3>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-xs text-rose-300">
+          <h3 className="text-xl font-semibold text-slate-900">{hw.title}</h3>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/15 px-3 py-1 text-xs text-rose-600">
             <IconClock className="h-3.5 w-3.5" /> 截止 {hw.deadline}
           </span>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-brand-200/70">
+        <p className="mt-2 text-base leading-relaxed text-slate-600">
           {hw.description}
         </p>
       </Card>
 
+      <Card className="rise-2 p-6">
+        <SectionTitle
+          icon={<IconShield className="h-6 w-6" />}
+          title="提交规范清单"
+          sub="对照工单验收标准，提交前逐项自查"
+          tone="amber"
+        />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {specItems.map((s, i) => (
+            <div
+              key={s.title}
+              className="tone-amber rounded-xl border bg-slate-900/[0.03] px-5 py-4"
+              style={{ borderColor: "var(--tone-line)" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="icon-chip h-8 w-8 shrink-0 rounded-lg">
+                  <IconCheck className="h-4 w-4" strokeWidth={2.5} />
+                </span>
+                <span className="grad-text text-lg font-extrabold">0{i + 1}</span>
+              </div>
+              <div className="mt-2.5 text-base font-semibold text-slate-900">{s.title}</div>
+              <p className="mt-1 text-sm leading-relaxed text-slate-500">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="divider-grad mt-5" />
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-slate-500">格式要求：</span>
+          {FORMAT_RULES.map((r) => (
+            <Tag key={r} tone="amber">{r}</Tag>
+          ))}
+        </div>
+      </Card>
+
       {mine ? (
-        <Card className="flex items-center gap-4 p-6">
+        <Card tone="emerald" className="rise-3 flex items-center gap-4 p-6">
           {mine.contentType?.startsWith("image/") && !imgErr ? (
             <img
               src={homeworkFileUrl(mine.studentId, mine.task || task, { thumb: true, v: mine.key })}
               alt={mine.fileName}
               onError={() => setImgErr(true)}
-              className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-brand-400/30"
+              className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-emerald-400/30"
             />
           ) : (
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-300">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-600">
               <IconCheck className="h-6 w-6" strokeWidth={2.5} />
             </span>
           )}
           <div className="min-w-0 flex-1">
-            <div className="font-medium text-white">已提交</div>
-            <div className="truncate text-sm text-brand-200/70">
+            <div className="flex items-center gap-2">
+              <span className="text-base font-medium text-slate-900">已提交</span>
+              <Tag tone="emerald">作品已入库</Tag>
+            </div>
+            <div className="mt-0.5 truncate text-sm text-slate-500">
               {mine.fileName} · {fmtSize(mine.size)} · {mine.submittedAt}
             </div>
           </div>
         </Card>
       ) : (
-        <Card className="p-6">
+        <Card tone="amber" className="rise-3 p-6">
           <input
             ref={inputRef}
             type="file"
@@ -240,7 +295,7 @@ export default function StudentHomework() {
           />
           <button
             onClick={() => inputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-400/30 bg-brand-500/5 py-8 transition-colors hover:border-brand-400/60 hover:bg-brand-500/10"
+            className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-400/30 bg-amber-400/5 py-8 transition-colors hover:border-amber-400/60 hover:bg-amber-400/10"
           >
             {preview ? (
               <img
@@ -249,13 +304,15 @@ export default function StudentHomework() {
                 className="max-h-48 rounded-lg object-contain"
               />
             ) : (
-              <IconUpload className="h-8 w-8 text-brand-300" />
+              <span className="tone-amber icon-chip h-14 w-14 rounded-2xl">
+                <IconUpload className="h-7 w-7" />
+              </span>
             )}
-            <span className="mt-3 text-sm text-brand-100">
+            <span className="mt-3 text-base text-slate-700">
               {file ? file.name : "点击选择作品图片（PNG / JPG，不超过 5MB）"}
             </span>
             {file && (
-              <span className="mt-1 text-xs text-brand-200/50">
+              <span className="mt-1 text-xs text-slate-500">
                 {fmtSize(file.size)}
               </span>
             )}
@@ -263,27 +320,22 @@ export default function StudentHomework() {
 
           {uploading && (
             <div className="mt-4">
-              <div className="mb-1 flex justify-between text-xs text-brand-200/70">
+              <div className="mb-1 flex justify-between text-xs text-slate-500">
                 <span>正在上传…</span>
                 <span>{progress}%</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div
-                  className="h-full rounded-full bg-brand-400 transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              <Bar value={progress} color={TONE_HEX.amber} />
             </div>
           )}
-          {err && <p className="mt-3 text-sm text-rose-300">{err}</p>}
+          {err && <p className="mt-3 text-sm text-rose-600">{err}</p>}
 
           <button
             disabled={!file || uploading}
             onClick={submit}
-            className={`mt-4 w-full rounded-xl py-3.5 font-semibold transition-all ${
+            className={`mt-4 w-full rounded-xl py-3.5 text-base font-semibold transition-all ${
               file && !uploading
-                ? "bg-brand-500 text-ink-900 hover:bg-brand-400"
-                : "cursor-not-allowed bg-white/10 text-brand-200/40"
+                ? "bg-gradient-to-r from-amber-400 to-orange-500 text-ink-950 shadow-lg shadow-amber-500/25 hover:brightness-110"
+                : "cursor-not-allowed bg-slate-900/10 text-slate-500"
             }`}
           >
             {uploading ? "上传中…" : "提交作业"}

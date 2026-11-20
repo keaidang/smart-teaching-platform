@@ -6,6 +6,7 @@ import Projects from "./pages/site/Projects";
 import TaskDetail from "./pages/site/TaskDetail";
 import Industry from "./pages/site/Industry";
 import Extensions from "./pages/site/Extensions";
+import MindMap from "./pages/site/MindMap";
 import DisplayLayout from "./pages/display/DisplayLayout";
 import DisplayHome from "./pages/display/DisplayHome";
 import PreviewBoard from "./pages/display/PreviewBoard";
@@ -22,11 +23,14 @@ import { RequireStudent } from "./lib/auth";
 // 重依赖页面按需加载：Evaluation 拉 echarts，StudentAI 拉 react-markdown
 const Evaluation = lazy(() => import("./pages/site/Evaluation"));
 const StudentAI = lazy(() => import("./pages/student/StudentAI"));
+const GraphStats = lazy(() => import("./pages/site/GraphStats"));
+const AnalyticsBoard = lazy(() => import("./pages/display/AnalyticsBoard"));
+const StudentTests = lazy(() => import("./pages/student/StudentTests"));
 
 function Loading() {
   return (
     <div className="grid min-h-[50vh] place-items-center">
-      <div className="flex flex-col items-center gap-3 text-brand-200/60">
+      <div className="flex flex-col items-center gap-3 text-brand-600/60">
         <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-400/30 border-t-brand-400" />
         <span className="text-sm">加载中…</span>
       </div>
@@ -45,12 +49,15 @@ export default function App() {
           <Route path="projects/task/:taskId" element={<TaskDetail />} />
           <Route path="industry" element={<Industry />} />
           <Route path="extensions" element={<Extensions />} />
+          <Route path="mindmap" element={<MindMap />} />
+          <Route path="graph-stats" element={<GraphStats />} />
           <Route path="evaluation" element={<Evaluation />} />
         </Route>
 
         {/* 学生专属界面 */}
         <Route path="/student" element={<StudentLayout />}>
           <Route index element={<StudentLogin />} />
+          <Route path="tests" element={<RequireStudent><StudentTests /></RequireStudent>} />
           <Route path="preview" element={<RequireStudent><StudentPreview /></RequireStudent>} />
           <Route path="homework" element={<RequireStudent><StudentHomework /></RequireStudent>} />
           <Route path="exercise" element={<RequireStudent><StudentExercise /></RequireStudent>} />
@@ -60,6 +67,7 @@ export default function App() {
         {/* 教师实时大屏 */}
         <Route path="/class" element={<DisplayLayout />}>
           <Route index element={<DisplayHome />} />
+          <Route path="analytics" element={<AnalyticsBoard />} />
           <Route path="preview" element={<PreviewBoard />} />
           <Route path="homework" element={<HomeworkBoard />} />
           <Route path="exercise" element={<ExerciseBoard />} />

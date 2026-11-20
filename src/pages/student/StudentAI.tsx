@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { api } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
 import { IconCpu } from "../../components/icons";
-import { Card } from "../../components/ui";
+import { Card, Tag } from "../../components/ui";
 
 interface Msg {
   role: "user" | "assistant";
@@ -14,11 +14,14 @@ interface Msg {
   error?: boolean;
 }
 
+// 推荐提问示例：点击填入输入框，可编辑后再发送（覆盖课程核心知识点与工单实操）
 const SUGGESTIONS = [
   "pyserial 怎么读取传感器数据？",
   "数据清洗时缺失值怎么处理？",
   "多源数据融合对齐的关键是什么？",
   "公共区域采集要注意哪些合规问题？",
+  "K230 CanMV 如何采集多姿态人脸样本？",
+  "metadata.csv 的 8 个字段分别是什么？",
 ];
 
 export default function StudentAI() {
@@ -32,6 +35,7 @@ export default function StudentAI() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,33 +69,42 @@ export default function StudentAI() {
     setBusy(false);
   };
 
+  const fillSuggestion = (s: string) => {
+    setInput(s);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="animate-rise flex h-[calc(100vh-190px)] flex-col">
-      <div className="mb-4 flex items-center gap-3">
-        <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
-          <IconCpu className="h-5 w-5" />
+      <Card tone="violet" className="mb-3 flex shrink-0 flex-wrap items-center gap-3 px-5 py-3.5">
+        <span className="tone-violet icon-chip h-11 w-11 shrink-0 rounded-xl">
+          <IconCpu className="h-6 w-6" />
         </span>
-        <div>
-          <h2 className="text-xl font-semibold text-white">AI 课程问答</h2>
-          <p className="text-sm text-brand-200/60">流式作答 · 展示思考过程 · 阿里通义千问</p>
+        <div className="min-w-0">
+          <h2 className="grad-text text-2xl font-extrabold tracking-wide">AI 助学问答</h2>
+          <p className="text-sm text-slate-500">流式作答 · 展示思考过程 · 阿里通义千问</p>
         </div>
-      </div>
+        <div className="ml-auto flex flex-wrap gap-2">
+          <Tag tone="violet">课程专属</Tag>
+          <Tag tone="cyan">数据合规</Tag>
+        </div>
+      </Card>
 
-      <Card className="scrollbar-thin flex-1 space-y-4 overflow-y-auto p-5">
+      <Card className="scrollbar-thin min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
         {msgs.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             {m.role === "user" ? (
-              <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl bg-brand-500 px-4 py-2.5 text-sm leading-relaxed text-ink-900">
+              <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 px-4 py-2.5 text-sm leading-relaxed text-white">
                 {m.content}
               </div>
             ) : (
               <div className="max-w-[88%] space-y-2">
                 {m.reasoning ? (
-                  <details open={m.streaming && !m.content} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2">
-                    <summary className="cursor-pointer select-none text-xs font-medium text-brand-200/70">
+                  <details open={m.streaming && !m.content} className="rounded-xl border border-violet-400/20 bg-violet-400/[0.06] px-3 py-2">
+                    <summary className="cursor-pointer select-none text-xs font-medium text-violet-600/80">
                       💭 思考过程{m.streaming && !m.content ? "（进行中…）" : ""}
                     </summary>
-                    <div className="mt-2 max-h-52 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-brand-200/60 scrollbar-thin">
+                    <div className="mt-2 max-h-52 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-slate-500 scrollbar-thin">
                       {m.reasoning}
                     </div>
                   </details>
@@ -99,18 +112,18 @@ export default function StudentAI() {
 
                 <div
                   className={`md rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    m.error ? "border border-rose-400/30 bg-rose-500/10 text-rose-100" : "border border-white/10 bg-white/5 text-brand-50"
+                    m.error ? "border border-rose-400/30 bg-rose-500/10 text-rose-600" : "border border-slate-900/10 bg-slate-900/5 text-slate-800"
                   }`}
                 >
                   {m.content ? (
                     <Markdown remarkPlugins={[remarkGfm]}>{m.content}</Markdown>
                   ) : m.streaming ? (
-                    <span className="inline-flex items-center gap-2 text-brand-200/60">
-                      <span className="h-2 w-2 animate-ping rounded-full bg-brand-400" />
+                    <span className="inline-flex items-center gap-2 text-slate-500">
+                      <span className="h-2 w-2 animate-ping rounded-full bg-violet-400" />
                       正在思考…
                     </span>
                   ) : null}
-                  {m.streaming && m.content ? <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-brand-300 align-middle" /> : null}
+                  {m.streaming && m.content ? <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-violet-300 align-middle" /> : null}
                 </div>
               </div>
             )}
@@ -119,31 +132,35 @@ export default function StudentAI() {
         <div ref={endRef} />
       </Card>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            onClick={() => send(s)}
-            disabled={busy}
-            className="rounded-full border border-brand-400/25 bg-brand-500/5 px-3 py-1.5 text-xs text-brand-100 transition-colors hover:bg-brand-500/15 disabled:opacity-40"
-          >
-            {s}
-          </button>
-        ))}
+      <div className="mt-3 shrink-0">
+        <div className="mb-1.5 text-xs text-slate-500">推荐提问 · 点击填入输入框，可编辑后发送</div>
+        <div className="flex flex-wrap gap-2">
+          {SUGGESTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => fillSuggestion(s)}
+              disabled={busy}
+              className="tone-violet chip-tone rounded-full px-3 py-1.5 text-xs transition-all hover:brightness-125 disabled:opacity-40"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-3 flex gap-3">
+      <div className="mt-3 flex shrink-0 gap-3">
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder="输入你的问题…"
-          className="min-w-0 flex-1 rounded-xl border border-brand-400/25 bg-ink-900/50 px-4 py-3 text-white outline-none transition-colors placeholder:text-brand-200/40 focus:border-brand-400/60"
+          className="min-w-0 flex-1 rounded-xl border border-slate-900/10 bg-white/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-violet-400/60"
         />
         <button
           onClick={() => send(input)}
           disabled={busy || !input.trim()}
-          className="rounded-xl bg-brand-500 px-6 py-3 font-semibold text-ink-900 transition-colors hover:bg-brand-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-brand-200/40"
+          className="rounded-xl bg-gradient-to-r from-violet-500 to-blue-500 px-6 py-3 font-semibold text-white transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:from-white/10 disabled:to-white/10 disabled:text-slate-500"
         >
           发送
         </button>

@@ -1,7 +1,7 @@
 // 数智社区 · 教学资源库 —— 课程结构与内容（前端 mock 与展示共用）
 
 export interface Roster { id: string; name: string }
-export interface TaskDef { id: string; title: string; active: boolean }
+export interface TaskDef { id: string; title: string; active: boolean; isNew?: boolean }
 export interface ProjectDef { id: string; title: string; hours: number; tasks: TaskDef[] }
 
 // 28 人班级名单（学号 1–28 连续；已剔除休学 1 人、集训 3 人，后补徐馨、陶高宇）
@@ -25,34 +25,34 @@ export const STUDENTS = ROSTER.map((r, i) => ({
   classId: "C-2412",
 }));
 
-// 4 个项目 / 8 个任务；已开放：P1T1（练习）、P1T2（进行中主线）、P4T1（独立作业：社区物联感知看板设计与实现）
+// 4 个项目 / 8 个任务（2026 新版人才培养方案：任务6、任务8 为新增）；已开放：P1T1（练习）、P1T2（进行中主线）、P4T1（独立作业：社区物联感知看板设计与实现）
 export const PROJECTS: ProjectDef[] = [
   {
-    id: "P1", title: "数据感知方案设计与采集", hours: 8,
+    id: "P1", title: "社区多源数据的感知与采集", hours: 8,
     tasks: [
-      { id: "P1T1", title: "社区民意文本数据采集", active: true },
-      { id: "P1T2", title: "传感与视觉数据采集", active: true },
+      { id: "P1T1", title: "居民诉求文本采集与数据集构建", active: true },
+      { id: "P1T2", title: "环境感知与视觉数据集构建", active: true },
     ],
   },
   {
-    id: "P2", title: "多源数据清洗治理", hours: 8,
+    id: "P2", title: "社区多源数据的清洗与治理", hours: 8,
     tasks: [
-      { id: "P2T1", title: "居民诉求文本数据清洗", active: false },
-      { id: "P2T2", title: "传感与视觉数据清洗", active: false },
+      { id: "P2T1", title: "居民诉求文本清洗与标注", active: false },
+      { id: "P2T2", title: "传感与视觉数据治理", active: false },
     ],
   },
   {
-    id: "P3", title: "多源数据融合与存储", hours: 8,
+    id: "P3", title: "社区知识底座的构建与服务", hours: 8,
     tasks: [
       { id: "P3T1", title: "社区知识底座构建与数据入库", active: false },
-      { id: "P3T2", title: "社区多源数据关联融合", active: false },
+      { id: "P3T2", title: "多源数据融合与RAG应用", active: false, isNew: true },
     ],
   },
   {
-    id: "P4", title: "社区综合治理数据可视化", hours: 6,
+    id: "P4", title: "社区数据可视化与综合治理", hours: 6,
     tasks: [
-      { id: "P4T1", title: "社区数据单维度看板设计", active: true },
-      { id: "P4T2", title: "综合治理大屏设计与汇报", active: false },
+      { id: "P4T1", title: "社区数据单维度看板设计与实现", active: true },
+      { id: "P4T2", title: "综合治理大屏设计与成果汇报", active: false, isNew: true },
     ],
   },
 ];
