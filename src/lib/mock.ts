@@ -263,6 +263,3 @@ export const TASK_BANKS: Record<string, Record<Phase, BankQuestion[]>> = {
 export function mockTaskBank(taskId: string, phase: Phase): BankQuestion[] {
   return TASK_BANKS[taskId]?.[phase] ?? [];
 }
-
-// 学情分析第一版假数据（真实接口不可用时回退）
-export { mockPhaseScores, mockClassAnalytics, mockGraphStats, mockSubmitPhase } from "./learning";

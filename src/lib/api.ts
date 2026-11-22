@@ -23,6 +23,8 @@ import { STUDENTS, P4T1_HOMEWORK } from "./course";
 // mock 数据惰性加载：只有 VITE_USE_MOCK=true 的离线演示才会拉取该 chunk，
 // 生产构建中 USE_MOCK 为字面量 false，此动态 import 会被构建器消除，不进入产物。
 const mockMod = () => import("./mock");
+// 学情分析数据惰性加载（分数由 mock 题库逐题判分聚合；与题库 mock 同属离线演示 chunk）。
+const learnMod = () => import("./learning");
 
 // 生产环境：EdgeOne 云函数与前端同源部署，走 /api 即可。
 // 本地开发：vite 已把 /api 代理到本地 Node API（见 vite.config.ts）。
@@ -339,20 +341,20 @@ export const api = {
   getPhaseScores: (taskId?: string, phase?: Phase) =>
     getFlex<PhaseScore[]>(
       `/phase-scores${taskId || phase ? `?${new URLSearchParams({ ...(taskId ? { task: taskId } : {}), ...(phase ? { phase } : {}) }).toString()}` : ""}`,
-      async () => (await mockMod()).mockPhaseScores(taskId, phase)
+      async () => (await learnMod()).mockPhaseScores(taskId, phase)
     ),
   submitPhaseAnswers: (payload: { studentId: string; taskId: string; phase: Phase; answers: { questionId: string; selected: number }[] }) =>
     postFlex<{ ok: boolean; score: number; total: number; answered: number }>(
       "/phase-answers",
       payload,
-      async () => (await mockMod()).mockSubmitPhase(payload.studentId, payload.taskId, payload.phase, payload.answers.length)
+      async () => (await learnMod()).mockSubmitPhase(payload.studentId, payload.taskId, payload.phase, payload.answers)
     ),
 
   // ===== 学情分析 =====
   getClassAnalytics: () =>
-    getFlex<ClassAnalytics>("/analytics/class", async () => (await mockMod()).mockClassAnalytics()),
+    getFlex<ClassAnalytics>("/analytics/class", async () => (await learnMod()).mockClassAnalytics()),
   getGraphStats: () =>
-    getFlex<GraphStats>("/analytics/graph", async () => (await mockMod()).mockGraphStats()),
+    getFlex<GraphStats>("/analytics/graph", async () => (await learnMod()).mockGraphStats()),
 };
 
 // 作业图片地址：任务级提交带 task 参数，默认（P1T2）不带
