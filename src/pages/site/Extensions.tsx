@@ -198,7 +198,7 @@ export default function Extensions() {
         </div>
 
         <p className="text-center text-sm text-slate-500">
-          数智社区 · 信息采集技术综合实训 · 《人工智能数据服务》· 校企融合真实任务工单
+          数智社区 · 《人工智能数据服务》· 校企融合真实任务工单
         </p>
       </div>
     );

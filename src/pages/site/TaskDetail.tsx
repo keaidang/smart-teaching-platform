@@ -4,7 +4,7 @@ import { Card, SectionTitle, Stat, Tag, type Tone } from "../../components/ui";
 import {
   IconBook, IconCheck, IconUpload, IconBoard, IconLayers, IconSkill,
 } from "../../components/icons";
-import { findTask, isTaskHomework, type TaskDef } from "../../lib/course";
+import { findTask, isTaskHomework, ACTIVE_TASK_ID, type TaskDef } from "../../lib/course";
 import { TASK_BOOK, type Worksheet, type SideBox } from "../../lib/taskbook";
 
 const PROJECT_TONES: Record<string, Tone> = { P1: "cyan", P2: "emerald", P3: "violet", P4: "rose" };
@@ -317,15 +317,15 @@ export default function TaskDetail() {
             <div className="min-w-0"><div className="font-semibold text-slate-900">任务测评</div><div className="text-xs text-slate-500">课前 · 课中 · 课后达标检测</div></div>
           </Card>
         </Link>
-        {isTaskHomework(task.id) && (
-          <Link to={`/student/homework?task=${task.id}`}>
+        {(isTaskHomework(task.id) || task.id === ACTIVE_TASK_ID) && (
+          <Link to={isTaskHomework(task.id) ? `/student/homework?task=${task.id}` : "/student/homework"}>
             <Card tone="emerald" hover className="flex h-full items-center gap-4 p-5">
               <span className="tone-emerald icon-chip grid h-11 w-11 shrink-0 place-items-center rounded-xl"><IconUpload className="h-5 w-5" /></span>
               <div className="min-w-0"><div className="font-semibold text-slate-900">提交作业</div><div className="text-xs text-slate-500">上传本任务成果与记录</div></div>
             </Card>
           </Link>
         )}
-        <Link to={isTaskHomework(task.id) ? `/class/homework?task=${task.id}` : "/class"}>
+        <Link to={isTaskHomework(task.id) ? `/class/homework?task=${task.id}` : task.id === ACTIVE_TASK_ID ? "/class/homework" : "/class"}>
           <Card tone="violet" hover className="flex h-full items-center gap-4 p-5">
             <span className="tone-violet icon-chip grid h-11 w-11 shrink-0 place-items-center rounded-xl"><IconBoard className="h-5 w-5" /></span>
             <div className="min-w-0"><div className="font-semibold text-slate-900">后台大屏</div><div className="text-xs text-slate-500">查看本任务提交与课堂数据</div></div>

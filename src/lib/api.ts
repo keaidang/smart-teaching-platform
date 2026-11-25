@@ -260,7 +260,7 @@ export const api = {
   ) => {
     if (USE_MOCK) {
       const mock =
-        "【离线演示】部署到 EdgeOne 后，我会基于《信息采集技术》课程内容（Python 数据采集、传感器、爬虫、清洗融合、可视化、数据合规）**流式**作答，并展示思考过程。";
+        "【离线演示】部署到 EdgeOne 后，我会基于《人工智能数据服务》课程内容（Python 数据采集、传感器、爬虫、清洗融合、可视化、数据合规）**流式**作答，并展示思考过程。";
       for (const ch of mock) {
         onEvent({ type: "content", text: ch });
         await new Promise((r) => setTimeout(r, 18));

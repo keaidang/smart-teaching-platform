@@ -60,7 +60,7 @@ export default function StudentLogin() {
             <Tag tone="violet">2465 人工智能</Tag>
           </div>
           <p className="mt-2 max-w-2xl text-base leading-relaxed text-slate-600">
-            数智社区 · 《信息采集技术》学习平台 —— 登录后选择课堂任务，开启你的数据之旅。
+            数智社区 · 《人工智能数据服务》学习平台 —— 登录后选择课堂任务，开启你的数据之旅。
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
             <Stat value={PROJECTS.length} label="实战项目" tone="cyan" />

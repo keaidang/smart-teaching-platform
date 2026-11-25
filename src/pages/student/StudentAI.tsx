@@ -29,7 +29,7 @@ export default function StudentAI() {
   const [msgs, setMsgs] = useState<Msg[]>([
     {
       role: "assistant",
-      content: `你好${student ? "，" + student.name : ""}！我是《信息采集技术》课程 AI 助学助手，可解答 Python 数据采集、传感器、爬虫、数据清洗融合、可视化与数据合规等问题。`,
+      content: `你好${student ? "，" + student.name : ""}！我是《人工智能数据服务》课程 AI 助学助手，可解答 Python 数据采集、传感器、爬虫、数据清洗融合、可视化与数据合规等问题。`,
     },
   ]);
   const [input, setInput] = useState("");

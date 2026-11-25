@@ -73,23 +73,10 @@ export function mockHomeworkSubmissions(): HomeworkSubmission[] {
   }));
 }
 
-// 任务级作业（P4T1 / P4T2）离线演示：按任务确定性种子出一部分已提交学生，保证大屏有提交人数；真实数据读云函数 KV
-export function mockTaskHomeworkSubmissions(task: string): HomeworkSubmission[] {
-  let h = 0;
-  for (const ch of task) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  // 已提交人数在 60%~82% 之间浮动，不同任务不同
-  const doneN = Math.round((0.6 + ((h % 22) / 100)) * students.length);
-  const label = task === "P4T2" ? "综合治理大屏" : "物联感知看板";
-  return students.slice(0, doneN).map((s, i) => ({
-    studentId: s.id,
-    name: s.name,
-    fileName: `${s.name}_${label}_${String(i + 1).padStart(2, "0")}.png`,
-    size: Math.round((1.6 + ((i + h) % 6) * 0.9) * 1024 * 1024),
-    key: `${task}/hw/${s.id}/demo-${i + 1}.png`,
-    contentType: "image/png",
-    submittedAt: fmtTime(52 - i * 2),
-    task,
-  }));
+// 任务级作业（P4T1 / P4T2）离线演示：按要求清空任务7、任务8的学生作业提交内容，返回空列表。
+// 真实环境由云函数 KV 读取；如需彻底清空线上数据，请一并清理 homework:sub:P4T1/P4T2:* 键。
+export function mockTaskHomeworkSubmissions(_task: string): HomeworkSubmission[] {
+  return [];
 }
 
 export function mockExerciseStats(): ExerciseStat[] {

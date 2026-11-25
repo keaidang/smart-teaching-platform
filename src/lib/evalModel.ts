@@ -23,7 +23,7 @@ export interface EvalData {
 }
 
 export const META: Record<string, string | number> = {
-  course: "信息采集技术",
+  course: "人工智能数据服务",
   project: "数智社区 · 数据采集与治理（4 个项目）",
   hours: 30,
   className: "2465 人工智能",

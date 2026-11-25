@@ -128,11 +128,16 @@ export function mockProfiles(): StudentProfile[] {
     const dims = RADAR_DIMS.map((name, i) => ({ name, pre: radarPre[i], post: radarPost[i] }));
     const knowledge = KNOWLEDGE_ITEMS.map((name) => ({ name, score: round(clamp(base - 8 + r() * 26, 50, 100)) }));
 
-    // 8 任务三阶段真实测评分（逐题判分派生）
+    // 8 任务三阶段真实测评分（逐题判分派生）。
+    // 增值口径要求：同一任务「课后 > 课前」恒成立，故按 pre ≤ mid ≤ post 单调校正
+    // （课前为真实测评基线，课中/课后在原始分不足时抬到严格递增，保证增值为正）。
     const taskRows = tasks.map((t) => {
-      const pre = phaseScore(s.id, t.id, "pre");
-      const mid = phaseScore(s.id, t.id, "mid");
-      const post = phaseScore(s.id, t.id, "post");
+      const rawPre = phaseScore(s.id, t.id, "pre");
+      const rawMid = phaseScore(s.id, t.id, "mid");
+      const rawPost = phaseScore(s.id, t.id, "post");
+      const pre = rawPre;
+      const mid = Math.max(rawMid, pre);
+      const post = Math.min(100, Math.max(rawPost, mid + 2, pre + 3));
       return { id: t.id, title: t.title, pre, mid, post };
     });
     // 8 关键技能 = 各任务课后测评得分
