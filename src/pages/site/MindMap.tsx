@@ -5,6 +5,7 @@ import {
   nodes, edges, adjacent, MARK_COLORS, KIND_LABEL, short,
   type GNode, type GEdge,
 } from "../../lib/graph";
+import { canvasTheme } from "../../lib/theme";
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
@@ -35,6 +36,7 @@ export default function MindMapPage() {
     let drag: { x: number; y: number; tx: number; ty: number; n: GNode | null; moved: boolean; id: number; nx?: number; ny?: number } | null = null;
     let pinch: { x: number; y: number; d: number } | null = null;
     const activePointers = new Map<number, { x: number; y: number }>();
+    const ct = canvasTheme();
 
     const requested = (n: GNode) => {
       const mark = markRef.current?.value || "";
@@ -74,7 +76,7 @@ export default function MindMapPage() {
         ctx.beginPath();
         ctx.moveTo(ax, ay);
         ctx.quadraticCurveTo(cx, cy, ex, ey);
-        ctx.strokeStyle = bright ? "#2563eb" : e.hier ? "rgba(58,110,165,0.55)" : "rgba(100,116,139,0.55)";
+        ctx.strokeStyle = bright ? "#2563eb" : e.hier ? ct.edge : ct.edgeFaint;
         ctx.globalAlpha = bright ? 0.95 : dim ? 0.05 : near ? (near.has(e.a) && near.has(e.b) ? 0.5 : 0.14) : e.hier ? 0.55 : 0.4;
         ctx.lineWidth = bright ? 1.8 : 0.9;
         ctx.setLineDash(e.hier ? [] : [4, 4]);
@@ -131,11 +133,11 @@ export default function MindMapPage() {
         if (l.priority > 0 && occupied.some(([a, b, c, d]) => bounds[0] < c && bounds[2] > a && bounds[1] < d && bounds[3] > b)) continue;
         occupied.push(bounds);
         ctx.globalAlpha = l.alpha;
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle = ct.halo;
         ctx.lineWidth = 3;
         ctx.lineJoin = "round";
         ctx.strokeText(l.text, l.px, l.py);
-        ctx.fillStyle = "#0f172a";
+        ctx.fillStyle = ct.text;
         ctx.fillText(l.text, l.px, l.py);
       }
       ctx.globalAlpha = 1;
@@ -196,7 +198,7 @@ export default function MindMapPage() {
         for (const e of rel) {
           const other = e.a === selected ? e.b : e.a;
           const b = document.createElement("button");
-          b.className = "flex w-full items-start gap-1.5 rounded-lg border border-slate-900/10 bg-white px-2.5 py-1.5 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-50";
+          b.className = "flex w-full items-start gap-1.5 rounded-lg border border-slate-900/10 bg-surface px-2.5 py-1.5 text-left text-[13px] text-slate-700 transition-colors hover:bg-slate-50";
           const tag = document.createElement("span");
           tag.className = "shrink-0 rounded bg-slate-900/6 px-1.5 text-[11px] leading-5 text-slate-500";
           tag.textContent = (e.a === selected ? "→ " : "← ") + e.t;
@@ -409,7 +411,7 @@ export default function MindMapPage() {
   }, []);
 
   const selCls =
-    "rounded-lg border border-slate-900/15 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:border-blue-500/60";
+    "rounded-lg border border-slate-900/15 bg-surface px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:border-blue-500/60";
 
   return (
     <div className="flex flex-col gap-5">
@@ -421,7 +423,7 @@ export default function MindMapPage() {
         right={<span ref={countRef} className="text-sm text-slate-500" />}
       />
 
-      <div ref={wrapRef} className="flex min-h-0 flex-col rounded-2xl border border-slate-900/8 bg-white shadow-[0_10px_34px_-16px_rgba(15,23,42,0.22)]">
+      <div ref={wrapRef} className="flex min-h-0 flex-col rounded-2xl border border-slate-900/8 bg-surface shadow-[0_10px_34px_-16px_rgba(15,23,42,0.22)]">
         {/* 工具条 */}
         <div className="flex flex-wrap items-center gap-3 border-b border-slate-900/8 px-4 py-3">
           <div data-search className="relative min-w-[240px] flex-1 max-w-md">
@@ -435,7 +437,7 @@ export default function MindMapPage() {
             <div
               ref={resultsRef}
               hidden
-              className="absolute top-full left-0 right-0 z-20 max-h-64 overflow-auto rounded-xl border border-slate-900/10 bg-white p-1.5 shadow-xl"
+              className="absolute top-full left-0 right-0 z-20 max-h-64 overflow-auto rounded-xl border border-slate-900/10 bg-surface p-1.5 shadow-xl"
             />
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -463,7 +465,7 @@ export default function MindMapPage() {
           {/* 画布 */}
           <div ref={stageRef} className="relative h-[calc(100vh-360px)] min-h-[520px] min-w-0 flex-1">
             <canvas ref={canvasRef} tabIndex={0} className="block h-full w-full cursor-grab touch-none outline-none" />
-            <div className="pointer-events-none absolute top-3 left-3 flex flex-wrap gap-x-4 gap-y-1.5 rounded-xl border border-slate-900/10 bg-white/90 px-3 py-2 text-xs text-slate-500 shadow-sm">
+            <div className="pointer-events-none absolute top-3 left-3 flex flex-wrap gap-x-4 gap-y-1.5 rounded-xl border border-slate-900/10 bg-surface/90 px-3 py-2 text-xs text-slate-500 shadow-sm">
               <span><b className="mr-1 font-medium text-slate-700">◆</b>课程 / 项目 / 任务 / 模块</span>
               <span><b className="mr-1 font-medium text-slate-700">●</b>知识点</span>
               <span><span className="mr-1 inline-block w-5 border-t border-slate-400 align-middle" />层级</span>
@@ -471,14 +473,14 @@ export default function MindMapPage() {
               <span><b className="font-semibold text-amber-600">◉</b> 重点</span>
               <span><b className="font-semibold text-fuchsia-600">◉</b> 难点</span>
             </div>
-            <div ref={tooltipRef} hidden className="pointer-events-none absolute z-10 max-w-[280px] rounded-lg border border-slate-900/12 bg-white px-2.5 py-1.5 text-[13px] text-slate-800 shadow-lg" />
+            <div ref={tooltipRef} hidden className="pointer-events-none absolute z-10 max-w-[280px] rounded-lg border border-slate-900/12 bg-surface px-2.5 py-1.5 text-[13px] text-slate-800 shadow-lg" />
             <div className="pointer-events-none absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
-              <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-slate-900/10 bg-white/95 p-1 shadow-lg">
+              <div className="pointer-events-auto flex items-center gap-1 rounded-xl border border-slate-900/10 bg-surface/95 p-1 shadow-lg">
                 <button id="mm-minus" className="grid h-8 w-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100">−</button>
                 <output ref={zoomOutRef} className="min-w-12 text-center text-xs text-slate-500 tabular-nums">100%</output>
                 <button id="mm-plus" className="grid h-8 w-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100">＋</button>
               </div>
-              <div className="rounded-lg bg-white/90 px-2.5 py-1.5 text-xs text-slate-500 shadow-sm">拖动平移 · 滚轮缩放 · 悬停查看 · 双击聚焦</div>
+              <div className="rounded-lg bg-surface/90 px-2.5 py-1.5 text-xs text-slate-500 shadow-sm">拖动平移 · 滚轮缩放 · 悬停查看 · 双击聚焦</div>
             </div>
           </div>
 

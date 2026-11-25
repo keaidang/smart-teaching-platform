@@ -83,7 +83,7 @@ export default function StudentLogin() {
                   setErr("");
                 }}
                 placeholder="例如 20241216501"
-                className="w-full rounded-xl border border-slate-900/10 bg-white/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-400/60"
+                className="w-full rounded-xl border border-slate-900/10 bg-surface/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-400/60"
               />
             </div>
             <div>
@@ -96,7 +96,7 @@ export default function StudentLogin() {
                 }}
                 onKeyDown={(e) => e.key === "Enter" && doLogin(sid, name)}
                 placeholder="例如 孙天一"
-                className="w-full rounded-xl border border-slate-900/10 bg-white/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-400/60"
+                className="w-full rounded-xl border border-slate-900/10 bg-surface/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-blue-400/60"
               />
             </div>
           </div>

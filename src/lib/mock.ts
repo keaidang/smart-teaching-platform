@@ -73,6 +73,25 @@ export function mockHomeworkSubmissions(): HomeworkSubmission[] {
   }));
 }
 
+// 任务级作业（P4T1 / P4T2）离线演示：按任务确定性种子出一部分已提交学生，保证大屏有提交人数；真实数据读云函数 KV
+export function mockTaskHomeworkSubmissions(task: string): HomeworkSubmission[] {
+  let h = 0;
+  for (const ch of task) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  // 已提交人数在 60%~82% 之间浮动，不同任务不同
+  const doneN = Math.round((0.6 + ((h % 22) / 100)) * students.length);
+  const label = task === "P4T2" ? "综合治理大屏" : "物联感知看板";
+  return students.slice(0, doneN).map((s, i) => ({
+    studentId: s.id,
+    name: s.name,
+    fileName: `${s.name}_${label}_${String(i + 1).padStart(2, "0")}.png`,
+    size: Math.round((1.6 + ((i + h) % 6) * 0.9) * 1024 * 1024),
+    key: `${task}/hw/${s.id}/demo-${i + 1}.png`,
+    contentType: "image/png",
+    submittedAt: fmtTime(52 - i * 2),
+    task,
+  }));
+}
+
 export function mockExerciseStats(): ExerciseStat[] {
   // 离线演示：正确率 / 分布 / 答案标位均为演示数据（真实答案在云函数，不下发前端）
   return exercises.map((ex, i) => {

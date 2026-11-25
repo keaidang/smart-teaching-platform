@@ -13,7 +13,8 @@ import {
 } from "../../components/icons";
 import { Avatar, Card, Tag, type Tone } from "../../components/ui";
 import { Logo } from "../../components/Logo";
-import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
+import { ThemeToggle } from "../../components/ThemeToggle";
+import { PROJECTS, ACTIVE_TASK_ID, findTask, isTaskHomework } from "../../lib/course";
 
 const TABS: { to: string; label: string; icon: typeof IconTrophy; tone: Tone }[] = [
   { to: "/student/tests", label: "任务测评", icon: IconGauge, tone: "blue" },
@@ -28,9 +29,10 @@ const PROJECT_TONES: Record<string, Tone> = { P1: "cyan", P2: "emerald", P3: "vi
 const TASK_HINTS: Record<string, string> = {
   [ACTIVE_TASK_ID]: "主线任务 · 预习 → 作业 → 习题 → AI 助学全套",
   P4T1: "任务级作业 · 进入后直达提交页",
+  P4T2: "任务级作业 · 进入后直达提交页",
 };
 
-const isOpenTask = (id: string) => id === ACTIVE_TASK_ID || id === "P4T1";
+const isOpenTask = (id: string) => id === ACTIVE_TASK_ID || isTaskHomework(id);
 
 const TASK_KEY = "stp.taskChosen";
 
@@ -64,8 +66,8 @@ export default function StudentLayout() {
   };
 
   const choose = (id: string) => {
-    // P1T2 = 主线任务（预习/作业/问答全套）；P4T1 = 任务级作业，进入后直达提交页；其余暂不开放学生端
-    if (id !== ACTIVE_TASK_ID && id !== "P4T1") return;
+    // P1T2 = 主线任务（预习/作业/问答全套）；任务级作业（P4T1/P4T2）直达提交页；其余暂不开放学生端
+    if (id !== ACTIVE_TASK_ID && !isTaskHomework(id)) return;
     sessionStorage.setItem(TASK_KEY, id);
     setChosen(id);
     nav(id === ACTIVE_TASK_ID ? "/student/preview" : `/student/homework?task=${id}`);
@@ -74,7 +76,10 @@ export default function StudentLayout() {
   // 登录后先选任务（P1T2 主线 + P4T1 看板作业开放）；任务测评页自带 8 任务选择，不受门槛限制
   if (student && !taskChosen && !onTests) {
     return (
-      <div className="grid min-h-screen place-items-center px-6 py-10">
+      <div className="relative grid min-h-screen place-items-center px-6 py-10">
+        <div className="absolute right-5 top-5">
+          <ThemeToggle variant="chip" />
+        </div>
         <div className="w-full max-w-4xl">
           <div className="hero-mesh tone-blue animate-rise relative mb-6 overflow-hidden rounded-2xl border border-slate-900/10 px-7 py-8 text-center">
             <h1 className="grad-text text-3xl font-extrabold tracking-wide">选择课堂任务</h1>
@@ -83,7 +88,7 @@ export default function StudentLayout() {
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <Tag tone="cyan">主线任务 P1T2 · 全套学习流程</Tag>
-              <Tag tone="rose">任务级作业 P4T1 · 直达提交</Tag>
+              <Tag tone="rose">任务级作业 P4T1 / P4T2 · 直达提交</Tag>
             </div>
           </div>
 
@@ -162,7 +167,7 @@ export default function StudentLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-900/10 bg-white/85 px-6 py-3 backdrop-blur-xl">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-900/10 bg-surface/85 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <Logo size={30} />
           <span className="hero-title text-lg font-bold tracking-widest">
@@ -174,21 +179,24 @@ export default function StudentLayout() {
             </span>
           )}
         </div>
-        {student && (
-          <div className="flex items-center gap-3">
-            <Avatar name={student.name} color={student.avatarColor} size={34} />
-            <div className="text-sm">
-              <div className="font-medium text-slate-900">{student.name}</div>
-              <div className="text-xs text-slate-500">{student.id}</div>
-            </div>
-            <button
-              onClick={logout}
-              className="ml-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-900/15 px-3 py-1.5 text-sm text-slate-600 transition-colors hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-600"
-            >
-              <IconLogout className="h-4 w-4" /> 退出
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <ThemeToggle variant="ghost" />
+          {student && (
+            <>
+              <Avatar name={student.name} color={student.avatarColor} size={34} />
+              <div className="text-sm">
+                <div className="font-medium text-slate-900">{student.name}</div>
+                <div className="text-xs text-slate-500">{student.id}</div>
+              </div>
+              <button
+                onClick={logout}
+                className="ml-2 inline-flex items-center gap-1.5 rounded-lg border border-slate-900/15 px-3 py-1.5 text-sm text-slate-600 transition-colors hover:border-rose-400/40 hover:bg-rose-500/15 hover:text-rose-600"
+              >
+                <IconLogout className="h-4 w-4" /> 退出
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       {student && (
@@ -196,7 +204,7 @@ export default function StudentLayout() {
           {TABS.map((t) => (
             <NavLink
               key={t.to}
-              to={t.to === "/student/homework" && chosen === "P4T1" ? "/student/homework?task=P4T1" : t.to}
+              to={t.to === "/student/homework" && isTaskHomework(chosen) ? `/student/homework?task=${chosen}` : t.to}
               className={({ isActive }) =>
                 `tone-${t.tone} inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                   isActive

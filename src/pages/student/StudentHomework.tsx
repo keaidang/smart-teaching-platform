@@ -26,6 +26,11 @@ const SPEC_P4T1 = [
   { title: "设计并实现", desc: "ECharts 等图表工具均可，完成一个可运行的单维度数据看板" },
   { title: "截图完整", desc: "截图需完整包含看板标题、图表效果与关键数据结论" },
 ];
+const SPEC_P4T2 = [
+  { title: "大屏集成完成", desc: "基于 JimuReport 完成栅格布局，词云图 / 柱状图 / 温度预警折线图正常渲染" },
+  { title: "联动与预警", desc: "数据绑定、指标卡片、告警列表按演示工单联动运行，预警线与弹窗可触发" },
+  { title: "质检与汇报", desc: "附《AI缺陷清单》与整改复测结果，并说明组件复用思路与系统集成方案" },
+];
 const FORMAT_RULES = ["仅支持 PNG / JPG 格式", "单张图片不超过 5MB", "截图清晰完整、关键信息可读"];
 
 // 把文件 PUT 到预签名 URL（直传到 Blob，带进度）
@@ -195,14 +200,16 @@ export default function StudentHomework() {
       </div>
     );
 
-  const isP4T1 = task === "P4T1";
-  const specItems = isP4T1 ? SPEC_P4T1 : SPEC_P1T2;
+  const isTaskHw = task === "P4T1" || task === "P4T2";
+  const specItems = task === "P4T2" ? SPEC_P4T2 : task === "P4T1" ? SPEC_P4T1 : SPEC_P1T2;
+  const hwTag = isTaskHw ? `${task} · 任务级作业` : "P1T2 · 主线作业";
+  const hwTone = isTaskHw ? "rose" : "cyan";
 
   return (
     <div className="animate-rise space-y-6">
       <div className="hero-mesh tone-amber relative overflow-hidden rounded-2xl border border-slate-900/10 px-6 py-7">
         <div className="flex flex-wrap items-center gap-2">
-          <Tag tone={isP4T1 ? "rose" : "cyan"}>{isP4T1 ? "P4T1 · 任务级作业" : "P1T2 · 主线作业"}</Tag>
+          <Tag tone={hwTone}>{hwTag}</Tag>
           <Tag tone="rose">
             <IconClock className="mr-1 h-3.5 w-3.5" /> 截止 {hw.deadline}
           </Tag>

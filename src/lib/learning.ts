@@ -110,21 +110,68 @@ export function mockSubmitPhase(
   return { ok: true, score: round(score), total, answered };
 }
 
-/* ===== 个人数字画像（由 8 任务课前/课后测评聚合） ===== */
+/* ===== 确定性随机头像（图标 + 配色 + 编号），按学号种子生成，刷新不变 ===== */
+const AVATAR_GLYPHS = ["🦊", "🐼", "🐧", "🦉", "🐬", "🦋", "🌟", "🚀", "🎧", "🐝", "🦖", "🐙", "🌈", "⚡", "🎯", "🧩", "🛰", "🤖", "🐳", "🦁", "🐨", "🌻", "🍀", "🪐", "🦄", "🐢", "🔭", "💡"];
+const AVATAR_PALETTES: [string, string][] = [
+  ["#3a6ea5", "#6c5b9e"], ["#2f876b", "#1f7a8c"], ["#a87b3a", "#b06e43"], ["#a8566e", "#6c5b9e"],
+  ["#1f7a8c", "#3a6ea5"], ["#6c5b9e", "#a8566e"], ["#b06e43", "#a87b3a"], ["#34d399", "#22d3ee"],
+];
+
+/* ===== 个人数字画像（由 8 任务课前/课中/课后测评逐题聚合） ===== */
 export function mockProfiles(): StudentProfile[] {
-  return ROSTER.map((s) => {
+  const tasks = allTasks();
+  const list: StudentProfile[] = ROSTER.map((s) => {
     const r = rng(s.id + ":profile");
     const base = ability(s.id);
     const radarPre = RADAR_DIMS.map(() => round(clamp(base - 14 + r() * 18, 40, 92)));
     const radarPost = radarPre.map((v) => round(clamp(v + 6 + r() * 16, 50, 100)));
+    const dims = RADAR_DIMS.map((name, i) => ({ name, pre: radarPre[i], post: radarPost[i] }));
     const knowledge = KNOWLEDGE_ITEMS.map((name) => ({ name, score: round(clamp(base - 8 + r() * 26, 50, 100)) }));
-    const preAvg = mean(allTasks().map((t) => phaseScore(s.id, t.id, "pre")));
-    const postAvg = mean(allTasks().map((t) => phaseScore(s.id, t.id, "post")));
-    // 掌握度、完成率均由课后测评得分派生，保证与"真实测试"一致。
+
+    // 8 任务三阶段真实测评分（逐题判分派生）
+    const taskRows = tasks.map((t) => {
+      const pre = phaseScore(s.id, t.id, "pre");
+      const mid = phaseScore(s.id, t.id, "mid");
+      const post = phaseScore(s.id, t.id, "post");
+      return { id: t.id, title: t.title, pre, mid, post };
+    });
+    // 8 关键技能 = 各任务课后测评得分
+    const skills = SKILLS.map((name, i) => ({ name, score: taskRows[i % taskRows.length].post }));
+    // 优势（课后 ≥80 取最高 2 项）/ 待提升（<70 取最低 2 项）
+    const ranked = [...skills].sort((a, b) => b.score - a.score);
+    const strengths = ranked.filter((x) => x.score >= 78).slice(0, 3).map((x) => x.name);
+    const weaknesses = ranked.filter((x) => x.score < 78).slice(-2).map((x) => x.name);
+
+    const preAvg = mean(taskRows.map((t) => t.pre));
+    const postAvg = mean(taskRows.map((t) => t.post));
     const mastery = round(clamp(postAvg * 0.92 + r() * 10 - 4, 40, 100));
     const completion = round(clamp(postAvg * 0.6 + 40 + r() * 8, 45, 100));
-    return { studentId: s.id, name: s.name, radarPre, radarPost, knowledge, preAvg, postAvg, growth: postAvg - preAvg, completion, mastery };
+    const attendance = round(clamp(88 + r() * 12, 80, 100));
+    const interaction = round(6 + r() * 26);
+    const homeworkDone = round(4 + r() * 4);
+
+    const gi = Math.floor(rng(s.id + ":glyph")() * AVATAR_GLYPHS.length) % AVATAR_GLYPHS.length;
+    const pi = Math.floor(rng(s.id + ":pal")() * AVATAR_PALETTES.length) % AVATAR_PALETTES.length;
+    const [from, to] = AVATAR_PALETTES[pi];
+    const code = hash(s.id).toString(16).toUpperCase().slice(0, 4).padStart(4, "0");
+
+    return {
+      studentId: s.id, name: s.name,
+      avatar: { glyph: AVATAR_GLYPHS[gi], color: from, from, to, code },
+      rank: 0, total: ROSTER.length,
+      band: mastery < 60 ? "待达标" : mastery < 80 ? "基本掌握" : "熟练掌握",
+      radarPre, radarPost, dims, knowledge, tasks: taskRows, skills,
+      attendance, interaction, homeworkDone,
+      preAvg, postAvg, growth: postAvg - preAvg, completion, mastery,
+      strengths, weaknesses,
+    } satisfies StudentProfile;
   });
+  // 班级掌握率排名（降序）
+  [...list].sort((a, b) => b.mastery - a.mastery).forEach((p, i) => {
+    const t = list.find((x) => x.studentId === p.studentId)!;
+    t.rank = i + 1;
+  });
+  return list;
 }
 
 /* ===== 班级学情分析 ===== */

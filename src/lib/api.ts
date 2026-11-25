@@ -18,7 +18,7 @@ import type {
   Student,
   TeacherEval,
 } from "./types";
-import { STUDENTS, P4T1_HOMEWORK } from "./course";
+import { STUDENTS, TASK_HOMEWORK_MAP, isTaskHomework } from "./course";
 
 // mock 数据惰性加载：只有 VITE_USE_MOCK=true 的离线演示才会拉取该 chunk，
 // 生产构建中 USE_MOCK 为字面量 false，此动态 import 会被构建器消除，不进入产物。
@@ -192,12 +192,18 @@ export const api = {
   getHomework: (task?: string) =>
     get<Homework[]>(
       `/homework${task ? `?task=${task}` : ""}`,
-      async () => (task ? [P4T1_HOMEWORK] : (await mockMod()).homeworks)
+      async () =>
+        isTaskHomework(task)
+          ? [TASK_HOMEWORK_MAP[task]]
+          : (await mockMod()).homeworks
     ),
   getHomeworkSubmissions: (task?: string) =>
     get<HomeworkSubmission[]>(
       `/homework/submissions${task ? `?task=${task}` : ""}`,
-      async () => (task ? [] : (await mockMod()).mockHomeworkSubmissions())
+      async () =>
+        isTaskHomework(task)
+          ? (await mockMod()).mockTaskHomeworkSubmissions(task)
+          : (await mockMod()).mockHomeworkSubmissions()
     ),
   getHomeworkUploadUrl: (payload: {
     studentId: string;

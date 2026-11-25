@@ -33,6 +33,7 @@ function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
 const HW_TABS = [
   { id: "", label: "P1T2 · 数据质检报告" },
   { id: "P4T1", label: "P4T1 · 社区物联感知看板" },
+  { id: "P4T2", label: "P4T2 · 综合治理大屏与成果汇报" },
 ];
 
 export default function HomeworkBoard() {
@@ -222,7 +223,7 @@ export default function HomeworkBoard() {
                 ✕
               </button>
             </div>
-            <div className="grid max-h-[72vh] place-items-center bg-white/85 p-4">
+            <div className="grid max-h-[72vh] place-items-center bg-surface/85 p-4">
               <img
                 // 大图：按需加载原图（一次只打开一张）
                 src={homeworkFileUrl(view.studentId, view.task, { v: view.key })}

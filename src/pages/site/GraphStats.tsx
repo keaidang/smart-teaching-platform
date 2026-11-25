@@ -4,18 +4,20 @@ import { nodes, edges, short, KIND_LABEL, type GNode } from "../../lib/graph";
 import type { GraphStats as GraphStatsData } from "../../lib/types";
 import { EChart, dark } from "../../components/EChart";
 import { Bar, Card, Tag } from "../../components/ui";
+import { canvasTheme, isDark } from "../../lib/theme";
 
 const CLOUD_COLORS = ["#1f7a8c", "#3a6ea5", "#6c5b9e", "#2f876b", "#a87b3a", "#a8566e", "#b06e43"];
-const masteryColor = (m: number) => (m >= 80 ? "#2f876b" : m >= 60 ? "#a87b3a" : "#a8566e");
+const masteryColor = (m: number) => (isDark() ? (m >= 80 ? "#48c59c" : m >= 60 ? "#e0ab5c" : "#e08aa4") : m >= 80 ? "#2f876b" : m >= 60 ? "#a87b3a" : "#a8566e");
 
 function Ring({ value, color = "#2f876b", size = 92 }: { value: number; color?: string; size?: number }) {
   const r = 34, c = 2 * Math.PI * r;
+  const d = isDark();
   return (
     <svg width={size} height={size} viewBox="0 0 84 84">
-      <circle cx="42" cy="42" r={r} fill="none" stroke="rgba(15,23,42,0.08)" strokeWidth="8" />
-      <circle cx="42" cy="42" r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
+      <circle cx="42" cy="42" r={r} fill="none" stroke={d ? "rgba(180,220,235,0.16)" : "rgba(15,23,42,0.08)"} strokeWidth="8" />
+      <circle cx="42" cy="42" r={r} fill="none" stroke={d ? "#48c59c" : color} strokeWidth="8" strokeLinecap="round"
         strokeDasharray={`${(value / 100) * c} ${c}`} transform="rotate(-90 42 42)" />
-      <text x="42" y="46" textAnchor="middle" fontSize="17" fontWeight="700" fill="#0f172a">{value}%</text>
+      <text x="42" y="46" textAnchor="middle" fontSize="17" fontWeight="700" fill={d ? "#e6f6fb" : "#0f172a"}>{value}%</text>
     </svg>
   );
 }
@@ -37,6 +39,7 @@ export default function GraphStats() {
     const canvas = canvasRef.current!, stage = stageRef.current!, ctx = canvas.getContext("2d")!;
     const tip = tipRef.current!;
     const mastery = new Map(data.knowledge.map((k) => [k.id, k]));
+    const ct = canvasTheme();
     let w = 1, h = 1, dpr = 1, scale = 1, tx = 0, ty = 0, base = 1, queued = false;
     let hovered: GNode | null = null, selected: GNode | null = null;
     let drag: { x: number; y: number; tx: number; ty: number; moved: boolean; id: number } | null = null;
@@ -56,7 +59,7 @@ export default function GraphStats() {
       for (const e of edges) {
         const ax = X(e.a), ay = Y(e.a), bx = X(e.b), by = Y(e.b);
         ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
-        ctx.strokeStyle = e.hier ? "rgba(58,110,165,0.30)" : "rgba(100,116,139,0.22)";
+        ctx.strokeStyle = e.hier ? ct.edgeSoft : ct.edgeSoftFaint;
         ctx.lineWidth = 0.8;
         ctx.setLineDash(e.hier ? [] : [3, 3]);
         ctx.stroke(); ctx.setLineDash([]);
@@ -90,9 +93,9 @@ export default function GraphStats() {
         const b: [number, number, number, number] = [l.px - half, l.py - 2, l.px + half, l.py + size + 3];
         if (l.pr > 0 && occ.some(([a, bb, c, d]) => b[0] < c && b[2] > a && b[1] < d && b[3] > bb)) continue;
         occ.push(b);
-        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; ctx.lineJoin = "round";
+        ctx.strokeStyle = ct.halo; ctx.lineWidth = 3; ctx.lineJoin = "round";
         ctx.strokeText(l.text, l.px, l.py);
-        ctx.fillStyle = "#0f172a"; ctx.fillText(l.text, l.px, l.py);
+        ctx.fillStyle = ct.text; ctx.fillText(l.text, l.px, l.py);
       }
       if (zoomRef.current) zoomRef.current.value = Math.round((100 * scale) / base) + "%";
     }
@@ -298,7 +301,7 @@ export default function GraphStats() {
           <div className="scrollbar-thin max-h-[420px] overflow-auto">
             {tab === "students" ? (
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-white text-left text-xs text-slate-400">
+                <thead className="sticky top-0 bg-surface text-left text-xs text-slate-400">
                   <tr><th className="py-2 pr-2">排名</th><th className="py-2 pr-2">姓名</th><th className="py-2 pr-2">学号</th><th className="py-2 pr-2">完成率</th><th className="py-2">掌握率</th></tr>
                 </thead>
                 <tbody>
@@ -317,7 +320,7 @@ export default function GraphStats() {
               </table>
             ) : (
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-white text-left text-xs text-slate-400">
+                <thead className="sticky top-0 bg-surface text-left text-xs text-slate-400">
                   <tr><th className="py-2 pr-2">知识点</th><th className="py-2 pr-2">类型</th><th className="py-2 pr-2">关联任务</th><th className="py-2 pr-2">掌握率</th><th className="py-2">完成率</th></tr>
                 </thead>
                 <tbody>
@@ -350,9 +353,9 @@ export default function GraphStats() {
         </div>
         <div ref={stageRef} className="relative h-[560px] min-w-0">
           <canvas ref={canvasRef} className="block h-full w-full cursor-grab touch-none outline-none" />
-          <div ref={tipRef} hidden className="pointer-events-none absolute z-10 max-w-[300px] rounded-lg border border-slate-900/12 bg-white px-2.5 py-1.5 text-[13px] text-slate-800 shadow-lg" />
+          <div ref={tipRef} hidden className="pointer-events-none absolute z-10 max-w-[300px] rounded-lg border border-slate-900/12 bg-surface px-2.5 py-1.5 text-[13px] text-slate-800 shadow-lg" />
           {sel && (
-            <div className="absolute top-3 right-3 w-72 rounded-xl border border-slate-900/10 bg-white/95 p-4 shadow-xl backdrop-blur">
+            <div className="absolute top-3 right-3 w-72 rounded-xl border border-slate-900/10 bg-surface/95 p-4 shadow-xl backdrop-blur">
               <div className="flex items-start justify-between gap-2">
                 <div className="text-sm font-semibold leading-snug text-slate-900">{sel.name}</div>
                 <button onClick={() => setSel(null)} className="text-slate-400 hover:text-slate-700">✕</button>
@@ -369,13 +372,13 @@ export default function GraphStats() {
               )}
             </div>
           )}
-          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-xl border border-slate-900/10 bg-white/95 p-1 shadow-lg">
+          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-xl border border-slate-900/10 bg-surface/95 p-1 shadow-lg">
             <button id="gs-minus" className="grid h-8 w-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100">−</button>
             <output ref={zoomRef} className="min-w-12 text-center text-xs text-slate-500 tabular-nums">100%</output>
             <button id="gs-plus" className="grid h-8 w-8 place-items-center rounded-lg text-slate-600 hover:bg-slate-100">＋</button>
             <button id="gs-fit" className="ml-1 rounded-lg px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100">查看全图</button>
           </div>
-          <div className="pointer-events-none absolute right-3 bottom-3 rounded-lg bg-white/90 px-2.5 py-1.5 text-xs text-slate-500 shadow-sm">拖动平移 · 滚轮缩放 · 单击查看掌握度 · 双击聚焦</div>
+          <div className="pointer-events-none absolute right-3 bottom-3 rounded-lg bg-surface/90 px-2.5 py-1.5 text-xs text-slate-500 shadow-sm">拖动平移 · 滚轮缩放 · 单击查看掌握度 · 双击聚焦</div>
         </div>
       </Card>
     </div>

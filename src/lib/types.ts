@@ -129,14 +129,27 @@ export interface PhaseScore {
 export interface StudentProfile {
   studentId: string;
   name: string;
-  radarPre: number[];
-  radarPost: number[];
-  knowledge: { name: string; score: number }[];
+  // 确定性随机头像：图标(emoji) + 渐变配色 + 短编号
+  avatar: { glyph: string; color: string; from: string; to: string; code: string };
+  rank: number;          // 班级掌握率排名
+  total: number;         // 参与排名人数
+  band: "待达标" | "基本掌握" | "熟练掌握";
+  radarPre: number[];    // 五维能力（课前）
+  radarPost: number[];   // 五维能力（课后）
+  dims: { name: string; pre: number; post: number }[]; // 五维明细
+  knowledge: { name: string; score: number }[];        // 关键知识项得分
+  tasks: { id: string; title: string; pre: number; mid: number; post: number }[]; // 8 任务三阶段
+  skills: { name: string; score: number }[];           // 8 关键技能掌握（课后测评）
+  attendance: number;    // 出勤率
+  interaction: number;   // 课堂互动次数
+  homeworkDone: number;  // 作业提交数
   preAvg: number;
   postAvg: number;
   growth: number;
   completion: number;
   mastery: number;
+  strengths: string[];   // 优势项
+  weaknesses: string[];  // 待提升项
 }
 
 export interface ClassAnalytics {

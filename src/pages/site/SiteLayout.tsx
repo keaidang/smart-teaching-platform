@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Logo } from "../../components/Logo";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import {
   IconBoard,
   IconBook,
@@ -27,7 +28,7 @@ export default function SiteLayout() {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-slate-900/10 bg-white/85 px-4 py-7 backdrop-blur-xl">
+      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-slate-900/10 bg-surface/85 px-4 py-7 backdrop-blur-xl">
         <div className="mb-10 flex items-center gap-3 px-2">
           <Logo size={44} />
           <div>
@@ -89,7 +90,7 @@ export default function SiteLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-900/10 bg-white/85 px-8 py-4 backdrop-blur-xl">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-900/10 bg-surface/85 px-8 py-4 backdrop-blur-xl">
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <span className="text-slate-700">首页</span>
             {current && current.to !== "/" && (
@@ -100,6 +101,7 @@ export default function SiteLayout() {
             )}
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle variant="ghost" />
             <a
               href="/admin"
               className="rounded-lg border border-amber-400/30 px-4 py-2 text-sm text-amber-600 transition-colors hover:bg-amber-400/10"

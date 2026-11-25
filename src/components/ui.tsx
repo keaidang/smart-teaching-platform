@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTheme } from "../lib/theme";
 
 // 模块色体系：青=首页/采集 蓝=项目/学生 紫=拓展/融合 绿=评价/清洗 琥珀=产教/警示 玫红=可视化/素养 橙=行业
 export type Tone = "cyan" | "blue" | "violet" | "emerald" | "amber" | "rose" | "orange";
@@ -161,6 +162,50 @@ export function Avatar({
       }}
     >
       {name.slice(0, 1)}
+    </span>
+  );
+}
+
+// 图标头像：确定性随机 emoji + 双色渐变圆底（个人画像专用），随明暗主题同步绘制
+export function AvatarGlyph({
+  glyph,
+  from,
+  to,
+  size = 40,
+}: {
+  glyph: string;
+  from: string;
+  to: string;
+  size?: number;
+}) {
+  const { mode } = useTheme();
+  const dark = mode === "dark";
+  // 暗色：把渐变底色压暗（叠加深色），emoji 提亮加投影，边框改用冷色细描边 + 柔光
+  const deep = (c: string) => `color-mix(in srgb, ${c} 58%, #0a1620)`;
+  const bg = dark
+    ? `linear-gradient(135deg, ${deep(from)}, ${deep(to)})`
+    : `linear-gradient(135deg, ${from}, ${to})`;
+  return (
+    <span
+      className="grid shrink-0 place-items-center rounded-2xl"
+      style={{
+        width: size,
+        height: size,
+        background: bg,
+        boxShadow: dark
+          ? `0 6px 18px -8px ${from}99, inset 0 1px 0 rgba(255,255,255,.10), inset 0 0 0 1px rgba(226,244,251,.20)`
+          : `0 6px 18px -6px ${from}88, inset 0 1px 0 rgba(255,255,255,.35)`,
+        fontSize: size * 0.52,
+      }}
+    >
+      <span
+        style={{
+          filter: dark ? "brightness(1.08) saturate(1.06)" : "saturate(1.1)",
+          textShadow: dark ? "0 1px 3px rgba(0,0,0,.45)" : undefined,
+        }}
+      >
+        {glyph}
+      </span>
     </span>
   );
 }

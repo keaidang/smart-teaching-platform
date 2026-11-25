@@ -19,6 +19,7 @@ import StudentHomework from "./pages/student/StudentHomework";
 import StudentExercise from "./pages/student/StudentExercise";
 import Admin from "./pages/admin/Admin";
 import { RequireStudent } from "./lib/auth";
+import { ThemeProvider, useTheme } from "./lib/theme";
 
 // 重依赖页面按需加载：Evaluation 拉 echarts，StudentAI 拉 react-markdown
 const Evaluation = lazy(() => import("./pages/site/Evaluation"));
@@ -40,7 +41,17 @@ function Loading() {
 
 export default function App() {
   return (
-    <Suspense fallback={<Loading />}>
+    <ThemeProvider>
+      <ThemedRoutes />
+    </ThemeProvider>
+  );
+}
+
+// 切换主题时按 mode 重挂载路由子树，使 canvas/ECharts 命令式取色重新计算
+function ThemedRoutes() {
+  const { mode } = useTheme();
+  return (
+    <Suspense key={mode} fallback={<Loading />}>
       <Routes>
         {/* AI数据服务资源库（主站，师生共用） */}
         <Route path="/" element={<SiteLayout />}>

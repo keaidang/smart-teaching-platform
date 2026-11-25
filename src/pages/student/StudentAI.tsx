@@ -155,7 +155,7 @@ export default function StudentAI() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send(input)}
           placeholder="输入你的问题…"
-          className="min-w-0 flex-1 rounded-xl border border-slate-900/10 bg-white/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-violet-400/60"
+          className="min-w-0 flex-1 rounded-xl border border-slate-900/10 bg-surface/85 px-4 py-3 text-base text-slate-900 outline-none transition-colors placeholder:text-slate-500 focus:border-violet-400/60"
         />
         <button
           onClick={() => send(input)}

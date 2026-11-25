@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { adminApi, type AdminStats } from "../../lib/api";
 import { Card, SectionTitle, Tag, type Tone } from "../../components/ui";
+import { ThemeToggle } from "../../components/ThemeToggle";
 import { IconGauge, IconTrophy, IconUpload, IconChart, IconUsers, IconLock, IconShield, IconBook } from "../../components/icons";
 
 const KEY_LS = "stp.adminKey";
@@ -61,7 +62,10 @@ export default function Admin() {
   // 未登录：密钥输入
   if (!key) {
     return (
-      <div className="grid min-h-screen place-items-center px-6">
+      <div className="relative grid min-h-screen place-items-center px-6">
+        <div className="absolute right-5 top-5">
+          <ThemeToggle variant="chip" />
+        </div>
         <Card tone="blue" className="w-full max-w-sm p-8">
           <div className="tone-blue icon-chip mx-auto h-14 w-14 rounded-2xl">
             <IconLock className="h-7 w-7" />
@@ -74,7 +78,7 @@ export default function Admin() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && login()}
             placeholder="管理密钥"
-            className="mt-6 w-full rounded-xl border border-blue-400/25 bg-white/85 px-4 py-3 text-slate-900 outline-none transition-colors focus:border-blue-400/60"
+            className="mt-6 w-full rounded-xl border border-blue-400/25 bg-surface/85 px-4 py-3 text-slate-900 outline-none transition-colors focus:border-blue-400/60"
           />
           {err && <p className="mt-3 text-sm text-rose-600">{err}</p>}
           <button onClick={login} className="mt-4 w-full rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3 font-semibold text-white shadow-lg shadow-blue-500/25 transition-all hover:brightness-110">
@@ -107,6 +111,7 @@ export default function Admin() {
           <p className="mt-1 text-sm text-slate-500">数智社区 · 教学资源库 · 数据与存储维护</p>
         </div>
         <div className="flex gap-2">
+          <ThemeToggle variant="chip" />
           <button onClick={() => load(key)} className="rounded-lg border border-blue-400/30 px-4 py-2 text-sm text-blue-600 transition-colors hover:bg-blue-400/10">刷新</button>
           <button
             onClick={() => { sessionStorage.removeItem(KEY_LS); setKey(""); setStats(null); }}

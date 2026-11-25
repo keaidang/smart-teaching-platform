@@ -1,7 +1,8 @@
 // 数智社区 · 教学资源库 —— 课程结构与内容（前端 mock 与展示共用）
 
 export interface Roster { id: string; name: string }
-export interface TaskDef { id: string; title: string; active: boolean; isNew?: boolean }
+// status: open=已开放 · ongoing=进行中(主线) · new=新版新增任务
+export interface TaskDef { id: string; title: string; active: boolean; isNew?: boolean; status: "open" | "ongoing" | "new"; desc: string }
 export interface ProjectDef { id: string; title: string; hours: number; tasks: TaskDef[] }
 
 // 28 人班级名单（学号 1–28 连续；已剔除休学 1 人、集训 3 人，后补徐馨、陶高宇）
@@ -25,34 +26,34 @@ export const STUDENTS = ROSTER.map((r, i) => ({
   classId: "C-2412",
 }));
 
-// 4 个项目 / 8 个任务（2026 新版人才培养方案：任务6、任务8 为新增）；已开放：P1T1（练习）、P1T2（进行中主线）、P4T1（独立作业：社区物联感知看板设计与实现）
+// 4 个项目 / 8 个任务（2026 新版人才培养方案：任务6、任务8 为新增）；全部任务开放进入活页任务书
 export const PROJECTS: ProjectDef[] = [
   {
     id: "P1", title: "社区多源数据的感知与采集", hours: 8,
     tasks: [
-      { id: "P1T1", title: "居民诉求文本采集与数据集构建", active: true },
-      { id: "P1T2", title: "环境感知与视觉数据集构建", active: true },
+      { id: "P1T1", title: "居民诉求文本采集与数据集构建", active: true, status: "open", desc: "爬虫抓取民意文本 → 字段设计 → 构建原始数据集（含找脏数据挑战）" },
+      { id: "P1T2", title: "环境感知与视觉数据集构建", active: true, status: "ongoing", desc: "行空板温湿度采集 + K230 人脸特征数据集构建（企业工单 SQ-2026-001）" },
     ],
   },
   {
     id: "P2", title: "社区多源数据的清洗与治理", hours: 8,
     tasks: [
-      { id: "P2T1", title: "居民诉求文本清洗与标注", active: false },
-      { id: "P2T2", title: "传感与视觉数据治理", active: false },
+      { id: "P2T1", title: "居民诉求文本清洗与标注", active: true, status: "open", desc: "文本去重脱敏 → 分类打标 → 标注质量检验，产出可用清洗语料" },
+      { id: "P2T2", title: "传感与视觉数据治理", active: true, status: "open", desc: "时序插值与滑动平均 + 图像清洗对齐与规范治理" },
     ],
   },
   {
     id: "P3", title: "社区知识底座的构建与服务", hours: 8,
     tasks: [
-      { id: "P3T1", title: "社区知识底座构建与数据入库", active: false },
-      { id: "P3T2", title: "多源数据融合与RAG应用", active: false, isNew: true },
+      { id: "P3T1", title: "社区知识底座构建与数据入库", active: true, status: "open", desc: "E-R 建模建表 + 文本向量化，ChromaDB 构建知识底座" },
+      { id: "P3T2", title: "多源数据融合与RAG应用", active: true, isNew: true, status: "new", desc: "多源关联构建知识宽表 + Coze RAG 智能体应用" },
     ],
   },
   {
     id: "P4", title: "社区数据可视化与综合治理", hours: 6,
     tasks: [
-      { id: "P4T1", title: "社区数据单维度看板设计与实现", active: true },
-      { id: "P4T2", title: "综合治理大屏设计与成果汇报", active: false, isNew: true },
+      { id: "P4T1", title: "社区数据单维度看板设计与实现", active: true, status: "open", desc: "单维度看板设计与实现（作业：社区物联感知看板设计与实现，独立提交）" },
+      { id: "P4T2", title: "综合治理大屏设计与成果汇报", active: true, isNew: true, status: "new", desc: "低代码综合大屏开发与治理成果汇报验收" },
     ],
   },
 ];
@@ -119,3 +120,18 @@ export const P4T1_HOMEWORK = {
   description: "提交看板作品截图：基于社区物联感知数据（如环境温湿度、人流变化、设备状态等任一维度），设计并实现一个单维度数据看板（ECharts 等图表工具均可），截图需完整包含看板标题、图表效果与关键数据结论。",
   deadline: "今日 16:30",
 };
+
+// 项目四·任务2 作业（任务级：综合治理大屏设计与成果汇报）
+export const P4T2_HOMEWORK = {
+  id: "HW-P4T2",
+  title: "综合治理大屏与成果汇报",
+  description: "提交综合治理大屏最终交付版作品截图与小组成果汇报记录：截图需完整包含大屏栅格布局、词云图 / 柱状图 / 温度预警折线图等组件与预警联动效果；汇报记录说明组件复用思路、系统集成方案与 AI 巡检整改结果（对应《大屏验收与整改台账》）。",
+  deadline: "今日 16:30",
+};
+
+// 任务级作业映射（最后项目 P4 的两个任务）：前端离线与展示共用；云函数 TASK_HOMEWORKS 同源
+export const TASK_HOMEWORK_MAP: Record<string, typeof P4T1_HOMEWORK> = {
+  P4T1: P4T1_HOMEWORK,
+  P4T2: P4T2_HOMEWORK,
+};
+export const isTaskHomework = (id?: string): id is string => !!id && id in TASK_HOMEWORK_MAP;

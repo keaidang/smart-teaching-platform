@@ -66,6 +66,7 @@ const SEED_HW = { id: "HW-P1T2", title: "数据质检报告", description: "提�
 // 不带 task 参数的旧接口仍走 homework / homework:sub:{学号}（P1T2 专用），互不影响
 const TASK_HOMEWORKS = {
   P4T1: { id: "HW-P4T1", title: "社区物联感知看板设计与实现", description: "提交看板作品截图：基于社区物联感知数据（如环境温湿度、人流变化、设备状态等任一维度），设计并实现一个单维度数据看板（ECharts 等图表工具均可），截图需完整包含看板标题、图表效果与关键数据结论。", deadline: "今日 16:30" },
+  P4T2: { id: "HW-P4T2", title: "综合治理大屏与成果汇报", description: "提交综合治理大屏最终交付版作品截图与小组成果汇报记录：截图需完整包含大屏栅格布局、词云图 / 柱状图 / 温度预警折线图等组件与预警联动效果；汇报记录说明组件复用思路、系统集成方案与 AI 巡检整改结果（对应《大屏验收与整改台账》）。", deadline: "今日 16:30" },
 };
 
 let seeded = false;

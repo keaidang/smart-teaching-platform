@@ -378,7 +378,7 @@ function GroupScorePanel({ kind }: { kind: EvalKind }) {
               onChange={(e) => setComment(e.target.value)}
               rows={3}
               placeholder={meta.placeholder}
-              className="w-full resize-none rounded-xl border border-slate-900/15 bg-white/85 px-4 py-3 text-sm text-slate-900 outline-none transition-colors focus:border-slate-900/35"
+              className="w-full resize-none rounded-xl border border-slate-900/15 bg-surface/85 px-4 py-3 text-sm text-slate-900 outline-none transition-colors focus:border-slate-900/35"
             />
           </div>
 
@@ -511,7 +511,7 @@ function LessonView({ D }: { D: D }) {
     <div className="space-y-6">
       <div>
         <label className="mr-2 text-sm text-slate-500">选择课堂：</label>
-        <select value={lid} onChange={(e) => setLid(e.target.value)} className="rounded-lg border border-slate-900/15 bg-white/85 px-3 py-2 text-sm text-slate-900 outline-none">
+        <select value={lid} onChange={(e) => setLid(e.target.value)} className="rounded-lg border border-slate-900/15 bg-surface/85 px-3 py-2 text-sm text-slate-900 outline-none">
           {D.lessons.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
         </select>
       </div>
@@ -610,7 +610,7 @@ function StudentView({ D }: { D: D }) {
     <div className="space-y-6">
       <div>
         <label className="mr-2 text-sm text-slate-500">选择学生：</label>
-        <select value={sid} onChange={(e) => setSid(e.target.value)} className="rounded-lg border border-slate-900/15 bg-white/85 px-3 py-2 text-sm text-slate-900 outline-none">
+        <select value={sid} onChange={(e) => setSid(e.target.value)} className="rounded-lg border border-slate-900/15 bg-surface/85 px-3 py-2 text-sm text-slate-900 outline-none">
           {D.students.map((x) => <option key={x.id} value={x.id}>{x.name}（{x.tier}）</option>)}
         </select>
       </div>

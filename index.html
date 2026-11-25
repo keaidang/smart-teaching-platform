@@ -5,8 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <meta name="theme-color" content="#06b6d4" />
+    <meta name="theme-color" content="#04141a" />
     <title>数智社区 · 教学资源库</title>
+    <script>
+      // 默认暗色主题、首屏防闪白：在 React 挂载前预设 html.dark 与背景
+      (function () {
+        try {
+          var m = localStorage.getItem("stp.theme");
+          if (m !== "light" && m !== "dark") m = "dark";
+          var e = document.documentElement;
+          e.classList.toggle("dark", m === "dark");
+          e.style.colorScheme = m;
+          e.style.background = m === "dark" ? "#04141a" : "#f4f7fb";
+        } catch (_) {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+          document.documentElement.style.background = "#04141a";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

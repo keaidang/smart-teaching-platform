@@ -84,7 +84,7 @@ export default function StudentTests() {
                   key={t.id}
                   onClick={() => setTaskId(t.id)}
                   className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left text-[13px] transition-colors ${
-                    taskId === t.id ? "chip-tone font-semibold" : "border-slate-900/10 bg-white text-slate-600 hover:bg-slate-50"
+                    taskId === t.id ? "chip-tone font-semibold" : "border-slate-900/10 bg-surface text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   <span className="truncate">任务{ti + 1 + (Number(p.id.slice(1)) - 1) * 2} · {t.title}</span>
@@ -103,7 +103,7 @@ export default function StudentTests() {
             key={p.key}
             onClick={() => setPhase(p.key)}
             className={`flex-1 rounded-xl border px-4 py-2.5 text-center transition-all ${
-              phase === p.key ? "tone-blue chip-tone font-semibold" : "border-slate-900/10 bg-white text-slate-600 hover:bg-slate-50"
+              phase === p.key ? "tone-blue chip-tone font-semibold" : "border-slate-900/10 bg-surface text-slate-600 hover:bg-slate-50"
             }`}
           >
             <span className="block text-sm">{p.label}</span>
@@ -136,7 +136,7 @@ export default function StudentTests() {
                         className={`flex items-start gap-2.5 rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
                           answers[q.id] === oi
                             ? "tone-blue border-blue-500/40 bg-blue-500/8 font-medium text-blue-700"
-                            : "border-slate-900/8 bg-white text-slate-600 hover:bg-slate-50"
+                            : "border-slate-900/8 bg-surface text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[11px] ${answers[q.id] === oi ? "border-blue-500 bg-blue-500 text-white" : "border-slate-300 text-slate-400"}`}>

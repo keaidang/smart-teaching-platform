@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Card, SectionTitle, Stat, Tag, Bar, TONE_HEX, type Tone } from "../../components/ui";
 import { IconBook, IconClock, IconLayers, IconCpu, IconChart, IconSkill } from "../../components/icons";
-import { PROJECTS, ACTIVE_TASK_ID, GROUPS } from "../../lib/course";
+import { PROJECTS, GROUPS } from "../../lib/course";
 
 const PROJECT_TONES: Record<string, Tone> = { P1: "cyan", P2: "emerald", P3: "violet", P4: "rose" };
 const PROJECT_ICONS: Record<string, typeof IconChart> = { P1: IconCpu, P2: IconSkill, P3: IconLayers, P4: IconChart };
@@ -27,18 +27,6 @@ const PROJECT_META: Record<string, { stage: string; goal: string; tools: string[
     goal: "能构建单维度看板与综合治理大屏，用图表讲清数据结论并汇报治理成果。",
     tools: ["ECharts", "Kepler.gl", "Matplotlib"],
   },
-};
-
-// 各任务一句话简介（展示层文案，随任务框放大同步充实）
-const TASK_DESC: Record<string, string> = {
-  P1T1: "爬虫抓取民意文本 → 字段设计 → 构建原始数据集（含找脏数据挑战）",
-  P1T2: "行空板温湿度采集 + K230 人脸特征数据集构建（企业工单 SQ-2026-001）",
-  P2T1: "文本去重脱敏 → 分类打标 → 标注质量检验，产出可用清洗语料",
-  P2T2: "时序插值与滑动平均 + 图像清洗对齐与规范治理",
-  P3T1: "E-R 建模建表 + 文本向量化，ChromaDB 构建知识底座",
-  P3T2: "多源关联构建知识宽表 + Coze RAG 智能体应用",
-  P4T1: "单维度看板设计与实现（作业：社区物联感知看板设计与实现，独立提交）",
-  P4T2: "低代码综合大屏开发与治理成果汇报验收",
 };
 
 export default function Projects() {
@@ -150,17 +138,18 @@ export default function Projects() {
                         <span className="min-w-0 flex-1">
                           <span className="flex items-center gap-2 text-base font-medium text-slate-900">
                             {t.title}
-                            {t.isNew && (
+                            {t.status === "new" && (
                               <span className="rounded-md bg-rose-500/12 px-2 py-0.5 text-[11px] font-semibold text-rose-600">新增</span>
                             )}
-                            {t.active && (
-                              <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${t.id === ACTIVE_TASK_ID ? "bg-emerald-500/15 text-emerald-600" : "bg-sky-500/15 text-sky-600"}`}>
-                                {t.id === ACTIVE_TASK_ID ? "进行中" : "已开放"}
-                              </span>
+                            {t.status === "ongoing" && (
+                              <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-600">进行中</span>
+                            )}
+                            {t.status === "open" && (
+                              <span className="rounded-md bg-sky-500/15 px-2 py-0.5 text-[11px] font-medium text-sky-600">已开放</span>
                             )}
                           </span>
                           <span className="mt-1 block truncate text-[13px] text-slate-500">
-                            {TASK_DESC[t.id]}
+                            {t.desc}
                           </span>
                         </span>
                         <span className="shrink-0 text-sm font-medium transition-transform group-hover:translate-x-0.5" style={{ color: "var(--tone)" }}>

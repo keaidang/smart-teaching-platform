@@ -7,7 +7,8 @@ import {
   IconUpload,
 } from "../../components/icons";
 import { LiveBadge, Tag, type Tone } from "../../components/ui";
-import { PROJECTS, ACTIVE_TASK_ID, findTask } from "../../lib/course";
+import { ThemeToggle } from "../../components/ThemeToggle";
+import { PROJECTS, ACTIVE_TASK_ID, findTask, isTaskHomework } from "../../lib/course";
 
 const MODULES: { to: string; label: string; icon: typeof IconBoard; tone: Tone }[] = [
   { to: "/class", label: "课堂总览", icon: IconBoard, tone: "violet" },
@@ -36,28 +37,31 @@ function Clock() {
 export default function DisplayLayout() {
   const nav = useNavigate();
   const location = useLocation();
-  // 当前展示的任务：URL 带 task=P4T1 且在作业墙 → P4T1；否则 P1T2 主线
+  // 当前展示的任务：URL 带任务级作业 id（P4T1/P4T2）且在作业墙 → 该任务作业墙；否则 P1T2 主线
   const urlTask = new URLSearchParams(location.search).get("task") || "";
-  const showingP4T1 = urlTask === "P4T1" && location.pathname.startsWith("/class/homework");
+  const showingTaskHw = isTaskHomework(urlTask) && location.pathname.startsWith("/class/homework");
   const onAnalytics = location.pathname.startsWith("/class/analytics");
-  // 直接从任务详情页点「后台大屏」（/class/homework?task=P4T1）时跳过选择页
-  const [entered, setEntered] = useState(() => showingP4T1);
+  // 直接从任务详情页点「后台大屏」（/class/homework?task=P4T1|P4T2）时跳过选择页
+  const [entered, setEntered] = useState(() => showingTaskHw);
 
   const choose = (id: string) => {
-    // P1T2 = 主线大屏；P4T1 = 直达任务作业墙；其余暂不开放
-    if (id !== ACTIVE_TASK_ID && id !== "P4T1") return;
+    // P1T2 = 主线大屏；任务级作业（P4T1/P4T2）= 直达作业墙；其余暂不开放
+    if (id !== ACTIVE_TASK_ID && !isTaskHomework(id)) return;
     if (id === ACTIVE_TASK_ID) {
       nav("/class");
       setEntered(true);
     } else {
-      nav("/class/homework?task=P4T1");
+      nav(`/class/homework?task=${id}`);
       setEntered(true);
     }
   };
 
   if (!entered && !onAnalytics) {
     return (
-      <div className="grid min-h-screen place-items-center px-6 py-10">
+      <div className="relative grid min-h-screen place-items-center px-6 py-10">
+        <div className="absolute right-5 top-5">
+          <ThemeToggle variant="chip" />
+        </div>
         <div className="w-full max-w-4xl animate-rise">
           <div className="hero-mesh mb-6 rounded-2xl border border-slate-900/10 px-7 py-8 text-center">
             <h1 className="hero-title text-3xl font-extrabold tracking-widest lg:text-4xl">
@@ -87,7 +91,7 @@ export default function DisplayLayout() {
                   </div>
                   <div className="space-y-2">
                     {p.tasks.map((t) => {
-                      const open = t.id === ACTIVE_TASK_ID || t.id === "P4T1";
+                      const open = t.id === ACTIVE_TASK_ID || isTaskHomework(t.id);
                       return (
                         <button
                           key={t.id}
@@ -121,12 +125,12 @@ export default function DisplayLayout() {
     );
   }
 
-  const task = showingP4T1 ? findTask("P4T1") : findTask(ACTIVE_TASK_ID);
-  const headerTone: Tone = showingP4T1 ? "amber" : "violet";
+  const task = showingTaskHw ? findTask(urlTask) : findTask(ACTIVE_TASK_ID);
+  const headerTone: Tone = showingTaskHw ? "amber" : "violet";
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/10 bg-white/85 px-6 py-3 backdrop-blur-xl">
+      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/10 bg-surface/85 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className={`tone-${headerTone} icon-chip h-10 w-10 rounded-xl`}>
             <IconBoard className="h-5 w-5" />
@@ -141,6 +145,7 @@ export default function DisplayLayout() {
           <LiveBadge />
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle variant="ghost" />
           <Clock />
           <nav className="mr-2 flex gap-1">
             {MODULES.map((m) => (
