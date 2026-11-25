@@ -129,7 +129,7 @@ export default function DisplayLayout() {
   const headerTone: Tone = showingTaskHw ? "amber" : "violet";
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col">
       <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/10 bg-surface/85 px-6 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className={`tone-${headerTone} icon-chip h-10 w-10 rounded-xl`}>

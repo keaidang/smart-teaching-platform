@@ -27,7 +27,7 @@ export default function SiteLayout() {
   const current = NAV.find((n) => (n.end ? n.to === "/" : pathname.startsWith(n.to)));
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen">
       <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-slate-900/10 bg-surface/85 px-4 py-7 backdrop-blur-xl">
         <div className="mb-10 flex items-center gap-3 px-2">
           <Logo size={44} />
