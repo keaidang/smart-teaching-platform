@@ -38,13 +38,13 @@ const mean = (xs: number[]) => round(xs.reduce((a, b) => a + b, 0) / Math.max(1,
 
 // 能力基线收紧到 82–90，使增值折线落在自然带（课前均≈83、课后均≈91），不顶天花板。
 const ability = (sid: string) => 82 + rng(sid + ":ability")() * 8;
-const PHASE_BONUS: Record<Phase, number> = { pre: -4, mid: 0, post: 5 };
+const PHASE_BONUS: Record<Phase, number> = { pre: -18, mid: 0, post: 5 };
 // 阶段达成率区间：用「连续能力模型」生成分数（能力 + 任务偏好 + 轻微噪声），
 // 而非逐题量化（4 题×25 分会产生 {80,85,90,95,100} 的台阶与孤立 100 尖峰，看着假）。
 // floor 保证不低于达成率目标，cap 收紧上限消除"85–95 里突然冒一个 98/100"的失真，
 // 同时避免过多学生顶到上限形成"天花板平台"。
-const PHASE_FLOOR: Record<Phase, number> = { pre: 80, mid: 84, post: 86 };
-const PHASE_CAP: Record<Phase, number> = { pre: 92, mid: 95, post: 97 };
+const PHASE_FLOOR: Record<Phase, number> = { pre: 60, mid: 84, post: 86 };
+const PHASE_CAP: Record<Phase, number> = { pre: 75, mid: 95, post: 97 };
 
 /* ===== 真实题库访问 ===== */
 export function bankOf(taskId: string, phase: Phase): BankQuestion[] {
@@ -133,8 +133,8 @@ export function mockProfiles(): StudentProfile[] {
   const list: StudentProfile[] = ROSTER.map((s) => {
     const r = rng(s.id + ":profile");
     const base = ability(s.id);
-    const radarPre = RADAR_DIMS.map(() => round(clamp(base - 14 + r() * 18, 40, 92)));
-    const radarPost = radarPre.map((v) => round(clamp(v + 6 + r() * 14, 50, 98)));
+    const radarPre = RADAR_DIMS.map(() => round(clamp(60 + r() * 15, 60, 75)));
+    const radarPost = radarPre.map((v) => round(clamp(v + 16 + r() * 8, 78, 96)));
     const dims = RADAR_DIMS.map((name, i) => ({ name, pre: radarPre[i], post: radarPost[i] }));
     const knowledge = KNOWLEDGE_ITEMS.map((name) => ({ name, score: round(clamp(base - 6 + r() * 16, 70, 98)) }));
 
