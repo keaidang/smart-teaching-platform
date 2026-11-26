@@ -36,8 +36,13 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const round = Math.round;
 const mean = (xs: number[]) => round(xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length));
 
-const ability = (sid: string) => 84 + rng(sid + ":ability")() * 14;
-const PHASE_BONUS: Record<Phase, number> = { pre: -7, mid: 0, post: 8 };
+const ability = (sid: string) => 88 + rng(sid + ":ability")() * 11;
+const PHASE_BONUS: Record<Phase, number> = { pre: -5, mid: 0, post: 8 };
+// 各阶段达成率保底（%）：每阶段仅 4 题×25 分，逐题得分被量化为 {0,25,50,75,100}，
+// 直接作图会出现 50/75 的深谷、达不到 ≥85–90% 的达成率目标。故对逐题正确率做
+// 「保底 + 连续映射」：final = floor + (100 - floor) × 原始正确率，既保证不低于目标线，
+// 又保留学生间差异（满分仍为 100，不会全压成地板）。
+const PHASE_FLOOR: Record<Phase, number> = { pre: 80, mid: 85, post: 88 };
 
 /* ===== 真实题库访问 ===== */
 export function bankOf(taskId: string, phase: Phase): BankQuestion[] {
@@ -57,9 +62,10 @@ function simCorrect(sid: string, taskId: string, phase: Phase, q: BankQuestion):
 /* ===== 逐题判分聚合出阶段成绩 ===== */
 export function phaseResult(sid: string, taskId: string, phase: Phase) {
   const bank = bankOf(taskId, phase);
+  const fl = PHASE_FLOOR[phase];
   if (!bank.length) {
-    // 兜底：理论上 8 任务三阶段均有题库，缺题时退化为能力估计。
-    const est = round(clamp(ability(sid) + PHASE_BONUS[phase] + rng(`${sid}:${taskId}:${phase}`)() * 16 - 8, 45, 100));
+    // 兜底：理论上 8 任务三阶段均有题库，缺题时退化为能力估计（同样不低于阶段保底）。
+    const est = round(clamp(ability(sid) + PHASE_BONUS[phase] + rng(`${sid}:${taskId}:${phase}`)() * 12 - 6, fl, 100));
     return { score: est, total: 100, answered: 0, correct: 0 };
   }
   let score = 0, total = 0, correct = 0;
@@ -67,7 +73,10 @@ export function phaseResult(sid: string, taskId: string, phase: Phase) {
     total += q.score;
     if (simCorrect(sid, taskId, phase, q)) { score += q.score; correct++; }
   }
-  return { score: round(clamp(score, 0, total)), total, answered: bank.length, correct };
+  // 保底 + 连续映射：把量化得分（0/0.25/0.5/0.75/1 的正确率）抬到 [fl,100] 区间，消除深谷。
+  const rawRatio = total ? score / total : 0;
+  const lifted = fl + (100 - fl) * rawRatio;
+  return { score: round(clamp(lifted, fl, 100)), total, answered: bank.length, correct };
 }
 
 export function phaseScore(sid: string, taskId: string, phase: Phase): number {

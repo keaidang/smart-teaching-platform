@@ -47,7 +47,7 @@ export const exercises: Exercise[] = [
 export const homeworks: Homework[] = [ACTIVE_HOMEWORK];
 
 function seededScore(i: number) {
-  return [95, 88, 76, 100, 82, 70, 91, 85, 79, 97, 68, 84, 90, 73, 88, 96][i % 16];
+  return [95, 88, 86, 100, 85, 82, 91, 85, 87, 97, 83, 84, 90, 86, 88, 96][i % 16];
 }
 
 export function mockPreviewScores(): PreviewScore[] {

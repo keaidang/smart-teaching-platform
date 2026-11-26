@@ -278,7 +278,7 @@ export default function AnalyticsBoard() {
   const boxOpt = useMemo(() => data && dark({
     grid: { left: 40, right: 16, top: 24, bottom: 64 },
     xAxis: { type: "category", data: data.skills.map((s) => s.name), axisLabel: { rotate: 32, fontSize: 10 } },
-    yAxis: { type: "value", min: 50, max: 100 },
+    yAxis: { type: "value", min: 80, max: 100 },
     series: [{
       type: "boxplot",
       data: data.skills.map((s) => five(s.values)),
@@ -290,7 +290,7 @@ export default function AnalyticsBoard() {
     grid: { left: 40, right: 16, top: 36, bottom: 70 },
     legend: { data: ["课前平均", "课后平均"], top: 4 },
     xAxis: { type: "category", data: data.students.map((s) => s.name), axisLabel: { rotate: 60, fontSize: 9 } },
-    yAxis: { type: "value", min: 50, max: 100 },
+    yAxis: { type: "value", min: 80, max: 100 },
     series: [
       { name: "课前平均", type: "line", smooth: true, symbolSize: 4, data: data.students.map((s) => s.pre), lineStyle: { color: "#3a6ea5", width: 2 }, itemStyle: { color: "#3a6ea5" } },
       { name: "课后平均", type: "line", smooth: true, symbolSize: 4, data: data.students.map((s) => s.post), lineStyle: { color: "#a87b3a", width: 2 }, itemStyle: { color: "#a87b3a" } },
