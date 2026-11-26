@@ -158,6 +158,25 @@ function WorksheetView({ ws, tone, base }: { ws: Worksheet; tone: Tone; base: nu
             );
           })}
         </div>
+
+        {/* 测试用例：数据质检与交叉互验的具体问题 */}
+        {ws.testCases && ws.testCases.length > 0 && (
+          <div className="mt-4 rounded-xl border border-slate-900/10 bg-slate-900/[0.03] p-5">
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-lg bg-cyan-500/15 text-cyan-600">🧪</span>
+              <h4 className="text-base font-bold text-slate-800">测试用例</h4>
+              <span className="text-xs text-slate-400">· 用真实社区问题验证宽表能否关联作答</span>
+            </div>
+            <ol className="mt-3 space-y-2.5">
+              {ws.testCases.map((t, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-slate-700">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md bg-cyan-500/15 text-[11px] font-bold text-cyan-700">{i + 1}</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
       </section>
 
       {/* 侧栏框：知识小贴士 / 避坑指南 / 标准规范 */}

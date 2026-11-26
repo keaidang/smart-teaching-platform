@@ -15,6 +15,7 @@ export interface Worksheet {
   deliverables: Deliverable[]; // 三、交付成果
   knowledge: string[];  // 四、知识要点
   steps: string[];      // 五、任务实施
+  testCases?: string[]; // 五、任务实施 · 测试用例（数据质检交叉互验的具体问题）
   sideBoxes: SideBox[]; // 知识小贴士 / 避坑指南 / 标准规范与职业素养
   workRecords: string[]; // 六、工作记录（实施环节）
   checks: CheckRow[];   // 七、成果质量检查
@@ -586,6 +587,11 @@ export const TASK_BOOK: Record<string, Worksheet[]> = {
         "SQL多表关联：运行半成品SQL模板，完成三表LEFT JOIN关联，观察不同关联方式对数据结果的影响，检查数据是否正确匹配。",
         "特征衍生与宽表输出：根据业务需求调整聚合参数，生成关怀画像相关特征字段，将关联结果整理为知识宽表并导出CSV文件。",
         "数据质检与交叉互查：运行宽表质量检查程序，检查字段完整性、关联准确性和隐私脱敏情况，借助AI辅助识别异常，并通过小组交叉检查完成成果验收。",
+      ],
+      testCases: [
+        "地下车库太黑，有人因此摔跤吗？",
+        "快递柜满了，有丢件事件吗？",
+        "电动车常见停在消防通道上，最近有安全事件吗？",
       ],
       sideBoxes: [
         { kind: "tip", title: "核验提示", points: [
