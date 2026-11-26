@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import { adminApi, type AdminStats } from "../../lib/api";
 import { Card, SectionTitle, Tag, type Tone } from "../../components/ui";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { allTasks, ACTIVE_TASK_ID } from "../../lib/course";
 import { IconGauge, IconTrophy, IconUpload, IconChart, IconUsers, IconLock, IconShield, IconBook } from "../../components/icons";
 
 const KEY_LS = "stp.adminKey";
+const HW_TASKS = [{ id: "", label: `${ACTIVE_TASK_ID} · 主线作业（数据质检报告）` }, ...allTasks().map((t) => ({ id: t.id, label: `${t.id} · ${t.title}` }))];
 
 const FEATURE_CARDS: { title: string; desc: string; icon: typeof IconGauge; tone: Tone }[] = [
   { title: "课堂数据总览", desc: "实时查看名单规模、在线心跳、预习/作业/习题提交量，配合教师大屏掌握课堂节奏。", icon: IconGauge, tone: "blue" },
-  { title: "作答记录重置", desc: "按教学批次清空预习、作业与习题作答记录及在线心跳，名单、题目与已传图片不受影响。", icon: IconShield, tone: "amber" },
+  { title: "作答记录重置", desc: "可按教学批次整体清空，也可按单个任务精准清空作业提交；支持 8 个任务分任务清除，名单、题目与已传图片按选择保留。", icon: IconShield, tone: "amber" },
   { title: "存储与种子维护", desc: "清理 Blob 作业图片、整体重置或按最新代码重新播种名单与题目，用于内容更新后的环境刷新。", icon: IconBook, tone: "blue" },
 ];
 
@@ -20,6 +22,7 @@ export default function Admin() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [hwTask, setHwTask] = useState("");
 
   const load = useCallback(async (k: string) => {
     setErr("");
@@ -51,6 +54,25 @@ export default function Admin() {
     try {
       await fn(key);
       setMsg(done);
+      await load(key);
+    } catch (e) {
+      setErr(String((e as Error).message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // 分任务清空作业提交（KV 记录 + Blob 作品图）
+  const clearHw = async () => {
+    if (!key) return;
+    const t = HW_TASKS.find((x) => x.id === hwTask);
+    if (!confirm(`确定清空「${t?.label ?? hwTask}」的全部学生作业提交（记录与作品图）？此操作不可恢复。`)) return;
+    setBusy(true);
+    setMsg("");
+    setErr("");
+    try {
+      const r = await adminApi.clearHomework(key, hwTask);
+      setMsg(`已清空 ${r.task}：${r.kvDeleted} 条提交记录、${r.blobDeleted} 张作品图`);
       await load(key);
     } catch (e) {
       setErr(String((e as Error).message || e));
@@ -161,6 +183,23 @@ export default function Admin() {
           学生名单与题目为固定种子数据；答题/提交/在线记录可按需重置。
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="tone-rose rounded-xl border bg-slate-900/[0.03] p-5 sm:col-span-2" style={{ borderColor: "var(--tone-line)" }}>
+            <div className="font-semibold" style={{ color: "var(--tone)" }}>分任务清空作业提交</div>
+            <p className="mt-1 text-sm text-slate-500">选择具体任务，仅清空该任务的学生作业提交记录与作品图片，其它任务、名单与题目不受影响。</p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <select
+                value={hwTask}
+                onChange={(e) => setHwTask(e.target.value)}
+                className="min-w-[15rem] flex-1 rounded-lg border border-rose-400/30 bg-surface px-3 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-rose-400/60"
+              >
+                {HW_TASKS.map((t) => (
+                  <option key={t.id} value={t.id}>{t.label}</option>
+                ))}
+              </select>
+              <button disabled={busy} onClick={clearHw}
+                className="rounded-lg bg-rose-400 px-5 py-2.5 font-semibold text-ink-900 transition-colors hover:bg-rose-300 disabled:opacity-50">清空该任务</button>
+            </div>
+          </div>
           <div className="tone-amber rounded-xl border bg-slate-900/[0.03] p-5" style={{ borderColor: "var(--tone-line)" }}>
             <div className="font-semibold" style={{ color: "var(--tone)" }}>重置答题 / 提交记录（KV）</div>
             <p className="mt-1 text-sm text-slate-500">清空预习/作业/问答作答与在线心跳，<b className="text-slate-900">保留</b>名单、题目与已传图片。</p>

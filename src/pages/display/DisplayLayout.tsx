@@ -45,7 +45,7 @@ export default function DisplayLayout() {
   const [entered, setEntered] = useState(() => showingTaskHw);
 
   const choose = (id: string) => {
-    // P1T2 = 主线大屏；任务级作业（P4T1/P4T2）= 直达作业墙；其余暂不开放
+    // P1T2 = 主线大屏；其余 7 个任务级作业 = 直达对应作业墙（提交人数）；8 任务全部开放
     if (id !== ACTIVE_TASK_ID && !isTaskHomework(id)) return;
     if (id === ACTIVE_TASK_ID) {
       nav("/class");
@@ -96,6 +96,7 @@ export default function DisplayLayout() {
                         <button
                           key={t.id}
                           onClick={() => choose(t.id)}
+                          disabled={!open}
                           className={`flex w-full items-center justify-between rounded-xl border px-4 py-2.5 text-sm transition-colors ${
                             open
                               ? "bg-slate-900/[0.04] text-slate-800 hover:bg-slate-900/[0.08]"
@@ -104,10 +105,8 @@ export default function DisplayLayout() {
                           style={open ? { borderColor: "var(--tone-line)" } : undefined}
                         >
                           <span className="truncate">{t.title}</span>
-                          {open ? (
+                          {open && (
                             <span className="shrink-0 font-medium" style={{ color: "var(--tone)" }}>进入 →</span>
-                          ) : (
-                            <span className="shrink-0 text-xs text-slate-600">待开放</span>
                           )}
                         </button>
                       );

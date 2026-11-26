@@ -65,6 +65,11 @@ const SEED_HW = { id: "HW-P1T2", title: "数据质检报告", description: "提�
 // 任务级作业（与 P1T2 的「数据质检报告」相互独立）：KV 键 homework:task:{taskId}，提交存 homework:sub:{taskId}:{学号}，图片 Blob 前缀 hw/{taskId}/
 // 不带 task 参数的旧接口仍走 homework / homework:sub:{学号}（P1T2 专用），互不影响
 const TASK_HOMEWORKS = {
+  P1T1: { id: "HW-P1T1", title: "居民诉求原始数据集", description: "提交居民诉求原始数据集与字段设计表：CSV 原始诉求 + 字段清单（诉求编号、内容、类别、时间、地点等）+ 采集来源与合规说明；截图需体现数据行数与列字段完整、脏数据样例保留。", deadline: "今日 16:30" },
+  P2T1: { id: "HW-P2T1", title: "文本清洗与分类标注成果", description: "提交清洗后语料与标注结果：去重、脱敏、格式统一后的 cleaned.csv + Label Studio 标注截图 + 分类分布 Top5 统计；合规自查含敏感信息掩码、无个人信息残留。", deadline: "今日 16:30" },
+  P2T2: { id: "HW-P2T2", title: "传感与图像治理成果", description: "提交治理后的时序传感数据与人脸图像数据集：插值/滑动平均后的 cleaned_timeseries.csv + 统一尺寸/灰度/对齐后的图像目录 + metadata.csv；截图需体现缺失率下降、图像 Shape 一致。", deadline: "今日 16:30" },
+  P3T1: { id: "HW-P3T1", title: "知识底座建表与向量库", description: "提交关系型数据库 E-R 图与建表结果 + ChromaDB 向量库截图：业务表结构、批量入库核验、文本分块与 Embedding 记录、Top-3 检索召回测试样例。", deadline: "今日 16:30" },
+  P3T2: { id: "HW-P3T2", title: "知识宽表与 RAG 智能体", description: "提交多源融合后的社区知识宽表 + Coze 智能体问答演示：假名化 Person_ID 关联结果、宽表字段与聚合特征、智能体回答示例（含命中知识库与兜底回复各一条）。", deadline: "今日 16:30" },
   P4T1: { id: "HW-P4T1", title: "社区物联感知看板设计与实现", description: "提交看板作品截图：基于社区物联感知数据（如环境温湿度、人流变化、设备状态等任一维度），设计并实现一个单维度数据看板（ECharts 等图表工具均可），截图需完整包含看板标题、图表效果与关键数据结论。", deadline: "今日 16:30" },
   P4T2: { id: "HW-P4T2", title: "综合治理大屏与成果汇报", description: "提交综合治理大屏最终交付版作品截图与小组成果汇报记录：截图需完整包含大屏栅格布局、词云图 / 柱状图 / 温度预警折线图等组件与预警联动效果；汇报记录说明组件复用思路、系统集成方案与 AI 巡检整改结果（对应《大屏验收与整改台账》）。", deadline: "今日 16:30" },
 };
@@ -199,6 +204,26 @@ export async function onRequest(context) {
         }
       }
       return json({ ok: true, deleted });
+    }
+
+    // 分任务清空作业：删除指定任务的提交记录(KV) + 作品图(Blob)。task 缺省 / P1T2 = 主线默认作业（旧键）；其余 = 任务级作业
+    if (path === "/admin/clear-homework" && method === "POST") {
+      if (!authorized()) return json({ error: "forbidden" }, 403);
+      let task = url.searchParams.get("task") || "";
+      try { const body = await request.json(); task = body.task || task; } catch { /* query 已带 task 时可无 body */ }
+      let kvDeleted = 0, blobDeleted = 0;
+      const isDefault = !task || task === "P1T2";
+      const subKeys = await listKeys("homework:sub:");
+      for (const k of subKeys) {
+        const hit = isDefault ? /^homework:sub:\d+$/.test(k) : k.startsWith(`homework:sub:${task}:`);
+        if (hit) { try { await KV.delete(k); kvDeleted++; } catch { /* ignore */ } }
+      }
+      const files = await FILES.list({ consistency: "strong" });
+      for (const b of files.blobs) {
+        const hit = isDefault ? /^hw\/\d+\//.test(b.key) : b.key.startsWith(`hw/${task}/`);
+        if (hit) { try { await FILES.delete(b.key); blobDeleted++; } catch { /* ignore */ } }
+      }
+      return json({ ok: true, task: isDefault ? "P1T2" : task, kvDeleted, blobDeleted });
     }
 
     if (path === "/admin/reset-all" && method === "POST") {

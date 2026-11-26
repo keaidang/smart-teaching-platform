@@ -36,7 +36,7 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const round = Math.round;
 const mean = (xs: number[]) => round(xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length));
 
-const ability = (sid: string) => 60 + rng(sid + ":ability")() * 32;
+const ability = (sid: string) => 84 + rng(sid + ":ability")() * 14;
 const PHASE_BONUS: Record<Phase, number> = { pre: -7, mid: 0, post: 8 };
 
 /* ===== 真实题库访问 ===== */
@@ -216,8 +216,8 @@ export function mockGraphStats(): GraphStats {
     const owner = ownerTaskOf(n);
     const base = owner ? classTaskAvg[owner] ?? overall : overall;
     const r = rng(n.id + ":mastery");
-    const mastery = round(clamp(base + (r() * 18 - 9), 30, 99));
-    const completion = round(clamp(mastery + 4 + r() * 14, 40, 100));
+    const mastery = round(clamp(base + (r() * 14 - 6), 78, 99));
+    const completion = round(clamp(mastery + 4 + r() * 12, 80, 100));
     return { id: n.id, name: n.name, type: n.type, mark: n.mark, task: taskLabelOf(n), mastery, completion };
   });
 

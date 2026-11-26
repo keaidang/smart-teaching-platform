@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { api, homeworkFileUrl } from "../../lib/api";
 import { useStudent } from "../../lib/auth";
 import type { Homework, HomeworkSubmission } from "../../lib/types";
+import { isTaskHomework } from "../../lib/course";
 import { IconCheck, IconClock, IconShield, IconUpload } from "../../components/icons";
 import { Bar, Card, SectionTitle, Tag, TONE_HEX } from "../../components/ui";
 
@@ -31,6 +32,21 @@ const SPEC_P4T2 = [
   { title: "联动与预警", desc: "数据绑定、指标卡片、告警列表按演示工单联动运行，预警线与弹窗可触发" },
   { title: "质检与汇报", desc: "附《AI缺陷清单》与整改复测结果，并说明组件复用思路与系统集成方案" },
 ];
+// 任务级作业的通用规范（P1T1 / P2T1 / P2T2 / P3T1 / P3T2 等无专属清单时使用）
+const SPEC_GENERIC = [
+  { title: "对照工单要求", desc: "按本任务活页任务书的工单要求与交付成果逐项完成" },
+  { title: "作品截图完整", desc: "截图清晰，包含关键成果、数据或界面效果与必要说明" },
+  { title: "合规自查", desc: "遵守数据安全与隐私规范，假名化、脱敏、无敏感信息残留" },
+];
+const SPEC_MAP: Record<string, { title: string; desc: string }[]> = {
+  P1T1: SPEC_GENERIC,
+  P2T1: SPEC_GENERIC,
+  P2T2: SPEC_GENERIC,
+  P3T1: SPEC_GENERIC,
+  P3T2: SPEC_GENERIC,
+  P4T1: SPEC_P4T1,
+  P4T2: SPEC_P4T2,
+};
 const FORMAT_RULES = ["仅支持 PNG / JPG 格式", "单张图片不超过 5MB", "截图清晰完整、关键信息可读"];
 
 // 把文件 PUT 到预签名 URL（直传到 Blob，带进度）
@@ -200,8 +216,8 @@ export default function StudentHomework() {
       </div>
     );
 
-  const isTaskHw = task === "P4T1" || task === "P4T2";
-  const specItems = task === "P4T2" ? SPEC_P4T2 : task === "P4T1" ? SPEC_P4T1 : SPEC_P1T2;
+  const isTaskHw = isTaskHomework(task);
+  const specItems = task ? SPEC_MAP[task] ?? SPEC_GENERIC : SPEC_P1T2;
   const hwTag = isTaskHw ? `${task} · 任务级作业` : "P1T2 · 主线作业";
   const hwTone = isTaskHw ? "rose" : "cyan";
 

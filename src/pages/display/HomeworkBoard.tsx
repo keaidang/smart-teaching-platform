@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, homeworkFileUrl } from "../../lib/api";
 import type { Homework, HomeworkSubmission, Student } from "../../lib/types";
+import { allTasks, isTaskHomework } from "../../lib/course";
 import { IconCheck, IconClock, IconUpload } from "../../components/icons";
 import { Avatar, Bar, Card, LiveBadge, SectionTitle, Tag, type Tone } from "../../components/ui";
 
@@ -29,11 +30,13 @@ function Thumb({ sub, size = 56 }: { sub: HomeworkSubmission; size?: number }) {
   return <Avatar name={sub.name} color="#fbbf24" size={size} />;
 }
 
-// 作业任务切换页签：两个任务的作业数据相互独立（P1T2 走旧键，任务级走 homework:sub:{task}:{学号}）
+// 作业任务切换页签：8 任务全部可切，各自作业数据相互独立
+// （P1T2 走旧默认键 homework:sub:{学号}，其余 7 任务走 homework:sub:{task}:{学号}）
 const HW_TABS = [
   { id: "", label: "P1T2 · 数据质检报告" },
-  { id: "P4T1", label: "P4T1 · 社区物联感知看板" },
-  { id: "P4T2", label: "P4T2 · 综合治理大屏与成果汇报" },
+  ...allTasks()
+    .filter((t) => isTaskHomework(t.id))
+    .map((t) => ({ id: t.id, label: `${t.id} · ${t.title}` })),
 ];
 
 export default function HomeworkBoard() {
@@ -90,8 +93,8 @@ export default function HomeworkBoard() {
         right={<LiveBadge />}
       />
 
-      {/* 任务切换页签（两任务作业相互独立） */}
-      <div className="mb-5 flex gap-2">
+      {/* 任务切换页签（8 任务作业相互独立） */}
+      <div className="mb-5 flex flex-wrap gap-2">
         {HW_TABS.map((t) => (
           <button
             key={t.id}

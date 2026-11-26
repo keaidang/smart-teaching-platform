@@ -129,8 +129,46 @@ export const P4T2_HOMEWORK = {
   deadline: "今日 16:30",
 };
 
-// 任务级作业映射（最后项目 P4 的两个任务）：前端离线与展示共用；云函数 TASK_HOMEWORKS 同源
+// 其余 5 个任务的作业（P1T1 / P2T1 / P2T2 / P3T1 / P3T2）：任务级作品截图 + 简要说明
+export const P1T1_HOMEWORK = {
+  id: "HW-P1T1",
+  title: "居民诉求原始数据集",
+  description: "提交居民诉求原始数据集与字段设计表：CSV 原始诉求 + 字段清单（诉求编号、内容、类别、时间、地点等）+ 采集来源与合规说明；截图需体现数据行数与列字段完整、脏数据样例保留。",
+  deadline: "今日 16:30",
+};
+export const P2T1_HOMEWORK = {
+  id: "HW-P2T1",
+  title: "文本清洗与分类标注成果",
+  description: "提交清洗后语料与标注结果：去重、脱敏、格式统一后的 cleaned.csv + Label Studio 标注截图 + 分类分布 Top5 统计；合规自查含敏感信息掩码、无个人信息残留。",
+  deadline: "今日 16:30",
+};
+export const P2T2_HOMEWORK = {
+  id: "HW-P2T2",
+  title: "传感与图像治理成果",
+  description: "提交治理后的时序传感数据与人脸图像数据集：插值/滑动平均后的 cleaned_timeseries.csv + 统一尺寸/灰度/对齐后的图像目录 + metadata.csv；截图需体现缺失率下降、图像 Shape 一致。",
+  deadline: "今日 16:30",
+};
+export const P3T1_HOMEWORK = {
+  id: "HW-P3T1",
+  title: "知识底座建表与向量库",
+  description: "提交关系型数据库 E-R 图与建表结果 + ChromaDB 向量库截图：业务表结构、批量入库核验、文本分块与 Embedding 记录、Top-3 检索召回测试样例。",
+  deadline: "今日 16:30",
+};
+export const P3T2_HOMEWORK = {
+  id: "HW-P3T2",
+  title: "知识宽表与 RAG 智能体",
+  description: "提交多源融合后的社区知识宽表 + Coze 智能体问答演示：假名化 Person_ID 关联结果、宽表字段与聚合特征、智能体回答示例（含命中知识库与兜底回复各一条）。",
+  deadline: "今日 16:30",
+};
+
+// 任务级作业映射：8 任务全部开放提交（P1T2 走主线默认路由，其余 7 任务走 task 参数）
+// 前端离线与展示共用；云函数 TASK_HOMEWORKS 同源
 export const TASK_HOMEWORK_MAP: Record<string, typeof P4T1_HOMEWORK> = {
+  P1T1: P1T1_HOMEWORK,
+  P2T1: P2T1_HOMEWORK,
+  P2T2: P2T2_HOMEWORK,
+  P3T1: P3T1_HOMEWORK,
+  P3T2: P3T2_HOMEWORK,
   P4T1: P4T1_HOMEWORK,
   P4T2: P4T2_HOMEWORK,
 };

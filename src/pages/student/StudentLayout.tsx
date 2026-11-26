@@ -28,10 +28,16 @@ const PROJECT_TONES: Record<string, Tone> = { P1: "cyan", P2: "emerald", P3: "vi
 
 const TASK_HINTS: Record<string, string> = {
   [ACTIVE_TASK_ID]: "主线任务 · 预习 → 作业 → 习题 → AI 助学全套",
+  P1T1: "任务级作业 · 进入后直达提交页",
+  P2T1: "任务级作业 · 进入后直达提交页",
+  P2T2: "任务级作业 · 进入后直达提交页",
+  P3T1: "任务级作业 · 进入后直达提交页",
+  P3T2: "任务级作业 · 进入后直达提交页",
   P4T1: "任务级作业 · 进入后直达提交页",
   P4T2: "任务级作业 · 进入后直达提交页",
 };
 
+// 8 个任务全部开放（P1T2 = 主线全套流程；其余 7 个任务级作业直达提交页）
 const isOpenTask = (id: string) => id === ACTIVE_TASK_ID || isTaskHomework(id);
 
 const TASK_KEY = "stp.taskChosen";
@@ -88,7 +94,7 @@ export default function StudentLayout() {
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
               <Tag tone="cyan">主线任务 P1T2 · 全套学习流程</Tag>
-              <Tag tone="rose">任务级作业 P4T1 / P4T2 · 直达提交</Tag>
+              <Tag tone="rose">8 个任务全部开放 · 直达作业提交</Tag>
             </div>
           </div>
 
@@ -103,11 +109,7 @@ export default function StudentLayout() {
                       <span className={`tone-${tone} grad-text text-2xl font-extrabold`}>{p.id}</span>
                       <span className="text-lg font-semibold leading-snug text-slate-900">{p.title}</span>
                     </div>
-                    {openCount > 0 ? (
-                      <Tag tone={tone}>{openCount} 个开放</Tag>
-                    ) : (
-                      <Tag tone="amber" className="opacity-70">待开放</Tag>
-                    )}
+                    <Tag tone={tone}>{openCount} 个可提交</Tag>
                   </div>
                   <div className="mb-4 flex items-center gap-3 text-sm text-slate-500">
                     <span className="flex items-center gap-1"><IconClock className="h-4 w-4" />{p.hours} 课时</span>
@@ -120,6 +122,7 @@ export default function StudentLayout() {
                         <button
                           key={t.id}
                           onClick={() => choose(t.id)}
+                          disabled={!open}
                           className={`tone-${tone} group flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
                             open
                               ? "bg-slate-900/[0.04] hover:bg-slate-900/[0.08]"
@@ -139,7 +142,7 @@ export default function StudentLayout() {
                             className={`shrink-0 text-sm font-medium ${open ? "" : "text-slate-500"}`}
                             style={open ? { color: "var(--tone)" } : undefined}
                           >
-                            {open ? "开始挑战 →" : "待开放"}
+                            {open ? (t.id === ACTIVE_TASK_ID ? "开始挑战 →" : "去提交 →") : "未开放"}
                           </span>
                         </button>
                       );

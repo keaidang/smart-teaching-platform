@@ -413,6 +413,13 @@ export const adminApi = {
     adminReq<{ ok: boolean; deleted: number }>("/admin/clear-blob", "POST", key),
   clearEvals: (key: string) =>
     adminReq<{ ok: boolean; deleted: number }>("/admin/clear-evals", "POST", key),
+  // 分任务清空作业提交：删除该任务的 KV 提交记录 + Blob 作品图（task 缺省 / P1T2 = 默认主线作业）
+  clearHomework: (key: string, task: string) =>
+    adminReq<{ ok: boolean; task: string; kvDeleted: number; blobDeleted: number }>(
+      `/admin/clear-homework?task=${encodeURIComponent(task)}`,
+      "POST",
+      key
+    ),
   resetAll: (key: string) =>
     adminReq<{ ok: boolean; kvDeleted: number; blobDeleted: number }>("/admin/reset-all", "POST", key),
   reseed: (key: string) =>

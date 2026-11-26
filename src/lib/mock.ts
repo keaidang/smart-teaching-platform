@@ -82,7 +82,7 @@ export function mockTaskHomeworkSubmissions(_task: string): HomeworkSubmission[]
 export function mockExerciseStats(): ExerciseStat[] {
   // 离线演示：正确率 / 分布 / 答案标位均为演示数据（真实答案在云函数，不下发前端）
   return exercises.map((ex, i) => {
-    const correctRate = [82, 68, 91, 75][i % 4];
+    const correctRate = [88, 85, 93, 87][i % 4];
     const attempts = students.length;
     const correctCount = Math.round((correctRate / 100) * attempts);
     const wrong = attempts - correctCount;

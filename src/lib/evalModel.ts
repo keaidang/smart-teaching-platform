@@ -87,7 +87,7 @@ export const LESSONS: Omit<Lesson, "students" | "classAchieve">[] = [
 ];
 
 const TIERS = [...Array(12).fill("基础层"), ...Array(12).fill("提高层"), ...Array(6).fill("拓展层")];
-const TIER_BASE: Record<string, [number, number, number]> = { 基础层: [55, 62, 72], 提高层: [68, 78, 86], 拓展层: [80, 88, 93] };
+const TIER_BASE: Record<string, [number, number, number]> = { 基础层: [74, 82, 88], 提高层: [80, 88, 92], 拓展层: [86, 92, 96] };
 
 function mulberry32(seed: number) {
   let a = seed >>> 0;
